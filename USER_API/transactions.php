@@ -32,51 +32,53 @@ require_once '../config/config.php';
 //     echo json_encode(["status" => "error", "message" => "Invalid category filter"]);
 //     exit;
 // }
-            
+
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
     $stmtSummary = $pdo->query("
-        WITH MonthlyStats AS (
-            SELECT 
-                -- CURRENT MONTH: Start of this month to now
-                SUM(CASE WHEN type = 'Payment' AND status = 'Completed' 
-                    AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_rev,
-                
-                SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
-                    AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_exp,
-                
-                COUNT(CASE WHEN transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id ELSE NULL END) as curr_trans,
-                
-                -- PREVIOUS MONTH: Start of last month to end of last month
-                SUM(CASE WHEN type = 'Payment' AND status = 'Completed' 
-                    AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
-                    AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_rev,
-                
-                SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
-                    AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
-                    AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_exp,
-                
-                COUNT(CASE WHEN transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
-                    AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id ELSE NULL END) as prev_trans
-            FROM transactions
-        )
+    WITH MonthlyStats AS (
         SELECT 
-            -- Raw Values for the Cards
-            curr_rev AS revenue_this_month, 
-            curr_exp AS expenses_this_month,
-            (curr_rev - curr_exp) AS net_profit_this_month,
-            curr_trans AS transactions_this_month,
+            -- CURRENT MONTH: March 2026
+            SUM(CASE WHEN type = 'Payment' AND status = 'Completed' 
+                AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_rev,
             
-            -- Growth Percentages (The "+8%" logic)
-            -- Formula: ((Current - Previous) / Previous) * 100
-            ROUND(((curr_rev - prev_rev) / NULLIF(prev_rev, 0) * 100), 1) as revenue_growth,
-            ROUND(((curr_exp - prev_exp) / NULLIF(prev_exp, 0) * 100), 1) as expense_growth,
-            ROUND(((curr_trans - prev_trans) / NULLIF(prev_trans, 0) * 100), 1) as transaction_growth,
+            SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
+                AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_exp,
             
-            -- Profit Growth Logic
-            ROUND((((curr_rev - curr_exp) - (prev_rev - prev_exp)) / NULLIF((prev_rev - prev_exp), 0) * 100), 1) as profit_growth
-        FROM MonthlyStats;
-    ");
+            -- Only count financial transactions for the 'Transaction Count' metric
+            COUNT(CASE WHEN type IN ('Payment', 'Expense') 
+                AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id ELSE NULL END) as curr_trans,
+            
+            -- PREVIOUS MONTH: February 2026
+            SUM(CASE WHEN type = 'Payment' AND status = 'Completed' 
+                AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
+                AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_rev,
+            
+            SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
+                AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
+                AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_exp,
+            
+            COUNT(CASE WHEN type IN ('Payment', 'Expense') 
+                AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
+                AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id ELSE NULL END) as prev_trans
+        FROM transactions
+    )
+    SELECT 
+        -- Totals for UI Cards
+        curr_rev AS revenue_this_month, 
+        curr_exp AS expenses_this_month,
+        (curr_rev - curr_exp) AS net_profit_this_month,
+        curr_trans AS transactions_this_month,
+        
+        -- Growth Calculations (Safely handling zeros with NULLIF)
+        ROUND(((curr_rev - prev_rev) / NULLIF(prev_rev, 0) * 100), 1) as revenue_growth,
+        ROUND(((curr_exp - prev_exp) / NULLIF(prev_exp, 0) * 100), 1) as expense_growth,
+        ROUND(((curr_trans - prev_trans) / NULLIF(prev_trans, 0) * 100), 1) as transaction_growth,
+        
+        -- Profit Growth (Compares current net vs previous net)
+        ROUND((((curr_rev - curr_exp) - (prev_rev - prev_exp)) / NULLIF((prev_rev - prev_exp), 0) * 100), 1) as profit_growth
+    FROM MonthlyStats;
+");
+
     $summaryData = $stmtSummary->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode($summaryData);

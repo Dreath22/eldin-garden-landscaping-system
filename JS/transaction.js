@@ -40,7 +40,7 @@ async function fetchData(page = state.currentPage) {
         //   state.allBookings = data.bookings;
         //   displayStats(data.summary);
         //   displayBookings(data.bookings);
-        // dataSummaryload(data)
+         dataSummaryload(data)
 
         //   renderPagination(data.summary.filtered, state, state.limit);
         } catch (error) {
@@ -49,10 +49,10 @@ async function fetchData(page = state.currentPage) {
       }
 
       function dataSummaryload(data){
-        updateStatCard("monthRevenue", "monthRevenueColor", data.revenue_this_month, data.revenue_growth);
-        updateStatCard("totalExpenses", "totalExpensesColor", data.expenses_this_month, data.expense_growth);
-        updateStatCard("lastMonthProfit", "lastMonthProfitColor", data.net_profit_this_month, data.profit_growth);
-        updateStatCard("totalTransactions", "totalTransactionsColor", data.expenses_this_month, data.transactions_growth);
+        updateStatCard("monthRevenue", "monthRevenueColor", `$${parseFloat(data.revenue_this_month || 0).toLocaleString()}`, data.revenue_growth);
+        updateStatCard("totalExpenses", "totalExpensesColor", `$${parseFloat(data.expenses_this_month || 0).toLocaleString()}`, data.expense_growth);
+        updateStatCard("lastMonthProfit", "lastMonthProfitColor", `$${parseFloat(data.net_profit_this_month || 0).toLocaleString()}`, data.profit_growth);
+        updateStatCard("totalTransactions", "totalTransactionsColor", `${data.transactions_this_month}`, data.transactions_growth);
       }
 
       /**
@@ -62,13 +62,13 @@ async function fetchData(page = state.currentPage) {
  * @param {number} amount - The numeric value to display
  * @param {number} growth - The growth percentage (positive or negative)
  */
-function updateStatCard(valueId, colorId, amount, growth) {
+function updateStatCard(valueId, colorId, txt, growth) {
     const valueElem = document.getElementById(valueId);
     const colorElem = document.getElementById(colorId);
 
     // 1. Update the Main Amount
     if (valueElem) {
-        valueElem.textContent = `$${parseFloat(amount || 0).toLocaleString()}`;
+        valueElem.textContent = `${txt}`;
     }
 
     // 2. Update the Growth Indicator

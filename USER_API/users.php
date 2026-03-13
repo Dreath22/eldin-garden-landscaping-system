@@ -1,17 +1,21 @@
 <?php
 header("Content-Type: application/json");
 date_default_timezone_set('Asia/Manila');
+
+// Ensure config.php exists and establishes the $pdo connection
 require_once '../config/config.php';
 
+// 1. Inputs & Sanitization
 $limit = 10; 
 $page  = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$status = isset($_GET['status']) ? $_GET['status'] : 'all';
-$role = isset($_GET['role']) ? $_GET['role'] : 'all';
-$order = isset($_GET['order']) ? $_GET['order'] : 'newest';
-$fromDate = isset($_GET['from']) ? $_GET['from'] : null;
-$toDate   = isset($_GET['to'])   ? $_GET['to']   : null;
+$status = $_GET['status'] ?? 'all';
+$role = $_GET['role'] ?? 'all';
+$order = $_GET['order'] ?? 'newest';
+$fromDate = $_GET['from'] ?? null;
+$toDate   = $_GET['to']   ?? null;
 $offset = ($page - 1) * $limit;
 
+// 2. Validation
 if (!in_array($status, ['active', 'pending', 'banned', 'all'])) {
     http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Invalid status filter"]);
@@ -28,13 +32,8 @@ if (!in_array($order, ["newest", "oldest", "name-az", "name-za"])) {
     exit;
 }
 
-
-// ... (Your existing header, config, and validation code stays the same) ...
-
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-
-    // 1. Get Global Stats
+    // 3. Get Global Stats
     $stmtSummary = $pdo->query("
         SELECT 
             COUNT(*) as total_users,
@@ -43,9 +42,9 @@ try {
             SUM(CASE WHEN status = 'banned' THEN 1 ELSE 0 END) as banned_users
         FROM users
     ");
-    $summaryData = $stmtSummary->fetch();
+    $summaryData = $stmtSummary->fetch(PDO::FETCH_ASSOC);
 
-    // 2. Build Filtered Query
+    // 4. Build Filtered Query
     $where = [];
     $params = [];
 
@@ -55,7 +54,7 @@ try {
     }
     if ($role !== 'all') {
         $where[] = "role = :role";
-        $params[':role'] = ucfirst($role); // Ensure DB case matches
+        $params[':role'] = ucfirst(strtolower($role)); // Matches "Admin", "Customer", etc.
     }
     if (!empty($fromDate)) {
         $where[] = "joined_date >= :fromDate";
@@ -68,12 +67,12 @@ try {
 
     $whereSql = !empty($where) ? " WHERE " . implode(" AND ", $where) : "";
 
-    // 3. Get TOTAL count of filtered results
+    // 5. Get TOTAL count of filtered results
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users $whereSql");
-    $countStmt->execute($params); // Simpler: pass array directly to execute
+    $countStmt->execute($params);
     $totalFilteredCount = (int)$countStmt->fetchColumn();
 
-    // 4. Get Actual User Data
+    // 6. Get Actual User Data
     $sortOptions = [
         "newest"  => "joined_date DESC",
         "oldest"  => "joined_date ASC",
@@ -82,7 +81,6 @@ try {
     ];
     $orderBy = $sortOptions[$order] ?? "joined_date DESC";
     
-    // LIMIT and OFFSET must be integers, so we handle them separately from $params
     $sql = "SELECT id, name, email, role, joined_date, last_login, status, phone_number, notes
             FROM users $whereSql 
             ORDER BY $orderBy 
@@ -90,34 +88,32 @@ try {
     
     $userStmt = $pdo->prepare($sql);
     
-    // Bind the filter params
     foreach ($params as $key => $value) {
         $userStmt->bindValue($key, $value);
     }
-    // Explicitly bind LIMIT/OFFSET as Integers (Crucial for some SQL modes)
     $userStmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
     $userStmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
     $userStmt->execute();
 
     $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Map the users to include the avatar/format dates
+    // 7. Map the users (The returned structure you requested)
     $formattedUsers = array_map(function($u) {
         return [
-            "id"          => (int)$u['id'],
-            "name"        => $u['name'],
-            "email"       => $u['email'],
-            "role"        => $u['role'],
-            "joined_date" => date("c", strtotime($u['joined_date'])), 
-            "last_active" => $u['last_login'] ? date("c", strtotime($u['last_login'])) : null,
-            "status"      => $u['status'],
-            "avatar_url"  => "https://api.dicebear.com/7.x/avataaars/svg?seed=" . urlencode($u['name']),
-            "phone_number" => $u['phone_number'] ?? null, // Assuming you have this field in DB
-            "notes"        => $u['notes'] ?? null, // Placeholder, replace with actual notes if available
+            "id"           => (int)$u['id'],
+            "name"         => $u['name'],
+            "email"        => $u['email'],
+            "role"         => $u['role'],
+            "joined_date"  => date("c", strtotime($u['joined_date'])), 
+            "last_active"  => $u['last_login'] ? date("c", strtotime($u['last_login'])) : null,
+            "status"       => $u['status'],
+            "avatar_url"   => "https://api.dicebear.com/7.x/avataaars/svg?seed=" . urlencode($u['name']),
+            "phone_number" => $u['phone_number'] ?? null,
+            "notes"        => $u['notes'] ?? null,
         ];
     }, $users);
     
-    // 5. Final Response
+    // 8. Final Response
     echo json_encode([
         "status" => "success",
         "summary" => [
@@ -126,12 +122,12 @@ try {
             "pending_users"    => (int)($summaryData['pending_users'] ?? 0),
             "banned_users"     => (int)($summaryData['banned_users'] ?? 0),
             "roleFilterValue"  => $totalFilteredCount,
-            "total_pages"      => ceil($totalFilteredCount / $limit) // Added for frontend logic
+            "total_pages"      => ceil($totalFilteredCount / $limit)
         ],
         "users" => $formattedUsers,
     ]);
 
-} catch (\PDOException $e) {
+} catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Database error: " . $e->getMessage()]);
 }
