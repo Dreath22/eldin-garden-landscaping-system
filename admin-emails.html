@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Updates - GreenScape Admin</title>
+  <link rel="stylesheet" href="admin-style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="admin-page">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-leaf"></i>
+          </div>
+          GreenScape
+        </a>
+      </div>
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Main</p>
+          <a href="admin-dashboard.html" class="admin-nav-item">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="admin-users.html" class="admin-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+          </a>
+          <a href="admin-bookings.html" class="admin-nav-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Bookings</span>
+          </a>
+          <a href="admin-transactions.html" class="admin-nav-item">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Transactions</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Content</p>
+          <a href="admin-upload.html" class="admin-nav-item">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Upload Content</span>
+          </a>
+          <a href="admin-gallery.html" class="admin-nav-item">
+            <i class="fas fa-images"></i>
+            <span>Gallery Manager</span>
+          </a>
+          <a href="admin-services.html" class="admin-nav-item">
+            <i class="fas fa-tools"></i>
+            <span>Services</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Communication</p>
+          <a href="admin-emails.html" class="admin-nav-item active">
+            <i class="fas fa-envelope"></i>
+            <span>Email Updates</span>
+          </a>
+          <a href="admin-notifications.html" class="admin-nav-item">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Settings</p>
+          <a href="admin-settings.html" class="admin-nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+          <a href="index.html" class="admin-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="admin-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search emails...">
+        </div>
+        <div class="admin-header-actions">
+          <a href="admin-notifications.html" class="admin-notification">
+            <i class="fas fa-bell"></i>
+            <span class="admin-notification-badge">5</span>
+          </a>
+          <div class="admin-user">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+            <div>
+              <p style="font-weight: 600; font-size: 0.9rem;">David Martinez</p>
+              <p style="font-size: 0.75rem; color: var(--text-gray);">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="admin-content">
+        <!-- Page Title -->
+        <div class="admin-page-title">
+          <div>
+            <h2>Email Updates & Announcements</h2>
+            <p>Send newsletters, promotions, and announcements to your customers.</p>
+          </div>
+          <button class="btn btn-primary" onclick="showComposeModal()">
+            <i class="fas fa-pen"></i> Compose Email
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-stats" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>48</h3>
+                <p>Total Emails</p>
+              </div>
+              <div class="stat-card-icon blue">
+                <i class="fas fa-envelope"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>1,284</h3>
+                <p>Subscribers</p>
+              </div>
+              <div class="stat-card-icon green">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>68%</h3>
+                <p>Open Rate</p>
+              </div>
+              <div class="stat-card-icon orange">
+                <i class="fas fa-eye"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>24%</h3>
+                <p>Click Rate</p>
+              </div>
+              <div class="stat-card-icon purple">
+                <i class="fas fa-mouse-pointer"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('all')">All Emails</div>
+          <div class="tab" onclick="switchTab('sent')">Sent</div>
+          <div class="tab" onclick="switchTab('drafts')">Drafts</div>
+          <div class="tab" onclick="switchTab('scheduled')">Scheduled</div>
+          <div class="tab" onclick="switchTab('templates')">Templates</div>
+        </div>
+
+        <!-- Email List -->
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <h3><i class="fas fa-envelope"></i> Email History</h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-small">
+                <i class="fas fa-download"></i> Export
+              </button>
+            </div>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="email-system">
+              <!-- Email Item 1 -->
+              <div class="email-item unread">
+                <div class="email-sender">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+                </div>
+                <div class="email-content">
+                  <div class="email-header">
+                    <h4>David Martinez (Admin)</h4>
+                    <span>Feb 18, 2026 - 10:30 AM</span>
+                  </div>
+                  <p class="email-subject">Spring Season Promotion - 20% Off All Services!</p>
+                  <p class="email-preview">We're excited to announce our spring season promotion! Get 20% off all landscaping services booked before March 31st. Don't miss this opportunity to transform your outdoor space...</p>
+                  <div class="email-actions">
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers
+                    </span>
+                    <span style="color: var(--success-green); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-eye"></i> 72% opened
+                    </span>
+                    <button class="btn btn-primary btn-small" onclick="viewEmail('Spring Season Promotion')"><i class="fas fa-eye"></i> View</button>
+                    <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="duplicateEmail('Spring Season Promotion')"><i class="fas fa-copy"></i> Duplicate</button>
+                    <button class="btn btn-small" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email Item 2 -->
+              <div class="email-item">
+                <div class="email-sender">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+                </div>
+                <div class="email-content">
+                  <div class="email-header">
+                    <h4>David Martinez (Admin)</h4>
+                    <span>Feb 15, 2026 - 2:15 PM</span>
+                  </div>
+                  <p class="email-subject">New Service: Smart Irrigation Systems Now Available</p>
+                  <p class="email-preview">We're thrilled to introduce our new Smart Irrigation System service! Save water and keep your landscape healthy with our state-of-the-art automated watering solutions...</p>
+                  <div class="email-actions">
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers
+                    </span>
+                    <span style="color: var(--success-green); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-eye"></i> 65% opened
+                    </span>
+                    <button class="btn btn-primary btn-small" onclick="viewEmail('Smart Irrigation Systems')"><i class="fas fa-eye"></i> View</button>
+                    <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="duplicateEmail('Smart Irrigation Systems')"><i class="fas fa-copy"></i> Duplicate</button>
+                    <button class="btn btn-small" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email Item 3 -->
+              <div class="email-item">
+                <div class="email-sender">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+                </div>
+                <div class="email-content">
+                  <div class="email-header">
+                    <h4>David Martinez (Admin)</h4>
+                    <span>Feb 10, 2026 - 9:00 AM</span>
+                  </div>
+                  <p class="email-subject">Important: Updated Business Hours</p>
+                  <p class="email-preview">Please note our updated business hours effective February 15th. We're now open Monday through Saturday from 8:00 AM to 6:00 PM to better serve our valued customers...</p>
+                  <div class="email-actions">
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers
+                    </span>
+                    <span style="color: var(--success-green); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-eye"></i> 81% opened
+                    </span>
+                    <button class="btn btn-primary btn-small" onclick="viewEmail('Updated Business Hours')"><i class="fas fa-eye"></i> View</button>
+                    <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="duplicateEmail('Updated Business Hours')"><i class="fas fa-copy"></i> Duplicate</button>
+                    <button class="btn btn-small" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email Item 4 -->
+              <div class="email-item">
+                <div class="email-sender">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+                </div>
+                <div class="email-content">
+                  <div class="email-header">
+                    <h4>David Martinez (Admin)</h4>
+                    <span>Feb 5, 2026 - 11:45 AM</span>
+                  </div>
+                  <p class="email-subject">Monthly Newsletter: February 2026</p>
+                  <p class="email-preview">Welcome to our February newsletter! This month we're featuring our latest projects, seasonal tips for your garden, and exclusive offers for our loyal customers...</p>
+                  <div class="email-actions">
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers
+                    </span>
+                    <span style="color: var(--success-green); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-eye"></i> 58% opened
+                    </span>
+                    <button class="btn btn-primary btn-small" onclick="viewEmail('February Newsletter')"><i class="fas fa-eye"></i> View</button>
+                    <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="duplicateEmail('February Newsletter')"><i class="fas fa-copy"></i> Duplicate</button>
+                    <button class="btn btn-small" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email Item 5 -->
+              <div class="email-item">
+                <div class="email-sender">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+                </div>
+                <div class="email-content">
+                  <div class="email-header">
+                    <h4>David Martinez (Admin)</h4>
+                    <span>Jan 28, 2026 - 3:30 PM</span>
+                  </div>
+                  <p class="email-subject">Thank You for Your Business in 2025!</p>
+                  <p class="email-preview">As we reflect on 2025, we want to express our sincere gratitude for choosing GreenScape Landscaping. Your trust in us has made this our best year yet...</p>
+                  <div class="email-actions">
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers
+                    </span>
+                    <span style="color: var(--success-green); font-size: 0.85rem; margin-right: 1rem;">
+                      <i class="fas fa-eye"></i> 76% opened
+                    </span>
+                    <button class="btn btn-primary btn-small" onclick="viewEmail('Thank You 2025')"><i class="fas fa-eye"></i> View</button>
+                    <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="duplicateEmail('Thank You 2025')"><i class="fas fa-copy"></i> Duplicate</button>
+                    <button class="btn btn-small" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-trash"></i> Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+              <p class="pagination-info">Showing 1-5 of 48 emails</p>
+              <div class="pagination-controls">
+                <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <span style="padding: 0.5rem;">...</span>
+                <button class="pagination-btn">10</button>
+                <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Compose Email Modal -->
+  <div class="modal-overlay" id="composeModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-pen" style="color: var(--primary-green);"></i> Compose Email</h3>
+        <button class="modal-close" onclick="closeComposeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="composeForm">
+          <div class="form-group">
+            <label for="emailTemplate">Use Template (Optional)</label>
+            <select id="emailTemplate">
+              <option value="">Select template...</option>
+              <option value="newsletter">Monthly Newsletter</option>
+              <option value="promotion">Promotional Offer</option>
+              <option value="announcement">Company Announcement</option>
+              <option value="welcome">Welcome Email</option>
+              <option value="thankyou">Thank You Email</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emailRecipients">Recipients</label>
+            <select id="emailRecipients">
+              <option value="all">All Subscribers (1,284)</option>
+              <option value="active">Active Customers (1,156)</option>
+              <option value="new">New Subscribers (98)</option>
+              <option value="vip">VIP Customers (45)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="emailSubject">Subject</label>
+            <input type="text" id="emailSubject" placeholder="Enter email subject">
+          </div>
+          <div class="form-group">
+            <label for="emailContent">Content</label>
+            <textarea id="emailContent" rows="10" placeholder="Write your email content here..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="sendOption">Send Options</label>
+              <select id="sendOption">
+                <option value="now">Send Now</option>
+                <option value="schedule">Schedule for Later</option>
+                <option value="draft">Save as Draft</option>
+              </select>
+            </div>
+            <div class="form-group" id="scheduleDateGroup" style="display: none;">
+              <label for="scheduleDate">Schedule Date & Time</label>
+              <input type="datetime-local" id="scheduleDate">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeComposeModal()">Cancel</button>
+        <button class="btn btn-secondary btn-small" onclick="saveDraft()"><i class="fas fa-save"></i> Save Draft</button>
+        <button class="btn btn-primary btn-small" onclick="sendEmail()"><i class="fas fa-paper-plane"></i> Send Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Email Modal -->
+  <div class="modal-overlay" id="viewEmailModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-envelope" style="color: var(--primary-green);"></i> Email Preview</h3>
+        <button class="modal-close" onclick="closeViewEmailModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="padding: 1.5rem; background-color: #f8fafc; border-radius: 8px; margin-bottom: 1.5rem;">
+          <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 0.5rem;">Subject</p>
+          <h3 id="viewEmailSubject">Spring Season Promotion - 20% Off All Services!</h3>
+        </div>
+        <div style="padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <p style="margin-bottom: 1rem;">Dear Valued Customer,</p>
+          <p style="margin-bottom: 1rem;">We're excited to announce our spring season promotion! Get 20% off all landscaping services booked before March 31st.</p>
+          <p style="margin-bottom: 1rem;">Don't miss this opportunity to transform your outdoor space and prepare your garden for the beautiful spring season ahead.</p>
+          <p style="margin-bottom: 1rem;">Our services include:</p>
+          <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+            <li>Lawn Maintenance</li>
+            <li>Garden Design</li>
+            <li>Hardscaping</li>
+            <li>Irrigation Systems</li>
+          </ul>
+          <p style="margin-bottom: 1rem;">Use code <strong>SPRING20</strong> at checkout to claim your discount.</p>
+          <p>Best regards,<br>The GreenScape Team</p>
+        </div>
+        <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Sent To</p>
+            <p style="font-weight: 600;">1,284</p>
+          </div>
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Opened</p>
+            <p style="font-weight: 600; color: var(--success-green);">925 (72%)</p>
+          </div>
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Clicked</p>
+            <p style="font-weight: 600; color: var(--info-blue);">308 (24%)</p>
+          </div>
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Bounced</p>
+            <p style="font-weight: 600; color: var(--danger-red);">12 (0.9%)</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewEmailModal()">Close</button>
+        <button class="btn btn-secondary btn-small" onclick="duplicateEmail(document.getElementById('viewEmailSubject').textContent)"><i class="fas fa-copy"></i> Duplicate</button>
+        <button class="btn btn-primary btn-small"><i class="fas fa-redo"></i> Resend</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Compose Modal
+    function showComposeModal() {
+      document.getElementById('composeModal').style.display = 'flex';
+    }
+
+    function closeComposeModal() {
+      document.getElementById('composeModal').style.display = 'none';
+    }
+
+    function sendEmail() {
+      alert('Email has been sent successfully!');
+      closeComposeModal();
+    }
+
+    function saveDraft() {
+      alert('Draft has been saved.');
+      closeComposeModal();
+    }
+
+    // View Email Modal
+    function viewEmail(subject) {
+      document.getElementById('viewEmailSubject').textContent = subject;
+      document.getElementById('viewEmailModal').style.display = 'flex';
+    }
+
+    function closeViewEmailModal() {
+      document.getElementById('viewEmailModal').style.display = 'none';
+    }
+
+    // Duplicate Email
+    function duplicateEmail(subject) {
+      alert('Email "' + subject + '" has been duplicated. You can now edit and send it.');
+    }
+
+    // Schedule Date Toggle
+    document.getElementById('sendOption').addEventListener('change', function() {
+      const scheduleGroup = document.getElementById('scheduleDateGroup');
+      if (this.value === 'schedule') {
+        scheduleGroup.style.display = 'block';
+      } else {
+        scheduleGroup.style.display = 'none';
+      }
+    });
+
+    // Tab Switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services Management - GreenScape Admin</title>
+  <link rel="stylesheet" href="admin-style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="admin-page">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-leaf"></i>
+          </div>
+          GreenScape
+        </a>
+      </div>
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Main</p>
+          <a href="admin-dashboard.html" class="admin-nav-item">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="admin-users.html" class="admin-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+          </a>
+          <a href="admin-bookings.html" class="admin-nav-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Bookings</span>
+          </a>
+          <a href="admin-transactions.html" class="admin-nav-item">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Transactions</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Content</p>
+          <a href="admin-upload.html" class="admin-nav-item">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Upload Content</span>
+          </a>
+          <a href="admin-gallery.html" class="admin-nav-item">
+            <i class="fas fa-images"></i>
+            <span>Gallery Manager</span>
+          </a>
+          <a href="admin-services.html" class="admin-nav-item active">
+            <i class="fas fa-tools"></i>
+            <span>Services</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Communication</p>
+          <a href="admin-emails.html" class="admin-nav-item">
+            <i class="fas fa-envelope"></i>
+            <span>Email Updates</span>
+          </a>
+          <a href="admin-notifications.html" class="admin-nav-item">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Settings</p>
+          <a href="admin-settings.html" class="admin-nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+          <a href="index.html" class="admin-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="admin-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search services...">
+        </div>
+        <div class="admin-header-actions">
+          <a href="admin-notifications.html" class="admin-notification">
+            <i class="fas fa-bell"></i>
+            <span class="admin-notification-badge">5</span>
+          </a>
+          <div class="admin-user">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+            <div>
+              <p style="font-weight: 600; font-size: 0.9rem;">David Martinez</p>
+              <p style="font-size: 0.75rem; color: var(--text-gray);">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="admin-content">
+        <!-- Page Title -->
+        <div class="admin-page-title">
+          <div>
+            <h2>Services Management</h2>
+            <p>Manage your landscaping services and pricing.</p>
+          </div>
+          <button class="btn btn-primary" onclick="showAddServiceModal()">
+            <i class="fas fa-plus"></i> Add New Service
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-stats" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>12</h3>
+                <p>Total Services</p>
+              </div>
+              <div class="stat-card-icon blue">
+                <i class="fas fa-tools"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>10</h3>
+                <p>Active</p>
+              </div>
+              <div class="stat-card-icon green">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>2</h3>
+                <p>Inactive</p>
+              </div>
+              <div class="stat-card-icon orange">
+                <i class="fas fa-pause-circle"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>$4,250</h3>
+                <p>Avg. Order Value</p>
+              </div>
+              <div class="stat-card-icon purple">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('all')">All Services</div>
+          <div class="tab" onclick="switchTab('active')">Active</div>
+          <div class="tab" onclick="switchTab('inactive')">Inactive</div>
+          <div class="tab" onclick="switchTab('popular')">Most Popular</div>
+        </div>
+
+        <!-- Services List -->
+        <div class="dashboard-card">
+          <div class="dashboard-card-header">
+            <h3><i class="fas fa-list"></i> All Services</h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-small">
+                <i class="fas fa-sort"></i> Reorder
+              </button>
+            </div>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="services-list">
+              <!-- Service Item 1 -->
+              <div class="service-item">
+                <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=200" alt="Service" class="service-item-image">
+                <div class="service-item-info">
+                  <h4>Lawn Maintenance Service</h4>
+                  <p>Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful.</p>
+                  <div style="margin-top: 0.5rem;">
+                    <span class="status-badge active">Active</span>
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.8 (124 reviews)</span>
+                  </div>
+                </div>
+                <div class="service-item-price">$199<span style="font-size: 0.8rem; color: var(--text-gray);">/visit</span></div>
+                <div class="table-actions">
+                  <button class="table-btn view" title="View" onclick="viewService('Lawn Maintenance')"><i class="fas fa-eye"></i></button>
+                  <button class="table-btn edit" title="Edit" onclick="editService('Lawn Maintenance')"><i class="fas fa-edit"></i></button>
+                  <button class="table-btn delete" title="Delete" onclick="deleteService('Lawn Maintenance')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+
+              <!-- Service Item 2 -->
+              <div class="service-item">
+                <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=200" alt="Service" class="service-item-image">
+                <div class="service-item-info">
+                  <h4>Garden Design Package</h4>
+                  <p>Complete garden design and installation with native plants and sustainable landscaping solutions.</p>
+                  <div style="margin-top: 0.5rem;">
+                    <span class="status-badge active">Active</span>
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.9 (89 reviews)</span>
+                  </div>
+                </div>
+                <div class="service-item-price">$599<span style="font-size: 0.8rem; color: var(--text-gray);">/project</span></div>
+                <div class="table-actions">
+                  <button class="table-btn view" title="View" onclick="viewService('Garden Design')"><i class="fas fa-eye"></i></button>
+                  <button class="table-btn edit" title="Edit" onclick="editService('Garden Design')"><i class="fas fa-edit"></i></button>
+                  <button class="table-btn delete" title="Delete" onclick="deleteService('Garden Design')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+
+              <!-- Service Item 3 -->
+              <div class="service-item">
+                <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200" alt="Service" class="service-item-image">
+                <div class="service-item-info">
+                  <h4>Hardscaping Project</h4>
+                  <p>Professional installation of patios, walkways, retaining walls, and other hardscape features.</p>
+                  <div style="margin-top: 0.5rem;">
+                    <span class="status-badge active">Active</span>
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.7 (56 reviews)</span>
+                  </div>
+                </div>
+                <div class="service-item-price">$1,299<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
+                <div class="table-actions">
+                  <button class="table-btn view" title="View" onclick="viewService('Hardscaping')"><i class="fas fa-eye"></i></button>
+                  <button class="table-btn edit" title="Edit" onclick="editService('Hardscaping')"><i class="fas fa-edit"></i></button>
+                  <button class="table-btn delete" title="Delete" onclick="deleteService('Hardscaping')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+
+              <!-- Service Item 4 -->
+              <div class="service-item">
+                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200" alt="Service" class="service-item-image">
+                <div class="service-item-info">
+                  <h4>Irrigation System Install</h4>
+                  <p>Smart irrigation system installation with automated scheduling and water conservation features.</p>
+                  <div style="margin-top: 0.5rem;">
+                    <span class="status-badge active">Active</span>
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.6 (42 reviews)</span>
+                  </div>
+                </div>
+                <div class="service-item-price">$899<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
+                <div class="table-actions">
+                  <button class="table-btn view" title="View" onclick="viewService('Irrigation')"><i class="fas fa-eye"></i></button>
+                  <button class="table-btn edit" title="Edit" onclick="editService('Irrigation')"><i class="fas fa-edit"></i></button>
+                  <button class="table-btn delete" title="Delete" onclick="deleteService('Irrigation')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+
+              <!-- Service Item 5 -->
+              <div class="service-item">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200" alt="Service" class="service-item-image">
+                <div class="service-item-info">
+                  <h4>Tree Trimming Service</h4>
+                  <p>Professional tree pruning and trimming to maintain health, safety, and aesthetics.</p>
+                  <div style="margin-top: 0.5rem;">
+                    <span class="status-badge active">Active</span>
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.8 (78 reviews)</span>
+                  </div>
+                </div>
+                <div class="service-item-price">$350<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
+                <div class="table-actions">
+                  <button class="table-btn view" title="View" onclick="viewService('Tree Trimming')"><i class="fas fa-eye"></i></button>
+                  <button class="table-btn edit" title="Edit" onclick="editService('Tree Trimming')"><i class="fas fa-edit"></i></button>
+                  <button class="table-btn delete" title="Delete" onclick="deleteService('Tree Trimming')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+
+              <!-- Service Item 6 -->
+              <div class="service-item">
+                <img src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=200" alt="Service" class="service-item-image">
+                <div class="service-item-info">
+                  <h4>Seasonal Cleanup</h4>
+                  <p>Comprehensive seasonal yard cleanup including leaf removal, debris clearing, and bed preparation.</p>
+                  <div style="margin-top: 0.5rem;">
+                    <span class="status-badge pending">Inactive</span>
+                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.5 (34 reviews)</span>
+                  </div>
+                </div>
+                <div class="service-item-price">$275<span style="font-size: 0.8rem; color: var(--text-gray);">/visit</span></div>
+                <div class="table-actions">
+                  <button class="table-btn view" title="View" onclick="viewService('Seasonal Cleanup')"><i class="fas fa-eye"></i></button>
+                  <button class="table-btn edit" title="Edit" onclick="editService('Seasonal Cleanup')"><i class="fas fa-edit"></i></button>
+                  <button class="table-btn delete" title="Delete" onclick="deleteService('Seasonal Cleanup')"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+              <p class="pagination-info">Showing 1-6 of 12 services</p>
+              <div class="pagination-controls">
+                <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Service Modal -->
+  <div class="modal-overlay" id="addServiceModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-plus-circle" style="color: var(--primary-green);"></i> Add New Service</h3>
+        <button class="modal-close" onclick="closeAddServiceModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="addServiceForm">
+          <div class="form-group">
+            <label for="serviceName">Service Name</label>
+            <input type="text" id="serviceName" placeholder="Enter service name">
+          </div>
+          <div class="form-group">
+            <label for="serviceDescription">Description</label>
+            <textarea id="serviceDescription" rows="3" placeholder="Enter service description"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="servicePrice">Price</label>
+              <input type="number" id="servicePrice" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-group">
+              <label for="servicePriceType">Price Type</label>
+              <select id="servicePriceType">
+                <option value="fixed">Fixed</option>
+                <option value="hourly">Per Hour</option>
+                <option value="visit">Per Visit</option>
+                <option value="project">Per Project</option>
+                <option value="starting">Starting at</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="serviceCategory">Category</label>
+            <select id="serviceCategory">
+              <option value="">Select category...</option>
+              <option value="lawn">Lawn Care</option>
+              <option value="garden">Garden Design</option>
+              <option value="hardscape">Hardscaping</option>
+              <option value="irrigation">Irrigation</option>
+              <option value="tree">Tree Services</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="serviceImage">Service Image</label>
+            <div class="upload-zone" style="padding: 2rem;">
+              <i class="fas fa-image"></i>
+              <h4>Click to Upload Image</h4>
+              <p>Recommended: 800x600px, JPG or PNG</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Features (one per line)</label>
+            <textarea rows="4" placeholder="- Feature 1&#10;- Feature 2&#10;- Feature 3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="serviceDuration">Duration</label>
+              <input type="text" placeholder="e.g., 2-3 hours">
+            </div>
+            <div class="form-group">
+              <label for="serviceStatus">Status</label>
+              <select id="serviceStatus">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeAddServiceModal()">Cancel</button>
+        <button class="btn btn-primary btn-small" onclick="confirmAddService()">Add Service</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Service Modal -->
+  <div class="modal-overlay" id="editServiceModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-edit" style="color: var(--primary-green);"></i> Edit Service</h3>
+        <button class="modal-close" onclick="closeEditServiceModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="editServiceForm">
+          <div class="form-group">
+            <label for="editServiceName">Service Name</label>
+            <input type="text" id="editServiceName" value="Lawn Maintenance Service">
+          </div>
+          <div class="form-group">
+            <label for="editServiceDescription">Description</label>
+            <textarea id="editServiceDescription" rows="3">Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful.</textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editServicePrice">Price</label>
+              <input type="number" id="editServicePrice" value="199" step="0.01">
+            </div>
+            <div class="form-group">
+              <label for="editServicePriceType">Price Type</label>
+              <select id="editServicePriceType">
+                <option value="fixed">Fixed</option>
+                <option value="hourly">Per Hour</option>
+                <option value="visit" selected>Per Visit</option>
+                <option value="project">Per Project</option>
+                <option value="starting">Starting at</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="editServiceCategory">Category</label>
+            <select id="editServiceCategory">
+              <option value="">Select category...</option>
+              <option value="lawn" selected>Lawn Care</option>
+              <option value="garden">Garden Design</option>
+              <option value="hardscape">Hardscaping</option>
+              <option value="irrigation">Irrigation</option>
+              <option value="tree">Tree Services</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Current Image</label>
+            <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=400" alt="Service" style="width: 200px; border-radius: 8px;">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editServiceDuration">Duration</label>
+              <input type="text" value="1-2 hours">
+            </div>
+            <div class="form-group">
+              <label for="editServiceStatus">Status</label>
+              <select id="editServiceStatus">
+                <option value="active" selected>Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeEditServiceModal()">Cancel</button>
+        <button class="btn btn-primary btn-small" onclick="saveServiceChanges()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Service Modal -->
+  <div class="modal-overlay" id="viewServiceModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-tools" style="color: var(--primary-green);"></i> Service Details</h3>
+        <button class="modal-close" onclick="closeViewServiceModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="Service" style="width: 100%; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+          <div>
+            <h2>Lawn Maintenance Service</h2>
+            <p style="color: var(--text-gray);"><i class="fas fa-folder" style="margin-right: 0.5rem;"></i> Lawn Care</p>
+          </div>
+          <div style="text-align: right;">
+            <h2 style="color: var(--primary-green);">$199<span style="font-size: 1rem; color: var(--text-gray);">/visit</span></h2>
+            <span class="status-badge active">Active</span>
+          </div>
+        </div>
+        <p style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;">Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful. Our professional team uses eco-friendly products and modern equipment to ensure the best results.</p>
+        <div style="margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 0.75rem;">Features</h4>
+          <ul style="list-style: none; color: var(--text-dark);">
+            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Professional mowing and edging</li>
+            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Eco-friendly fertilizing</li>
+            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Weed control</li>
+            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Debris cleanup</li>
+          </ul>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; text-align: center;">
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Duration</p>
+            <p style="font-weight: 600;">1-2 hours</p>
+          </div>
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Rating</p>
+            <p style="font-weight: 600;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.8</p>
+          </div>
+          <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Bookings</p>
+            <p style="font-weight: 600;">124 this month</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewServiceModal()">Close</button>
+        <button class="btn btn-primary btn-small" onclick="closeViewServiceModal(); editService('Lawn Maintenance')">Edit Service</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add Service Modal
+    function showAddServiceModal() {
+      document.getElementById('addServiceModal').style.display = 'flex';
+    }
+
+    function closeAddServiceModal() {
+      document.getElementById('addServiceModal').style.display = 'none';
+    }
+
+    function confirmAddService() {
+      alert('New service has been added successfully.');
+      closeAddServiceModal();
+    }
+
+    // Edit Service Modal
+    function editService(serviceName) {
+      document.getElementById('editServiceModal').style.display = 'flex';
+    }
+
+    function closeEditServiceModal() {
+      document.getElementById('editServiceModal').style.display = 'none';
+    }
+
+    function saveServiceChanges() {
+      alert('Service has been updated successfully.');
+      closeEditServiceModal();
+    }
+
+    // View Service Modal
+    function viewService(serviceName) {
+      document.getElementById('viewServiceModal').style.display = 'flex';
+    }
+
+    function closeViewServiceModal() {
+      document.getElementById('viewServiceModal').style.display = 'none';
+    }
+
+    // Delete Service
+    function deleteService(serviceName) {
+      if (confirm('Are you sure you want to delete "' + serviceName + '"?')) {
+        alert('Service deleted successfully!');
+      }
+    }
+
+    // Tab Switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

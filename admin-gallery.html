@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery Manager - GreenScape Admin</title>
+  <link rel="stylesheet" href="admin-style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="admin-page">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-leaf"></i>
+          </div>
+          GreenScape
+        </a>
+      </div>
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Main</p>
+          <a href="admin-dashboard.html" class="admin-nav-item">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="admin-users.html" class="admin-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+          </a>
+          <a href="admin-bookings.html" class="admin-nav-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Bookings</span>
+          </a>
+          <a href="admin-transactions.html" class="admin-nav-item">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Transactions</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Content</p>
+          <a href="admin-upload.html" class="admin-nav-item">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Upload Content</span>
+          </a>
+          <a href="admin-gallery.html" class="admin-nav-item active">
+            <i class="fas fa-images"></i>
+            <span>Gallery Manager</span>
+          </a>
+          <a href="admin-services.html" class="admin-nav-item">
+            <i class="fas fa-tools"></i>
+            <span>Services</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Communication</p>
+          <a href="admin-emails.html" class="admin-nav-item">
+            <i class="fas fa-envelope"></i>
+            <span>Email Updates</span>
+          </a>
+          <a href="admin-notifications.html" class="admin-nav-item">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Settings</p>
+          <a href="admin-settings.html" class="admin-nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+          <a href="index.html" class="admin-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="admin-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search gallery images...">
+        </div>
+        <div class="admin-header-actions">
+          <a href="admin-notifications.html" class="admin-notification">
+            <i class="fas fa-bell"></i>
+            <span class="admin-notification-badge">5</span>
+          </a>
+          <div class="admin-user">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+            <div>
+              <p style="font-weight: 600; font-size: 0.9rem;">David Martinez</p>
+              <p style="font-size: 0.75rem; color: var(--text-gray);">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="admin-content">
+        <!-- Page Title -->
+        <div class="admin-page-title">
+          <div>
+            <h2>Gallery Manager</h2>
+            <p>Manage your website gallery images.</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-danger" onclick="deleteSelected()">
+              <i class="fas fa-trash"></i> Delete Selected
+            </button>
+            <a href="admin-upload.html" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Add Images
+            </a>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-stats" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>156</h3>
+                <p>Total Images</p>
+              </div>
+              <div class="stat-card-icon blue">
+                <i class="fas fa-images"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>142</h3>
+                <p>Published</p>
+              </div>
+              <div class="stat-card-icon green">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>14</h3>
+                <p>Drafts</p>
+              </div>
+              <div class="stat-card-icon orange">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>2.4 GB</h3>
+                <p>Storage Used</p>
+              </div>
+              <div class="stat-card-icon purple">
+                <i class="fas fa-hdd"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('all')">All Images</div>
+          <div class="tab" onclick="switchTab('published')">Published</div>
+          <div class="tab" onclick="switchTab('drafts')">Drafts</div>
+          <div class="tab" onclick="switchTab('featured')">Featured</div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+          <div class="filter-group">
+            <label>Category:</label>
+            <select>
+              <option>All Categories</option>
+              <option>Landscaping</option>
+              <option>Garden Design</option>
+              <option>Lawn Care</option>
+              <option>Hardscaping</option>
+              <option>Before & After</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort:</label>
+            <select>
+              <option>Newest First</option>
+              <option>Oldest First</option>
+              <option>Name A-Z</option>
+              <option>Name Z-A</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label><input type="checkbox" style="margin-right: 0.5rem;">Select All</label>
+          </div>
+          <button class="btn btn-secondary btn-small">
+            <i class="fas fa-filter"></i> Apply
+          </button>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="gallery-grid-admin">
+          <!-- Gallery Item 1 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Beautiful Backyard')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Beautiful Backyard')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Beautiful Backyard')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Beautiful Backyard</h5>
+              <p>Landscaping • Feb 18, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge active" style="font-size: 0.65rem;">Live</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 2 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Flower Garden')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Flower Garden')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Flower Garden')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Flower Garden</h5>
+              <p>Garden Design • Feb 17, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge active" style="font-size: 0.65rem;">Live</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 3 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Lawn Care')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Lawn Care')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Lawn Care')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Perfect Lawn Care</h5>
+              <p>Lawn Care • Feb 16, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge active" style="font-size: 0.65rem;">Live</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 4 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Irrigation System')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Irrigation System')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Irrigation System')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Smart Irrigation</h5>
+              <p>Hardscaping • Feb 15, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge pending" style="font-size: 0.65rem;">Draft</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 5 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Garden Path')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Garden Path')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Garden Path')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Stone Garden Path</h5>
+              <p>Hardscaping • Feb 14, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge active" style="font-size: 0.65rem;">Live</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 6 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1598902108854-10e335adac99?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Water Feature')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Water Feature')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Water Feature')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Water Feature</h5>
+              <p>Landscaping • Feb 13, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge active" style="font-size: 0.65rem;">Live</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 7 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1564429238984-b3cd3a5ba0b4?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Patio Design')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Patio Design')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Patio Design')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Modern Patio</h5>
+              <p>Hardscaping • Feb 12, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge active" style="font-size: 0.65rem;">Live</span>
+            </div>
+          </div>
+
+          <!-- Gallery Item 8 -->
+          <div class="gallery-item-admin">
+            <img src="https://images.unsplash.com/photo-1584479898061-15742e14f50d?w=400" alt="Gallery">
+            <div class="gallery-item-overlay">
+              <button class="table-btn view" title="View" onclick="viewImage('Tree Service')"><i class="fas fa-eye"></i></button>
+              <button class="table-btn edit" title="Edit" onclick="editImage('Tree Service')"><i class="fas fa-edit"></i></button>
+              <button class="table-btn delete" title="Delete" onclick="deleteImage('Tree Service')"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="gallery-item-info">
+              <h5>Tree Trimming</h5>
+              <p>Lawn Care • Feb 11, 2026</p>
+            </div>
+            <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
+              <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+            </div>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
+              <span class="status-badge pending" style="font-size: 0.65rem;">Draft</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <p class="pagination-info">Showing 1-8 of 156 images</p>
+          <div class="pagination-controls">
+            <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
+            <button class="pagination-btn active">1</button>
+            <button class="pagination-btn">2</button>
+            <button class="pagination-btn">3</button>
+            <span style="padding: 0.5rem;">...</span>
+            <button class="pagination-btn">20</button>
+            <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- View Image Modal -->
+  <div class="modal-overlay" id="viewImageModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-image" style="color: var(--primary-green);"></i> Image Preview</h3>
+        <button class="modal-close" onclick="closeViewImageModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img id="previewImage" src="" alt="Preview" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Title</p>
+            <p id="previewTitle" style="font-weight: 600;">Beautiful Backyard</p>
+          </div>
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Category</p>
+            <p id="previewCategory">Landscaping</p>
+          </div>
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Uploaded</p>
+            <p id="previewDate">Feb 18, 2026</p>
+          </div>
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">File Size</p>
+            <p>2.4 MB</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewImageModal()">Close</button>
+        <button class="table-btn edit" title="Edit" onclick="closeViewImageModal(); editImage(document.getElementById('previewTitle').textContent)"><i class="fas fa-edit"></i></button>
+        <button class="table-btn delete" title="Delete" onclick="closeViewImageModal(); deleteImage(document.getElementById('previewTitle').textContent)"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Image Modal -->
+  <div class="modal-overlay" id="editImageModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-edit" style="color: var(--primary-green);"></i> Edit Image</h3>
+        <button class="modal-close" onclick="closeEditImageModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="editImageForm">
+          <div class="form-group">
+            <label for="editImageTitle">Title</label>
+            <input type="text" id="editImageTitle" value="Beautiful Backyard">
+          </div>
+          <div class="form-group">
+            <label for="editImageDescription">Description</label>
+            <textarea id="editImageDescription" rows="2">A stunning backyard transformation with native plants.</textarea>
+          </div>
+          <div class="form-group">
+            <label for="editImageCategory">Category</label>
+            <select id="editImageCategory">
+              <option value="landscaping" selected>Landscaping</option>
+              <option value="garden">Garden Design</option>
+              <option value="lawn">Lawn Care</option>
+              <option value="hardscape">Hardscaping</option>
+              <option value="beforeafter">Before & After</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editImageStatus">Status</label>
+            <select id="editImageStatus">
+              <option value="live" selected>Live</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" checked> Featured Image
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeEditImageModal()">Cancel</button>
+        <button class="btn btn-primary btn-small" onclick="saveImageChanges()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // View Image
+    function viewImage(title) {
+      document.getElementById('previewTitle').textContent = title;
+      document.getElementById('viewImageModal').style.display = 'flex';
+    }
+
+    function closeViewImageModal() {
+      document.getElementById('viewImageModal').style.display = 'none';
+    }
+
+    // Edit Image
+    function editImage(title) {
+      document.getElementById('editImageTitle').value = title;
+      document.getElementById('editImageModal').style.display = 'flex';
+    }
+
+    function closeEditImageModal() {
+      document.getElementById('editImageModal').style.display = 'none';
+    }
+
+    function saveImageChanges() {
+      alert('Image details updated successfully!');
+      closeEditImageModal();
+    }
+
+    // Delete Image
+    function deleteImage(title) {
+      if (confirm('Are you sure you want to delete "' + title + '"?')) {
+        alert('Image deleted successfully!');
+      }
+    }
+
+    // Delete Selected
+    function deleteSelected() {
+      const checked = document.querySelectorAll('.gallery-item-admin input[type="checkbox"]:checked');
+      if (checked.length === 0) {
+        alert('Please select at least one image to delete.');
+        return;
+      }
+      if (confirm('Are you sure you want to delete ' + checked.length + ' selected images?')) {
+        alert('Selected images deleted successfully!');
+      }
+    }
+
+    // Tab Switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

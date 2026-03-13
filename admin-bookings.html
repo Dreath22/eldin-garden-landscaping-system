@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Management - GreenScape Admin</title>
+    <link rel="stylesheet" href="admin-style.css" />
+    <link rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+      crossorigin="anonymous" 
+      referrerpolicy="no-referrer" />
+      <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a4d2e",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+  </head>
+  <body>
+    <div class="admin-page">
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+          <a href="index.html" class="logo">
+            <div class="logo-icon">
+              <i class="fas fa-leaf"></i>
+            </div>
+            GreenScape
+          </a>
+        </div>
+        <nav class="admin-nav">
+          <div class="admin-nav-section">
+            <p class="admin-nav-title">Main</p>
+            <a href="admin-dashboard.html" class="admin-nav-item">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+            <a href="admin-users.html" class="admin-nav-item">
+              <i class="fas fa-users"></i>
+              <span>Users</span>
+            </a>
+            <a href="admin-bookings.html" class="admin-nav-item active">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Bookings</span>
+            </a>
+            <a href="admin-transactions.html" class="admin-nav-item">
+              <i class="fas fa-exchange-alt"></i>
+              <span>Transactions</span>
+            </a>
+          </div>
+          <div class="admin-nav-section">
+            <p class="admin-nav-title">Content</p>
+            <a href="admin-upload.html" class="admin-nav-item">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Upload Content</span>
+            </a>
+            <a href="admin-gallery.html" class="admin-nav-item">
+              <i class="fas fa-images"></i>
+              <span>Gallery Manager</span>
+            </a>
+            <a href="admin-services.html" class="admin-nav-item">
+              <i class="fas fa-tools"></i>
+              <span>Services</span>
+            </a>
+          </div>
+          <div class="admin-nav-section">
+            <p class="admin-nav-title">Communication</p>
+            <a href="admin-emails.html" class="admin-nav-item">
+              <i class="fas fa-envelope"></i>
+              <span>Email Updates</span>
+            </a>
+            <a href="admin-notifications.html" class="admin-nav-item">
+              <i class="fas fa-bell"></i>
+              <span>Notifications</span>
+            </a>
+          </div>
+          <div class="admin-nav-section">
+            <p class="admin-nav-title">Settings</p>
+            <a href="admin-settings.html" class="admin-nav-item">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+            <a href="index.html" class="admin-nav-item">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="admin-main">
+        <!-- Header -->
+        <header class="admin-header">
+          <div class="admin-search">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              placeholder="Search bookings by ID or customer..."
+            />
+          </div>
+          <div class="admin-header-actions">
+            <a href="admin-notifications.html" class="admin-notification">
+              <i class="fas fa-bell"></i>
+              <span class="admin-notification-badge">5</span>
+            </a>
+            <div class="admin-user">
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
+                alt="Admin"
+              />
+              <div>
+                <p style="font-weight: 600; font-size: 0.9rem">
+                  David Martinez
+                </p>
+                <p style="font-size: 0.75rem; color: var(--text-gray)">
+                  Administrator
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Content -->
+        <div class="admin-content">
+          <!-- Page Title -->
+          <div class="admin-page-title">
+            <div>
+              <h2>Booking Management</h2>
+              <p>Manage all service bookings and appointments.</p>
+            </div>
+            <button class="btn btn-primary" onclick="showAddBookingModal()">
+              <i class="fas fa-plus"></i> New Booking
+            </button>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="dashboard-stats">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div>
+                  <h3 id="activeBooking"></h3>
+                  <p>Active Bookings</p>
+                </div>
+                <div class="stat-card-icon blue">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div>
+                  <h3 id="pendingBooking"></h3>
+                  <p>Pending</p>
+                </div>
+                <div class="stat-card-icon orange">
+                  <i class="fas fa-clock"></i>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div>
+                  <h3 id="completedBooking"></h3>
+                  <p>Completed Today</p>
+                </div>
+                <div class="stat-card-icon green">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div>
+                  <h3 id="cancelledBooking"></h3>
+                  <p>Cancelled</p>
+                </div>
+                <div class="stat-card-icon red">
+                  <i class="fas fa-times-circle"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="tabs" id="userTabsContainer">
+            <div class="tab active" data-tab="all">All Bookings</div>
+            <div class="tab" data-tab="pending">Pending</div>
+            <div class="tab" data-tab="active">Active</div>
+            <div class="tab" data-tab="completed">Completed</div>
+            <div class="tab" data-tab="cancelled">Cancelled</div>
+          </div>
+
+          <!-- Filters -->
+          <div class="filters-bar">
+            <div class="filter-group">
+              <label>Service:</label>
+              <select id="selectedCustomerIdFilter">
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Date:</label>
+              <input type="date" id="dateFilter"/>
+            </div>
+            <div class="filter-group">
+              <label>Sort:</label>
+              <select>
+                <option>Newest First</option>
+                <option>Oldest First</option>
+                <option>Date: Soonest</option>
+              </select>
+            </div>
+            <button class="btn btn-secondary btn-small">
+              <i class="fas fa-filter"></i> Apply
+            </button>
+          </div>
+
+          <!-- Booking Cards Grid -->
+          <div class="booking-grid" id="bookingContainer">
+            <div class="booking-card-header">
+              <span style="font-weight: 600; color: var(--text-dark)"
+                >#BK-2026-006</span
+              >
+              <span class="status-badge pending">Pending</span>
+            </div>
+            <div class="booking-card-body">
+              <div class="table-user" style="margin-bottom: 1rem">
+                <img
+                  src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100"
+                  alt="User"
+                />
+                <div class="table-user-info">
+                  <h4>Robert Kim</h4>
+                  <p>robert@email.com</p>
+                </div>
+              </div>
+              <div class="booking-info-row">
+                <i class="fas fa-tools"></i>
+                <span>Seasonal Cleanup</span>
+              </div>
+              <div class="booking-info-row">
+                <i class="fas fa-calendar"></i>
+                <span>Feb 23, 2026 at 8:00 AM</span>
+              </div>
+              <div class="booking-info-row">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>987 Cedar Ln, Green City</span>
+              </div>
+              <div class="booking-info-row">
+                <i class="fas fa-dollar-sign"></i>
+                <span style="font-weight: 600; color: var(--primary-green)"
+                  >$275.00</span
+                >
+              </div>
+            </div>
+            <div class="booking-card-footer">
+              <button
+                class="btn btn-small"
+                style="background-color: #f1f5f9; color: var(--text-dark)"
+                onclick="showBookingDetails('#BK-2026-006')"
+              >
+                <i class="fas fa-eye"></i> View
+              </button>
+              <button
+                class="btn btn-primary btn-small"
+                onclick="confirmBooking('#BK-2026-006')"
+              >
+                <i class="fas fa-check"></i> Confirm
+              </button>
+              <button
+                class="btn btn-danger btn-small"
+                onclick="cancelBooking('#BK-2026-006')"
+              >
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div
+          id="pagination"
+          style="display: flex; justify-content: center; margin-bottom: 3rem"
+        ></div>
+      </main>
+    </div>
+
+    <!-- Add Booking Modal -->
+    <div id="addBookingModal" class="modal-overlay" style="display: none">
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>
+            <i
+              class="fas fa-calendar-plus"
+              style="color: var(--primary-green)"
+            ></i>
+            New Booking
+          </h3>
+          <button class="modal-close" onclick="closeAddBookingModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="addBookingForm">
+            <div class="form-group">
+              <div class="form-group">
+                <label for="customerSearch">Select Customer</label>
+                <input
+                  list="customerList"
+                  id="customerSearch"
+                  name="customer"
+                  placeholder="Type to search customer..."
+                  class="form-control"
+                /><input type="hidden" id="selectedCustomerId">
+                <datalist id="customerList">
+                </datalist>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="service">Select Service</label>
+              <input id="serviceSearch" list="serviceList" name="service" placeholder="Type to search services..." class="form-control"><input type="hidden" id="selectedServiceId">
+              <datalist id="serviceList">
+                </datalist>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bookingDate">Date</label>
+                <input type="date" id="bookingDate" />
+              </div>
+              <div class="form-group">
+                <label for="bookingTime">Time</label>
+                <input type="time" id="bookingTime" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cost">Cost</label>
+              <input
+                type="number"
+                id="cost"
+                placeholder="$1000.00"
+                step="0.01"
+              />
+              <style>
+                /* Chrome, Safari, Edge, Opera */
+                input#cost::-webkit-outer-spin-button,
+                input#cost::-webkit-inner-spin-button {
+                  -webkit-appearance: none;
+                  margin: 0;
+                }
+
+                /* Firefox */
+                input#cost[type=number] {
+                  -moz-appearance: textfield;
+                }
+              </style>
+            </div>
+            <div class="form-group">
+              <label for="address">Service Address</label>
+              <input
+                type="text"
+                id="address"
+                placeholder="Enter full address"
+              />
+            </div>
+            <div class="form-group">
+              <label for="notes">Special Instructions</label>
+              <textarea
+                id="notes"
+                rows="2"
+                placeholder="Any special requirements..."
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-small"
+            style="background-color: #f1f5f9; color: var(--text-dark)"
+            onclick="closeAddBookingModal()"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary btn-small"
+            onclick="confirmAddBooking()"
+          >
+            Create Booking
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" style="display: none;" class="modal-overlay">
+        
+    </div>
+
+    <!-- Complete/Finalize Modal  -->
+    <div id="completeModal" style="display: none;" class="modal-overlay">
+    </div>
+
+    <!-- Cancellation Modal  -->
+    <div id="cancelModal" style="display: none;" class="modal-overlay">
+        
+    </div>
+    <!-- Rebooking Modal  -->
+    <div id="rebookModal" style="display: none;" class="modal-overlay">
+        
+    </div>
+    <!-- View Modal -->
+    <div id="viewModal" style="display: none;" class="modal-overlay">
+    </div>
+
+    <script type="module" src="./JS/admin_booking.js"></script>
+    <script></script>
+  </body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - GreenScape Admin</title>
+  <link rel="stylesheet" href="/landscape/v/admin-style1.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="admin-page">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-leaf"></i>
+          </div>
+          GreenScape
+        </a>
+      </div>
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Main</p>
+          <a href="admin-dashboard.html" class="admin-nav-item active">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="admin-users.html" class="admin-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+          </a>
+          <a href="admin-bookings.html" class="admin-nav-item">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Bookings</span>
+          </a>
+          <a href="admin-transactions.html" class="admin-nav-item">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Transactions</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Content</p>
+          <a href="admin-upload1.html" class="admin-nav-item">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Upload Content</span>
+          </a>
+          <a href="admin-gallery1.html" class="admin-nav-item">
+            <i class="fas fa-images"></i>
+            <span>Gallery Manager</span>
+          </a>
+          <a href="admin-services.html" class="admin-nav-item">
+            <i class="fas fa-tools"></i>
+            <span>Services</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Communication</p>
+          <a href="admin-emails.html" class="admin-nav-item">
+            <i class="fas fa-envelope"></i>
+            <span>Email Updates</span>
+          </a>
+          <a href="admin-notifications.html" class="admin-nav-item">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+          </a>
+        </div>
+        <div class="admin-nav-section">
+          <p class="admin-nav-title">Settings</p>
+          <a href="admin-settings.html" class="admin-nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+          <a href="index.html" class="admin-nav-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="admin-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search users, bookings, transactions...">
+        </div>
+        <div class="admin-header-actions">
+          <a href="admin-notifications.html" class="admin-notification">
+            <i class="fas fa-bell"></i>
+            <span class="admin-notification-badge">5</span>
+          </a>
+          <div class="admin-user">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+            <div>
+              <p style="font-weight: 600; font-size: 0.9rem;">David Martinez</p>
+              <p style="font-size: 0.75rem; color: var(--text-gray);">Administrator</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="admin-content">
+        <!-- Page Title -->
+        <div class="admin-page-title">
+          <div>
+            <h2>Dashboard</h2>
+            <p>Welcome back! Here's what's happening with your business.</p>
+          </div>
+          <button class="btn btn-primary">
+            <i class="fas fa-download"></i> Export Report
+          </button>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>1,284</h3>
+                <p>Total Users</p>
+              </div>
+              <div class="stat-card-icon blue">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +12% from last month</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>$48,250</h3>
+                <p>Revenue This Month</p>
+              </div>
+              <div class="stat-card-icon green">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+            </div>
+            <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +8% from last month</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>156</h3>
+                <p>Active Bookings</p>
+              </div>
+              <div class="stat-card-icon orange">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+            </div>
+            <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +5% from last month</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div>
+                <h3>23</h3>
+                <p>Pending Requests</p>
+              </div>
+              <div class="stat-card-icon red">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+            <p class="stat-card-change negative"><i class="fas fa-arrow-down"></i> -3% from last month</p>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <h3 style="margin-bottom: 1rem; color: var(--text-dark);">Quick Actions</h3>
+        <div class="quick-actions" style="margin-bottom: 2rem;">
+          <a href="admin-users.html" class="quick-action-card">
+            <i class="fas fa-user-plus"></i>
+            <h4>Add User</h4>
+          </a>
+          <a href="admin-bookings.html" class="quick-action-card">
+            <i class="fas fa-calendar-plus"></i>
+            <h4>New Booking</h4>
+          </a>
+          <a href="admin-upload1.html" class="quick-action-card">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <h4>Upload Content</h4>
+          </a>
+          <a href="admin-emails.html" class="quick-action-card">
+            <i class="fas fa-paper-plane"></i>
+            <h4>Send Email</h4>
+          </a>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="dashboard-grid">
+          <div class="chart-container">
+            <div class="chart-header">
+              <h3><i class="fas fa-chart-line"></i> Revenue Overview</h3>
+              <select style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+                <option>This Year</option>
+              </select>
+            </div>
+            <div class="chart-placeholder">
+              <div style="text-align: center;">
+                <i class="fas fa-chart-area" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                <p>Revenue Chart Visualization</p>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-header">
+              <h3><i class="fas fa-chart-pie"></i> Service Distribution</h3>
+            </div>
+            <div class="chart-placeholder">
+              <div style="text-align: center;">
+                <i class="fas fa-chart-pie" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                <p>Service Chart Visualization</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid" style="margin-top: 1.5rem;">
+          <!-- Recent Users -->
+          <div class="dashboard-card">
+            <div class="dashboard-card-header">
+              <h3><i class="fas fa-users"></i> Recent Users</h3>
+              <a href="admin-users.html" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
+            </div>
+            <div class="dashboard-card-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="table-user">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                        <div class="table-user-info">
+                          <h4>Sarah Johnson</h4>
+                          <p>sarah@email.com</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Feb 18, 2026</td>
+                    <td><span class="status-badge active">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="table-user">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="User">
+                        <div class="table-user-info">
+                          <h4>Michael Chen</h4>
+                          <p>michael@email.com</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Feb 17, 2026</td>
+                    <td><span class="status-badge active">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="table-user">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100" alt="User">
+                        <div class="table-user-info">
+                          <h4>Emily Rodriguez</h4>
+                          <p>emily@email.com</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Feb 15, 2026</td>
+                    <td><span class="status-badge pending">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="table-user">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" alt="User">
+                        <div class="table-user-info">
+                          <h4>James Wilson</h4>
+                          <p>james@email.com</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Feb 10, 2026</td>
+                    <td><span class="status-badge banned">Banned</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="dashboard-card">
+            <div class="dashboard-card-header">
+              <h3><i class="fas fa-history"></i> Recent Activity</h3>
+              <a href="#" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
+            </div>
+            <div class="dashboard-card-body">
+              <div class="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-content">
+                    <h4>New booking received</h4>
+                    <p>Sarah Johnson booked Lawn Maintenance Service</p>
+                    <p class="timeline-time">10 minutes ago</p>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-content">
+                    <h4>Payment processed</h4>
+                    <p>Received $599 from Michael Chen</p>
+                    <p class="timeline-time">1 hour ago</p>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-content">
+                    <h4>New user registered</h4>
+                    <p>Emily Rodriguez created an account</p>
+                    <p class="timeline-time">3 hours ago</p>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-content">
+                    <h4>Service completed</h4>
+                    <p>Garden Design Package completed for Robert Kim</p>
+                    <p class="timeline-time">5 hours ago</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="dashboard-card" style="margin-top: 1.5rem;">
+          <div class="dashboard-card-header">
+            <h3><i class="fas fa-exchange-alt"></i> Recent Transactions</h3>
+            <a href="admin-transactions.html" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
+          </div>
+          <div class="dashboard-card-body">
+            <div class="transaction-list">
+              <div class="transaction-item">
+                <div class="transaction-icon income">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="transaction-info">
+                  <h4>Payment from Sarah Johnson</h4>
+                  <p>Lawn Maintenance Service</p>
+                </div>
+                <div class="transaction-amount positive">
+                  <h4>+$199.00</h4>
+                  <p>Feb 18, 2026</p>
+                </div>
+              </div>
+              <div class="transaction-item">
+                <div class="transaction-icon income">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="transaction-info">
+                  <h4>Payment from Michael Chen</h4>
+                  <p>Garden Design Package</p>
+                </div>
+                <div class="transaction-amount positive">
+                  <h4>+$599.00</h4>
+                  <p>Feb 17, 2026</p>
+                </div>
+              </div>
+              <div class="transaction-item">
+                <div class="transaction-icon expense">
+                  <i class="fas fa-arrow-up"></i>
+                </div>
+                <div class="transaction-info">
+                  <h4>Equipment Purchase</h4>
+                  <p>Lawn Mower Maintenance</p>
+                </div>
+                <div class="transaction-amount negative">
+                  <h4>-$450.00</h4>
+                  <p>Feb 16, 2026</p>
+                </div>
+              </div>
+              <div class="transaction-item">
+                <div class="transaction-icon income">
+                  <i class="fas fa-arrow-down"></i>
+                </div>
+                <div class="transaction-info">
+                  <h4>Payment from Emily Rodriguez</h4>
+                  <p>Hardscaping Project</p>
+                </div>
+                <div class="transaction-amount positive">
+                  <h4>+$1,299.00</h4>
+                  <p>Feb 15, 2026</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="admin-dashboard1.js"></script>
+</body>
+</html>
