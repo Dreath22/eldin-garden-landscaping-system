@@ -368,11 +368,6 @@
                   -webkit-appearance: none;
                   margin: 0;
                 }
-
-                /* Firefox */
-                input#cost[type=number] {
-                  -moz-appearance: textfield;
-                }
               </style>
             </div>
             <div class="form-group">
@@ -412,8 +407,8 @@
     </div>
 
     <!-- Confirm Modal -->
-    <div id="confirmModal" style="display: none;" class="modal-overlay">
-        
+    <div id="confirmModal" style="display: none;" class="modal-overlay px-4">
+      
     </div>
 
     <!-- Complete/Finalize Modal  -->
@@ -433,6 +428,55 @@
     </div>
 
     <script type="module" src="./JS/admin_booking.js"></script>
-    <script></script>
+    <script data-purpose="dynamic-stepper-logic">
+    function updateProgress(activeStage) {
+      const steps = document.querySelectorAll('.step-item');
+      const progressBar = document.getElementById('progress-bar-horizontal');
+      
+      steps.forEach((step, index) => {
+        const stageNum = index + 1;
+        const circle = step.querySelector('.step-circle');
+        const label = step.querySelector('.step-label');
+        
+        if (stageNum <= activeStage) {
+          // Active or Completed State
+          circle.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'border-slate-300', 'dark:border-slate-600', 'text-slate-400');
+          circle.classList.add('bg-primary', 'border-primary', 'text-white');
+          label.classList.add('text-primary');
+          label.classList.remove('text-slate-400');
+        } else {
+          // Pending State
+          circle.classList.add('bg-slate-100', 'dark:bg-slate-700', 'border-slate-300', 'dark:border-slate-600', 'text-slate-400');
+          circle.classList.remove('bg-primary', 'border-primary', 'text-white');
+          label.classList.remove('text-primary');
+          label.classList.add('text-slate-400');
+        }
+      });
+
+      // Update progress bar width (for md screens and up)
+      // Stages: 1=0%, 2=33%, 3=66%, 4=100%
+      const percentage = ((activeStage - 1) / (steps.length - 1)) * 100;
+      if (progressBar) {
+        progressBar.style.width = `${percentage}%`;
+      }
+    }
+
+    // Initialize at Stage 3
+    document.addEventListener('DOMContentLoaded', () => {
+      updateProgress(3);
+    });
+  </script>
+  <style data-purpose="custom-transitions">
+    .stepper-transition {
+      transition: all 0.3s ease-in-out;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+
+  <script data-purpose="dynamic-stepper-logic">
+    
+  </script>
   </body>
 </html>

@@ -1,1 +1,10 @@
 .env
+
+# Dependencies
+node_modules/
+
+# Lock files (Optional, but common to ignore in simple projects)
+package-lock.json
+
+# Configuration files
+eslint.config.mjs

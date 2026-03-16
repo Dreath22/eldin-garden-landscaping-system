@@ -29,9 +29,6 @@ if ($status !== 'all' && !in_array($status, $validStatuses)) {
     exit;
 }
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-
-    // Only update if current status allows it
     $sql = "UPDATE bookings 
             SET status = :status 
             WHERE id = :id 
