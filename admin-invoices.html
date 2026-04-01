@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Management - GreenScape Admin</title>
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="./JS/invoice.js"></script>
+    <style>
+        .invoice-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .invoice-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+        .invoice-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.draft { background-color: #f3f4f6; color: #374151; }
+        .status-badge.sent { background-color: #dbeafe; color: #1d4ed8; }
+        .status-badge.paid { background-color: #d1fae5; color: #065f46; }
+        .status-badge.overdue { background-color: #fee2e2; color: #991b1b; }
+        .status-badge.cancelled { background-color: #e5e7eb; color: #374151; }
+    </style>
+</head>
+<body class="admin-page">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <a href="admin-dashboard.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                GreenScape
+            </a>
+        </div>
+        <nav class="admin-nav">
+            <div class="admin-nav-section">
+                <p class="admin-nav-title">Main</p>
+                <a href="admin-dashboard.html" class="admin-nav-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="admin-users.html" class="admin-nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="admin-bookings.html" class="admin-nav-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Bookings</span>
+                </a>
+                <a href="admin-transactions.html" class="admin-nav-item">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transactions</span>
+                </a>
+            </div>
+            <div class="admin-nav-section">
+                <p class="admin-nav-title">Content</p>
+                <a href="admin-upload.html" class="admin-nav-item">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Upload Content</span>
+                </a>
+                <a href="admin-gallery.html" class="admin-nav-item">
+                    <i class="fas fa-images"></i>
+                    <span>Gallery Manager</span>
+                </a>
+                <a href="admin-services.html" class="admin-nav-item">
+                    <i class="fas fa-tools"></i>
+                    <span>Services</span>
+                </a>
+            </div>
+            <div class="admin-nav-section">
+                <p class="admin-nav-title">Billing</p>
+                <a href="admin-invoices.html" class="admin-nav-item active">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Invoices</span>
+                </a>
+            </div>
+            <div class="admin-nav-section">
+                <p class="admin-nav-title">Settings</p>
+                <a href="admin-settings.html" class="admin-nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="index.html" class="admin-nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search invoices...">
+            </div>
+            <div class="admin-header-actions">
+                <div class="admin-user">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
+                    <div>
+                        <p style="font-weight: 600; font-size: 0.9rem;">David Martinez</p>
+                        <p style="font-size: 0.75rem; color: var(--text-gray);">Administrator</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="admin-content">
+            <!-- Page Title -->
+            <div class="admin-page-title">
+                <div>
+                    <h2>Invoice Management</h2>
+                    <p>View and manage all customer invoices</p>
+                </div>
+                <div class="flex gap-2">
+                    <select id="statusFilter" class="px-3 py-2 border rounded-lg text-sm">
+                        <option value="all">All Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="sent">Sent</option>
+                        <option value="paid">Paid</option>
+                        <option value="overdue">Overdue</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <button onclick="refreshInvoices()" class="btn btn-secondary">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="dashboard-stats" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <h3 id="totalInvoices">0</h3>
+                            <p>Total Invoices</p>
+                        </div>
+                        <div class="stat-card-icon blue">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <h3 id="paidInvoices">0</h3>
+                            <p>Paid Invoices</p>
+                        </div>
+                        <div class="stat-card-icon green">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <h3 id="unpaidInvoices">0</h3>
+                            <p>Unpaid Invoices</p>
+                        </div>
+                        <div class="stat-card-icon orange">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div>
+                            <h3 id="totalRevenue">$0</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                        <div class="stat-card-icon purple">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoices Grid -->
+            <div class="invoice-grid" id="invoicesContainer">
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500">Loading invoices...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="paginationContainer">
+                <!-- Pagination will be dynamically generated -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentPage = 1;
+        let currentStatus = 'all';
+        let allInvoices = [];
+
+        // Load invoices on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInvoices();
+            
+            // Setup event listeners
+            document.getElementById('statusFilter').addEventListener('change', (e) => {
+                currentStatus = e.target.value;
+                currentPage = 1;
+                loadInvoices();
+            });
+
+            document.getElementById('searchInput').addEventListener('input', debounce(() => {
+                filterInvoices();
+            }, 300));
+        });
+
+        async function loadInvoices() {
+            try {
+                const result = await invoiceManager.listInvoices(currentPage, currentStatus);
+                allInvoices = result.invoices;
+                
+                displayInvoices(result.invoices);
+                updateStats(result.invoices);
+                displayPagination(result.pagination);
+                
+            } catch (error) {
+                console.error('Load invoices error:', error);
+                document.getElementById('invoicesContainer').innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                        <p class="text-red-500">Failed to load invoices: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayInvoices(invoices) {
+            const container = document.getElementById('invoicesContainer');
+            
+            if (invoices.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-file-invoice text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No invoices found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = invoices.map(invoice => `
+                <div class="invoice-card">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-semibold text-lg">${invoice.invoice_number}</h3>
+                            <p class="text-sm text-gray-500">${new Date(invoice.invoice_date).toLocaleDateString()}</p>
+                        </div>
+                        <span class="status-badge ${invoice.status.toLowerCase()}">${invoice.status}</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Customer:</span>
+                            <span class="font-medium">${invoice.customer_name}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Service:</span>
+                            <span class="font-medium">${invoice.service_name}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Due Date:</span>
+                            <span class="font-medium">${new Date(invoice.due_date).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Total:</span>
+                            <span style="color: var(--primary-green);">$${parseFloat(invoice.total_amount).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button class="btn btn-primary btn-small" onclick="invoiceManager.showInvoiceDetails(${invoice.id})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="window.open('/landscape/USER_API/generate_booking_report.php?id=${invoice.booking_id}', '_blank')">
+                            <i class="fas fa-download"></i> PDF
+                        </button>
+                        ${invoice.status === 'sent' ? `
+                            <button class="btn btn-small" style="background-color: #d1fae5; color: #065f46;" onclick="markAsPaid(${invoice.id})">
+                                <i class="fas fa-check"></i> Mark Paid
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats(invoices) {
+            const total = invoices.length;
+            const paid = invoices.filter(inv => inv.status === 'paid').length;
+            const unpaid = invoices.filter(inv => inv.status === 'sent').length;
+            const revenue = invoices
+                .filter(inv => inv.status === 'paid')
+                .reduce((sum, inv) => sum + parseFloat(inv.total_amount), 0);
+
+            document.getElementById('totalInvoices').textContent = total;
+            document.getElementById('paidInvoices').textContent = paid;
+            document.getElementById('unpaidInvoices').textContent = unpaid;
+            document.getElementById('totalRevenue').textContent = `$${revenue.toFixed(2)}`;
+        }
+
+        function displayPagination(pagination) {
+            const container = document.getElementById('paginationContainer');
+            
+            if (pagination.total_pages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<p class="pagination-info">Showing ${pagination.current_page} of ${pagination.total_pages} pages</p>`;
+            html += '<div class="pagination-controls">';
+            
+            // Previous button
+            if (pagination.current_page > 1) {
+                html += `<button class="pagination-btn" onclick="changePage(${pagination.current_page - 1})"><i class="fas fa-chevron-left"></i></button>`;
+            }
+            
+            // Page numbers
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                const active = i === pagination.current_page ? 'active' : '';
+                html += `<button class="pagination-btn ${active}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            // Next button
+            if (pagination.current_page < pagination.total_pages) {
+                html += `<button class="pagination-btn" onclick="changePage(${pagination.current_page + 1})"><i class="fas fa-chevron-right"></i></button>`;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            loadInvoices();
+        }
+
+        function refreshInvoices() {
+            loadInvoices();
+        }
+
+        async function markAsPaid(invoiceId) {
+            try {
+                await invoiceManager.updateStatus(invoiceId, 'paid');
+                loadInvoices(); // Refresh the list
+            } catch (error) {
+                alert('Failed to mark invoice as paid: ' + error.message);
+            }
+        }
+
+        function filterInvoices() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayInvoices(allInvoices);
+                return;
+            }
+
+            const filtered = allInvoices.filter(invoice => 
+                invoice.invoice_number.toLowerCase().includes(searchTerm) ||
+                invoice.customer_name.toLowerCase().includes(searchTerm) ||
+                invoice.service_name.toLowerCase().includes(searchTerm)
+            );
+            
+            displayInvoices(filtered);
+        }
+
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

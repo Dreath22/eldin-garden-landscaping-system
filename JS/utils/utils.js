@@ -5,7 +5,7 @@ export function switchTab(tab, event, fetchItems) {
   if (event && event.target) {
     event.target.classList.add('active')
   }
-        
+
   fetchItems(1)
 }
 
@@ -84,10 +84,14 @@ export function renderPagination(fetchData, totalData, state, fetchDataCallback)
       controls.appendChild(span)
     } else {
       const btn = document.createElement('button')
-      btn.className = `pagination-btn ${Number(p) === Number(state.currentPage) ? 'active' : ''}`
+      const pageNum = Number(p);
+      btn.className = `pagination-btn ${pageNum === Number(state.currentPage) ? 'active' : ''}`
       btn.textContent = p
       btn.disabled = totalData === 0
-      btn.onclick = () => goToPage(Number(p))
+
+      // FIX: Added missing state and fetchDataCallback parameters
+      btn.onclick = () => goToPage(pageNum, state, fetchDataCallback)
+
       controls.appendChild(btn)
     }
   })
@@ -97,13 +101,22 @@ export function renderPagination(fetchData, totalData, state, fetchDataCallback)
   nextBtn.className = 'pagination-btn'
   nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>'
   nextBtn.disabled = state.currentPage >= totalPages || totalData === 0
-  nextBtn.onclick = () => goToPage(state.currentPage + 1)
+  nextBtn.onclick = () => goToPage(state.currentPage + 1, state, fetchDataCallback)
   controls.appendChild(nextBtn)
 }
+
 function goToPage(pageNumber, state, fetchDataCallback) {
-  if (pageNumber < 1 || pageNumber > state.total_pages) return
-  state.currentPage = pageNumber
-  fetchDataCallback()
+  if (!state) return;
+  if (pageNumber < 1 || pageNumber > state.total_pages) return;
+
+  state.currentPage = pageNumber;
+
+  // FIX: Check if it's actually a function before calling it
+  if (typeof fetchDataCallback === 'function') {
+    fetchDataCallback();
+  } else {
+    console.error("Pagination Error: fetchDataCallback is not a function. Received:", fetchDataCallback);
+  }
 }
 
 
@@ -112,11 +125,11 @@ export function capitalize(str) {
 }
 
 export const log = (message, type = 'info') => {
-  const icons = { 
-    error: '❌', 
-    warn: '⚠️', 
-    success: '✅', 
-    info: 'ℹ️' 
+  const icons = {
+    error: '❌',
+    warn: '⚠️',
+    success: '✅',
+    info: 'ℹ️'
   }
 
   const styles = {
@@ -128,7 +141,7 @@ export const log = (message, type = 'info') => {
 
   // 1. Terminal/Console Logger (With consistent formatting)
   console.log(
-    `%c${icons[type] || ''} [${type.toUpperCase()}]: ${message}`, 
+    `%c${icons[type] || ''} [${type.toUpperCase()}]: ${message}`,
     styles[type] || ''
   )
 

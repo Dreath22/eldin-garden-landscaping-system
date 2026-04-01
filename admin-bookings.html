@@ -11,6 +11,8 @@
       crossorigin="anonymous" 
       referrerpolicy="no-referrer" />
       <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="./JS/invoice.js"></script>
+    <script type="module" src="./JS/admin_booking.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script id="tailwind-config">
@@ -216,7 +218,7 @@
           <div class="filters-bar">
             <div class="filter-group">
               <label>Service:</label>
-              <select id="selectedCustomerIdFilter">
+              <select id="serviceFilter">
               </select>
             </div>
             <div class="filter-group">
@@ -225,76 +227,15 @@
             </div>
             <div class="filter-group">
               <label>Sort:</label>
-              <select>
-                <option>Newest First</option>
-                <option>Oldest First</option>
-                <option>Date: Soonest</option>
+              <select id="sortFilter">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
               </select>
             </div>
-            <button class="btn btn-secondary btn-small">
-              <i class="fas fa-filter"></i> Apply
-            </button>
           </div>
 
           <!-- Booking Cards Grid -->
           <div class="booking-grid" id="bookingContainer">
-            <div class="booking-card-header">
-              <span style="font-weight: 600; color: var(--text-dark)"
-                >#BK-2026-006</span
-              >
-              <span class="status-badge pending">Pending</span>
-            </div>
-            <div class="booking-card-body">
-              <div class="table-user" style="margin-bottom: 1rem">
-                <img
-                  src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100"
-                  alt="User"
-                />
-                <div class="table-user-info">
-                  <h4>Robert Kim</h4>
-                  <p>robert@email.com</p>
-                </div>
-              </div>
-              <div class="booking-info-row">
-                <i class="fas fa-tools"></i>
-                <span>Seasonal Cleanup</span>
-              </div>
-              <div class="booking-info-row">
-                <i class="fas fa-calendar"></i>
-                <span>Feb 23, 2026 at 8:00 AM</span>
-              </div>
-              <div class="booking-info-row">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>987 Cedar Ln, Green City</span>
-              </div>
-              <div class="booking-info-row">
-                <i class="fas fa-dollar-sign"></i>
-                <span style="font-weight: 600; color: var(--primary-green)"
-                  >$275.00</span
-                >
-              </div>
-            </div>
-            <div class="booking-card-footer">
-              <button
-                class="btn btn-small"
-                style="background-color: #f1f5f9; color: var(--text-dark)"
-                onclick="showBookingDetails('#BK-2026-006')"
-              >
-                <i class="fas fa-eye"></i> View
-              </button>
-              <button
-                class="btn btn-primary btn-small"
-                onclick="confirmBooking('#BK-2026-006')"
-              >
-                <i class="fas fa-check"></i> Confirm
-              </button>
-              <button
-                class="btn btn-danger btn-small"
-                onclick="cancelBooking('#BK-2026-006')"
-              >
-                <i class="fas fa-times"></i> Cancel
-              </button>
-            </div>
           </div>
         </div>
 
@@ -419,8 +360,8 @@
     <div id="cancelModal" style="display: none;" class="modal-overlay">
         
     </div>
-    <!-- Rebooking Modal  -->
-    <div id="rebookModal" style="display: none;" class="modal-overlay">
+    <!-- Invoice Modal  -->
+    <div id="invoiceModal" style="display: none;" class="modal-overlay">
         
     </div>
     <!-- View Modal -->

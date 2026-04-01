@@ -110,9 +110,9 @@
             <h2>Transaction Management</h2>
             <p>View and manage all financial transactions.</p>
           </div>
-          <button class="btn btn-primary" onclick="showAddTransactionModal()">
+          <!--<button class="btn btn-primary" onclick="showAddTransactionModal()">
             <i class="fas fa-plus"></i> Record Transaction
-          </button>
+          </button>-->
         </div>
 
         <!-- Stats Cards -->
@@ -234,164 +234,13 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td style="font-family: monospace;">#TRX-2026-001</td>
-                  <td>Feb 18, 2026</td>
-                  <td>
-                    <div class="table-user">
-                      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
-                      <div class="table-user-info">
-                        <h4>Sarah Johnson</h4>
-                        <p>Lawn Maintenance Service</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="status-badge active">Payment</span></td>
-                  <td><span class="status-badge completed">Completed</span></td>
-                  <td style="color: #22c55e; font-weight: 600;">+$199.00</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="table-btn view" title="View" onclick="showTransactionDetails('#TRX-2026-001')"><i class="fas fa-eye"></i></button>
-                      <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                      <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-family: monospace;">#TRX-2026-002</td>
-                  <td>Feb 17, 2026</td>
-                  <td>
-                    <div class="table-user">
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="User">
-                      <div class="table-user-info">
-                        <h4>Michael Chen</h4>
-                        <p>Garden Design Package</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="status-badge active">Payment</span></td>
-                  <td><span class="status-badge completed">Completed</span></td>
-                  <td style="color: #22c55e; font-weight: 600;">+$599.00</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="table-btn view" title="View" onclick="showTransactionDetails('#TRX-2026-002')"><i class="fas fa-eye"></i></button>
-                      <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                      <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-family: monospace;">#TRX-2026-003</td>
-                  <td>Feb 16, 2026</td>
-                  <td>
-                    <div class="table-user">
-                      <div class="stat-card-icon red" style="width: 36px; height: 36px; font-size: 1rem;">
-                        <i class="fas fa-tools"></i>
-                      </div>
-                      <div class="table-user-info">
-                        <h4>Equipment Purchase</h4>
-                        <p>Lawn Mower Maintenance</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="status-badge banned">Expense</span></td>
-                  <td><span class="status-badge completed">Completed</span></td>
-                  <td style="color: #ef4444; font-weight: 600;">-$450.00</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="table-btn view" title="View" onclick="showTransactionDetails('#TRX-2026-003')"><i class="fas fa-eye"></i></button>
-                      <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                      <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-family: monospace;">#TRX-2026-004</td>
-                  <td>Feb 15, 2026</td>
-                  <td>
-                    <div class="table-user">
-                      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100" alt="User">
-                      <div class="table-user-info">
-                        <h4>Emily Rodriguez</h4>
-                        <p>Hardscaping Project</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="status-badge active">Payment</span></td>
-                  <td><span class="status-badge completed">Completed</span></td>
-                  <td style="color: #22c55e; font-weight: 600;">+$1,299.00</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="table-btn view" title="View" onclick="showTransactionDetails('#TRX-2026-004')"><i class="fas fa-eye"></i></button>
-                      <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                      <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-family: monospace;">#TRX-2026-005</td>
-                  <td>Feb 14, 2026</td>
-                  <td>
-                    <div class="table-user">
-                      <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" alt="User">
-                      <div class="table-user-info">
-                        <h4>James Wilson</h4>
-                        <p>Irrigation System Install</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="status-badge active">Payment</span></td>
-                  <td><span class="status-badge pending">Pending</span></td>
-                  <td style="color: #22c55e; font-weight: 600;">+$899.00</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="table-btn view" title="View" onclick="showTransactionDetails('#TRX-2026-005')"><i class="fas fa-eye"></i></button>
-                      <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                      <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-family: monospace;">#TRX-2026-006</td>
-                  <td>Feb 13, 2026</td>
-                  <td>
-                    <div class="table-user">
-                      <div class="stat-card-icon red" style="width: 36px; height: 36px; font-size: 1rem;">
-                        <i class="fas fa-undo"></i>
-                      </div>
-                      <div class="table-user-info">
-                        <h4>Refund - Lisa Anderson</h4>
-                        <p>Tree Trimming Service</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="status-badge pending">Refund</span></td>
-                  <td><span class="status-badge completed">Completed</span></td>
-                  <td style="color: #ef4444; font-weight: 600;">-$350.00</td>
-                  <td>
-                    <div class="table-actions">
-                      <button class="table-btn view" title="View" onclick="showTransactionDetails('#TRX-2026-006')"><i class="fas fa-eye"></i></button>
-                      <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
-                      <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
-                    </div>
-                  </td>
-                </tr>
+              <tbody id="tablebody">
               </tbody>
             </table>
 
             <!-- Pagination -->
-            <div class="pagination">
-              <p class="pagination-info">Showing 1-6 of 342 transactions</p>
-              <div class="pagination-controls">
-                <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">2</button>
-                <button class="pagination-btn">3</button>
-                <span style="padding: 0.5rem;">...</span>
-                <button class="pagination-btn">57</button>
-                <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
-              </div>
+            <div id="pagination" class="pagination">
+
             </div>
           </div>
         </div>
@@ -409,24 +258,24 @@
       <div class="modal-body">
         <form id="addTransactionForm">
           <div class="form-group">
-            <label for="transactionType">Transaction Type</label>
-            <select id="transactionType">
+            <label for="addedTransaction_type">Transaction Type</label>
+            <select id="addedTransaction_type">
               <option value="income">Income / Payment</option>
               <option value="expense">Expense</option>
               <option value="refund">Refund</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="transactionAmount">Amount</label>
-            <input type="number" id="transactionAmount" placeholder="0.00" step="0.01">
+            <label for="addedTransaction_amount">Amount</label>
+            <input id="addedTransaction_amount" type="number" id="transactionAmount" placeholder="0.00" step="0.01">
           </div>
           <div class="form-group">
-            <label for="transactionDescription">Description</label>
-            <input type="text" id="transactionDescription" placeholder="Enter description">
+            <label for="addedTransaction_description">Description</label>
+            <input type="text" id="addedTransaction_description" placeholder="Enter description">
           </div>
           <div class="form-group">
-            <label for="transactionCategory">Category</label>
-            <select id="transactionCategory">
+            <label for="addedTransaction_category">Category</label>
+            <select id="addedTransaction_category">
               <option value="">Select category...</option>
               <option value="service">Service Payment</option>
               <option value="equipment">Equipment</option>
@@ -436,12 +285,12 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="transactionDate">Date</label>
-            <input type="date" id="transactionDate">
+            <label for="addedTransaction_date">Date</label>
+            <input type="date" id="addedTransaction_date">
           </div>
           <div class="form-group">
-            <label for="transactionNotes">Notes (Optional)</label>
-            <textarea id="transactionNotes" rows="2" placeholder="Additional notes..."></textarea>
+            <label for="addedTransaction_notes">Notes (Optional)</label>
+            <textarea id="addedTransaction_notes" rows="2" placeholder="Additional notes..."></textarea>
           </div>
         </form>
       </div>
@@ -457,54 +306,89 @@
     <div class="modal">
       <div class="modal-header">
         <h3><i class="fas fa-receipt" style="color: var(--primary-green);"></i> Transaction Details</h3>
-        <button class="modal-close" onclick="closeTransactionDetailsModal()">&times;</button>
+        <button class="modal-close" onclick="closeModal('transactionDetailsModal')">&times;</button>
       </div>
       <div class="modal-body">
         <div style="text-align: center; padding: 1.5rem; background-color: #f8fafc; border-radius: 8px; margin-bottom: 1.5rem;">
           <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 0.5rem;">Amount</p>
-          <h2 style="color: #22c55e; font-size: 2.5rem;">+$199.00</h2>
-          <span class="status-badge completed" style="margin-top: 0.5rem;">Completed</span>
+          <h2 id="detailsAmount" style="color: #22c55e; font-size: 2.5rem;"></h2>
+          <span class="status-badge completed" id="detailsStatus" style="margin-top: 0.5rem;"></span>
         </div>
         <div style="margin-bottom: 1rem;">
           <p style="color: var(--text-gray); font-size: 0.85rem;">Transaction ID</p>
-          <p style="font-family: monospace; font-weight: 600;">#TRX-2026-001</p>
+          <p id="detailsId" style="font-family: monospace; font-weight: 600;"></p>
         </div>
         <div style="margin-bottom: 1rem;">
           <p style="color: var(--text-gray); font-size: 0.85rem;">Date & Time</p>
-          <p style="font-weight: 600;">Feb 18, 2026 at 2:30 PM</p>
+          <p id="detailsDate" style="font-weight: 600;">  </p>
         </div>
         <div style="margin-bottom: 1rem;">
           <p style="color: var(--text-gray); font-size: 0.85rem;">Customer</p>
           <div class="table-user">
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+            <img id="detailsImg" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
             <div class="table-user-info">
-              <h4>Sarah Johnson</h4>
-              <p>sarah@email.com</p>
+              <h4 id="detailsName"></h4>
+              <p id="detailsEmail"></p>
             </div>
           </div>
         </div>
         <div style="margin-bottom: 1rem;">
           <p style="color: var(--text-gray); font-size: 0.85rem;">Description</p>
-          <p style="font-weight: 600;">Lawn Maintenance Service</p>
-        </div>
-        <div style="margin-bottom: 1rem;">
-          <p style="color: var(--text-gray); font-size: 0.85rem;">Payment Method</p>
-          <p style="font-weight: 600;"><i class="fas fa-credit-card" style="margin-right: 0.5rem;"></i> Credit Card (****4242)</p>
+          <p id="detailsDescription" style="font-weight: 600;"></p>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeTransactionDetailsModal()">Close</button>
-        <button class="btn btn-secondary btn-small">
-          <i class="fas fa-file-invoice"></i> View Invoice
-        </button>
-        <button class="btn btn-primary btn-small">
-          <i class="fas fa-download"></i> Download Receipt
-        </button>
+        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeModal('transactionDetailsModal')">Close</button>
       </div>
     </div>
   </div>
 
   <script>
+     // Transaction Details Modal
+    function showTransactionDetails(transactionId) {
+      document.getElementById('transactionDetailsModal').style.display = 'flex';
+      
+      getTransactionDetails(transactionId).then(data => {
+        if(data && data.status === 'success' && data.transactions) {
+          const transaction = data.transactions; // transactions is an object, not array
+          
+          document.getElementById('detailsId').textContent = transaction.transaction_code;
+          document.getElementById('detailsAmount').textContent = transaction.type === 'cancelled' ? 
+            `-$${parseFloat(transaction.amount).toFixed(2)}` : `+$${parseFloat(transaction.amount).toFixed(2)}`;
+          document.getElementById('detailsDate').textContent = new Date(transaction.transaction_date).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+          document.getElementById('detailsStatus').textContent = transaction.status;
+          document.getElementById('detailsStatus').className = `status-badge ${transaction.status.toLowerCase()}`;
+          document.getElementById('detailsName').textContent = transaction.full_name || 'N/A';
+          document.getElementById('detailsEmail').textContent = transaction.user_email || 'N/A';
+          document.getElementById('detailsDescription').textContent = transaction.description || 'N/A';
+          
+          // Set avatar
+          const avatarUrl = transaction.full_name ? 
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(transaction.full_name)}&background=6366f1&color=fff&size=100` :
+            'https://ui-avatars.com/api/?name=N/A&background=6366f1&color=fff&size=100';
+          document.getElementById('detailsImg').src = avatarUrl;
+          
+          // Update amount color based on transaction type
+          const amountElement = document.getElementById('detailsAmount');
+          amountElement.style.color = transaction.type === 'cancelled' ? '#ef4444' : '#22c55e';
+        } else {
+          console.log("No transaction data found");
+        }
+      }).catch(error => {
+        console.error("Error fetching transaction details:", error);
+      });
+    }
+
+    function closeTransactionDetailsModal() {
+      document.getElementById('transactionDetailsModal').style.display = 'none';
+    }
+
+    function closeModal(id){
+      document.getElementById(id).style.display = "none";
+    }
+
     // Add Transaction Modal
     function showAddTransactionModal() {
       document.getElementById('addTransactionModal').style.display = 'flex';
@@ -516,18 +400,11 @@
 
     function confirmAddTransaction() {
       alert('Transaction has been recorded successfully.');
+      createTransaction()
       closeAddTransactionModal();
     }
 
-    // Transaction Details Modal
-    function showTransactionDetails(transactionId) {
-      document.getElementById('transactionDetailsModal').style.display = 'flex';
-    }
-
-    function closeTransactionDetailsModal() {
-      document.getElementById('transactionDetailsModal').style.display = 'none';
-    }
-
+   
     // Tab Switching
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));

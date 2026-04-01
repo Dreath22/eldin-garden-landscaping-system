@@ -6,6 +6,15 @@ require_once '../config/config.php';
 $action = isset($_GET['action']) ? $_GET['action'] : null;
 $userId = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
+// ─── HELPER: Enforce POST for write actions ───
+function requirePost() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(["status" => "error", "message" => "Method Not Allowed. Use POST."]);
+        exit;
+    }
+}
+
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 
@@ -42,7 +51,8 @@ try {
         ]);
     }
     // UPDATE USER
-    elseif ($action === 'update' && $userId && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    elseif ($action === 'update' && $userId) {
+        requirePost();
         $data = json_decode(file_get_contents("php://input"), true);
 
         $stmt = $pdo->prepare("
@@ -67,7 +77,8 @@ try {
         }
     }
     // BAN USER
-    elseif ($action === 'ban' && $userId && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    elseif ($action === 'ban' && $userId) {
+        requirePost();
         $data = json_decode(file_get_contents("php://input"), true);
 
         $stmt = $pdo->prepare("
@@ -87,7 +98,8 @@ try {
         }
     }
     // DELETE USER
-    elseif ($action === 'delete' && $userId && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    elseif ($action === 'delete' && $userId) {
+        requirePost();
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
         $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
 
@@ -99,7 +111,8 @@ try {
         }
     }
     // ADD USER
-    elseif ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    elseif ($action === 'add') {
+        requirePost();
         $data = json_decode(file_get_contents("php://input"), true);
 
         $stmt = $pdo->prepare("

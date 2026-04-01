@@ -182,7 +182,7 @@
             </div>
           </div>
           <div class="dashboard-card-body">
-            <div class="services-list">
+            <div id="services_list" class="services-list">
               <!-- Service Item 1 -->
               <div class="service-item">
                 <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=200" alt="Service" class="service-item-image">
@@ -299,14 +299,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination">
-              <p class="pagination-info">Showing 1-6 of 12 services</p>
-              <div class="pagination-controls">
-                <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">2</button>
-                <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
-              </div>
+            <div id="pagination" class="pagination">
             </div>
           </div>
         </div>
@@ -475,15 +468,15 @@
         <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="Service" style="width: 100%; border-radius: 8px; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
           <div>
-            <h2>Lawn Maintenance Service</h2>
-            <p style="color: var(--text-gray);"><i class="fas fa-folder" style="margin-right: 0.5rem;"></i> Lawn Care</p>
+            <h2 id="viewServiceModalName">Lawn Maintenance Service</h2>
+            <p id="viewServiceModalCategory" style="color: var(--text-gray);"><i class="fas fa-folder" style="margin-right: 0.5rem;"></i> Lawn Care</p>
           </div>
           <div style="text-align: right;">
-            <h2 style="color: var(--primary-green);">$199<span style="font-size: 1rem; color: var(--text-gray);">/visit</span></h2>
-            <span class="status-badge active">Active</span>
+            <h2 id="viewServiceModalPrice" style="color: var(--primary-green);">$199<span style="font-size: 1rem; color: var(--text-gray);">/base price</span></h2>
+            <span id="viewServiceModalStatus" class="status-badge active">Active</span>
           </div>
         </div>
-        <p style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;">Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful. Our professional team uses eco-friendly products and modern equipment to ensure the best results.</p>
+        <p id="viewServiceModalDescription" style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;">Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful. Our professional team uses eco-friendly products and modern equipment to ensure the best results.</p>
         <div style="margin-bottom: 1.5rem;">
           <h4 style="margin-bottom: 0.75rem;">Features</h4>
           <ul style="list-style: none; color: var(--text-dark);">
@@ -500,7 +493,7 @@
           </div>
           <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
             <p style="color: var(--text-gray); font-size: 0.85rem;">Rating</p>
-            <p style="font-weight: 600;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.8</p>
+            <p style="font-weight: 600;"><i class="fas fa-star" style="color: var(--star-orange);"></i> <span id="viewServiceModalRating">4.8</span></p>
           </div>
           <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
             <p style="color: var(--text-gray); font-size: 0.85rem;">Bookings</p>
@@ -514,7 +507,7 @@
       </div>
     </div>
   </div>
-
+<script type="module" src="JS/Services.js"></script>
   <script>
     // Add Service Modal
     function showAddServiceModal() {
@@ -545,8 +538,19 @@
     }
 
     // View Service Modal
-    function viewService(serviceName) {
+    function viewService(id) {
       document.getElementById('viewServiceModal').style.display = 'flex';
+      getServiceRecord(id).then(data => { 
+        console.log(data);
+        if (data.success && data.data) {
+          document.getElementById('viewServiceModalName').textContent = data.data.service_name + " Services";
+          document.getElementById('viewServiceModalCategory').textContent = data.data.category;
+          document.getElementById('viewServiceModalPrice').textContent = '$' + data.data.base_price;
+          document.getElementById('viewServiceModalStatus').textContent = data.data.status;
+          document.getElementById('viewServiceModalRating').textContent = (data.data.rating ?? 0.0);
+          document.getElementById('viewServiceModalDescription').textContent = data.data.description;
+        }
+      });
     }
 
     function closeViewServiceModal() {

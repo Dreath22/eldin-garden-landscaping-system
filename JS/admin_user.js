@@ -1,4 +1,5 @@
 import { switchTab, renderPagination } from './utils/utils.js'
+import UserAPI from './utils/UserAPI.js'
 // --- 1. Centralized State Object ---
 const state = {
   currentPage: 1,
@@ -16,28 +17,19 @@ const state = {
 async function exportUsers(exportBtn) {
   const originalText = exportBtn.innerHTML
 
-  // 1. UI Feedback: Show the user something is happening
+  // 1. UI Feedback
   exportBtn.disabled = true
   exportBtn.innerHTML = 'Generating CSV...'
 
-  // 2. Build params: We set a very high limit to bypass pagination
-  const params = new URLSearchParams({
-    status: state.currentTab,
-    role: state.role,
-    order: state.order,
-    from: state.dateFrom,
-    to: state.dateTo,
-    limit: 10000, // High limit to get all filtered users
-    offset: 0, // Always start from the first record for export
-  })
-
   try {
-    const response = await fetch(
-      `/landscape/USER_API/users.php?${params.toString()}`,
-    )
-    if (!response.ok) throw new Error('Failed to fetch data for export')
-
-    const data = await response.json()
+    // 2. Fetch all filtered users via centralized API
+    const data = await UserAPI.listAll({
+      status: state.currentTab,
+      role: state.role,
+      order: state.order,
+      from: state.dateFrom,
+      to: state.dateTo,
+    })
     const usersToExport = data.users
 
     if (!usersToExport || usersToExport.length === 0) {
@@ -46,44 +38,23 @@ async function exportUsers(exportBtn) {
     }
 
     // 3. Define CSV Headers
-    const headers = [
-      'ID',
-      'Full Name',
-      'Email',
-      'Role',
-      'Status',
-      'Joined Date',
-    ]
+    const headers = ['ID', 'Full Name', 'Email', 'Role', 'Status', 'Joined Date']
 
     // 4. Map data to CSV rows
-    // We wrap names in quotes to prevent commas in names from breaking columns
     const csvRows = usersToExport.map((u) =>
-      [
-        u.id,
-        `"${u.name}"`,
-        u.email,
-        u.role,
-        u.status,
-        u.joined_date,
-      ].join(','),
+      [u.id, `"${u.name}"`, u.email, u.role, u.status, u.joined_date].join(','),
     )
 
     // 5. Combine and create the File
     const csvContent = [headers.join(','), ...csvRows].join('\n')
-    const blob = new Blob([csvContent], {
-      type: 'text/csv;charset=utf-8;',
-    })
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
 
     // 6. Trigger Download
     const link = document.createElement('a')
     const dateStamp = new Date().toISOString().split('T')[0]
-
     link.setAttribute('href', url)
-    link.setAttribute(
-      'download',
-      `User_Export_${state.currentTab}_${dateStamp}.csv`,
-    )
+    link.setAttribute('download', `User_Export_${state.currentTab}_${dateStamp}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -91,7 +62,6 @@ async function exportUsers(exportBtn) {
     console.error('Export Error:', error)
     alert('There was an error generating the export.')
   } finally {
-    // Restore button state
     exportBtn.disabled = false
     exportBtn.innerHTML = originalText
   }
@@ -99,63 +69,37 @@ async function exportUsers(exportBtn) {
 
 async function confirmBan(userId) {
   const userName = document.getElementById('banUserName').textContent
-  const reasonElement = document.querySelector(
-    'input[name="banReason"]:checked',
-  )
+  const reasonElement = document.querySelector('input[name="banReason"]:checked')
   const note = document.getElementById('banNote').value
 
-  // 1. Validation: Ensure a reason is selected
+  // 1. Validation
   if (!reasonElement) {
     alert('Please select a reason for the ban.')
     return
   }
 
-  // 2. Prepare Data (Matching your DB schema: id and status)
-  const banData = {
-    id: userId,
-    status: 'banned', // Explicitly setting status for the DB
-    reason: reasonElement.value,
-    notes: note,
-  }
-
-  // Optional: UI Feedback (Disable button during request)
-  const banBtn = document.querySelector(
-    '.btn-danger[onclick^="confirmBan"]',
-  )
+  // 2. UI Feedback
+  const banBtn = document.querySelector('.btn-danger[onclick^="confirmBan"]')
   if (banBtn) {
     banBtn.disabled = true
     banBtn.textContent = 'Processing...'
   }
 
   try {
-    // 3. Sending data using async/await to your API directory
-    const response = await fetch('/landscape/USER_API/ban_user.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(banData),
+    // 3. Send via centralized API
+    await UserAPI.ban({
+      id: userId,
+      reason: reasonElement.value,
+      notes: note,
     })
 
-    const result = await response.json()
-
-    if (response.ok && result.status === 'success') {
-      alert(`User ${userName} has been banned.`)
-
-      closeBanModal()
-
-      // 4. Refresh the UI list if the function exists
-      if (typeof fetchUsers === 'function') {
-        fetchUsers()
-      }
-    } else {
-      alert('Error: ' + (result.message || 'Failed to ban user'))
-    }
+    alert(`User ${userName} has been banned.`)
+    closeBanModal()
+    fetchUsers()
   } catch (error) {
     console.error('Ban failed:', error)
-    alert('Connection error. Could not reach the server.')
+    alert('Error: ' + (error.message || 'Could not reach the server.'))
   } finally {
-    // Re-enable button
     if (banBtn) {
       banBtn.disabled = false
       banBtn.textContent = 'Ban User'
@@ -176,48 +120,29 @@ async function confirmEditUser(userId) {
     firstName: cleanValue('editFirstName', ''),
     lastName: cleanValue('editLastName', ''),
     email: cleanValue('editEmail', ''),
-    // If the value is the default "Phone number not provided", send null
     phone_number: cleanValue('editPhone', 'Phone number not provided'),
     role: document.getElementById('editRole').value,
     status: document.getElementById('editStatus').value,
-    // If the notes are the default "Regular customer...", treat as empty
-    notes: cleanValue(
-      'editNotes',
-      'Regular customer, prefers weekend appointments.',
-    ),
+    notes: cleanValue('editNotes', 'Regular customer, prefers weekend appointments.'),
   }
 
-  // 2. Strict Validation: Ensure essential data exists
+  // 2. Validation
   if (!userData.firstName || !userData.email) {
     alert('First Name and Email are required.')
     return
   }
 
-  // Optional: UI feedback
-  const saveBtn = document.querySelector(
-    'button[onclick="confirmEditUser()"]',
-  )
+  // 3. UI feedback
+  const saveBtn = document.querySelector('button[onclick="confirmEditUser()"]')
   if (saveBtn) saveBtn.disabled = true
 
   try {
-    const response = await fetch('/landscape/USER_API/update_user.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    })
-
-    const result = await response.json()
-
-    if (response.ok) {
-      alert('User updated successfully!')
-      
-      if (typeof fetchUsers === 'function') fetchUsers()
-    } else {
-      alert('Error: ' + (result.message || 'Failed to update'))
-    }
+    await UserAPI.update(userData)
+    alert('User updated successfully!')
+    fetchUsers()
   } catch (error) {
     console.error('Update failed:', error)
-    alert('Connection error. Please check if the server is reachable.')
+    alert('Error: ' + (error.message || 'Could not reach the server.'))
   } finally {
     if (saveBtn) saveBtn.disabled = false
   }
@@ -225,80 +150,43 @@ async function confirmEditUser(userId) {
 
 async function confirmAddUser() {
   const form = document.getElementById('addUserForm')
-
-  // Create FormData object from the form element
   const formData = new FormData(form)
-
-  // Convert FormData to a clean JSON object
   const userData = Object.fromEntries(formData.entries())
 
   console.log('data', userData)
-  // Basic Validation: Ensure required fields aren't empty
-  if (
-    !userData.firstName ||
-          !userData.email ||
-          !userData.temporaryPassword
-  ) {
-    alert(
-      'Please fill in the required fields (First Name, Email, and Password).',
-    )
+
+  // Validation (matches UserAPI.add guard)
+  if (!userData.firstName || !userData.email || !userData.temporaryPassword) {
+    alert('Please fill in the required fields (First Name, Email, and Password).')
     return
   }
 
   try {
-    // Change this URL to your actual API endpoint
-    const response = await fetch('/landscape/USER_API/add_user.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    })
+    const result = await UserAPI.add(userData)
+    console.log('Success:', result)
 
-    if (response.ok) {
-      const result = await response.json()
-      console.log('Success:', result)
-
-      alert('User added successfully!')
-
-      // Cleanup: Reset form and close modal
-      form.reset()
-      //need to close the modal
-
-      // Optional: Refresh your user list table here
-      fetchUsers(1)
-    } else {
-      const errorData = await response.json()
-      alert(`Failed to add user: ${errorData.message || 'Server error'}`)
-    }
+    alert('User added successfully!')
+    form.reset()
+    closeAddUserModal()
+    fetchUsers(1)
   } catch (error) {
     console.error('Network error:', error)
-    alert(
-      'Could not connect to the server. Please check your connection.',
-    )
+    alert('Error: ' + (error.message || 'Could not connect to the server.'))
   }
 }
 
 async function fetchUsers(page = state.currentPage) {
   state.currentPage = page
 
-  const params = new URLSearchParams({
-    page: state.currentPage,
-    status: state.currentTab,
-    role: state.role,
-    order: state.order,
-    from: state.dateFrom,
-    to: state.dateTo,
-  })
-
-  const apiURL = `/landscape/USER_API/users.php?${params.toString()}`
-
   try {
-    const response = await fetch(apiURL)
-    if (!response.ok)
-      throw new Error(`HTTP error! status: ${response.status}`)
-
-    const data = await response.json()
+    const data = await UserAPI.list({
+      page: state.currentPage,
+      status: state.currentTab,
+      role: state.role,
+      order: state.order,
+      from: state.dateFrom,
+      to: state.dateTo,
+    })
     console.log('Fetched data:', data)
 
     // Update State & UI
@@ -306,13 +194,13 @@ async function fetchUsers(page = state.currentPage) {
     displayStats(data.summary)
     displayUsers(data.users)
 
-    renderPagination(fetchUsers, data.summary.roleFilterValue, state)
+    renderPagination(fetchUsers, data.summary.total_users, state, () => fetchUsers());
   } catch (error) {
     console.error('Fetch error:', error)
   }
 }
 
-      
+
 // --- 5. Action Handler (Finds user in state) ---
 window.handleAction = (userId, actionType) => {
   const user = state.allUsers.find((u) => u.id === userId)
@@ -323,8 +211,8 @@ window.handleAction = (userId, actionType) => {
   else if (actionType === 'ban') showBanModal(user)
 }
 
-     
-      
+
+
 
 function displayStats(data) {
   const stateMap = {
@@ -378,7 +266,7 @@ function displayUsers(users) {
 }
 
 // --- 7. Pagination Logic (Updated to use state) ---
-      
+
 
 // --- 8. Modal Display Logic ---
 // (Using your existing template structure, referencing state)
@@ -439,7 +327,7 @@ function showViewUserModal(user) {
         </div>
        <div class="modal-footer">
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewUserModal()">Close</button>
-        <button class="btn btn-primary btn-small" onclick="closeViewUserModal(); showEditUserModal('${user}')">Edit User</button>
+        <button class="btn btn-primary btn-small" onclick="closeViewUserModal(); handleAction(${user.id}, 'edit')">Edit User</button>
       </div>
     </div>`
   document.getElementById('viewUserModal').innerHTML = doc
@@ -504,11 +392,11 @@ function showEditUserModal(user) {
       </div>
     </div>`
 }
-      
 
-      
 
-      
+
+
+
 
 function showBanModal(user) {
   document.getElementById('banModal').style.display = 'flex'
@@ -595,9 +483,9 @@ function closeBanModal() {
 //   })
 // }
 
-      
 
-     
+
+
 
 // --- 9. Utilities ---
 function timeAgo(dateString) {
@@ -631,10 +519,10 @@ function timeAgo(dateString) {
     day: 'numeric',
     // Only show year if it's not the current year
     year:
-            now.getFullYear() !== past.getFullYear() ? 'numeric' : undefined,
+      now.getFullYear() !== past.getFullYear() ? 'numeric' : undefined,
   })
 }
-   
+
 
 window.goToPage = (page) => fetchUsers(page)
 window.confirmBan = (userId) => confirmBan(userId)
@@ -646,7 +534,7 @@ window.closeBanModal = () => document.getElementById('banModal').style.display =
 window.closeAddUserModal = () => document.getElementById('addUserModal').style.display = 'none'
 window.document.querySelector('[data-action=\'showadd-user\']').onclick = () => document.getElementById('addUserModal').style.display = 'flex'
 
-document.querySelector('[data-action=\'showadd-user\']').onclick = function() {
+document.querySelector('[data-action=\'showadd-user\']').onclick = function () {
   document.getElementById('addUserModal').style.display = 'flex'
 }
 // --- 3. Event Listeners (Initialized on Load) ---
@@ -678,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toInput.value) fromInput.max = toInput.value
 
     // Update the export button's functionality based on the selected date range
-    document.getElementById('exportBtn').onclick = function() {
+    document.getElementById('exportBtn').onclick = function () {
       exportUsers(this)
     }
     fetchUsers(1)
