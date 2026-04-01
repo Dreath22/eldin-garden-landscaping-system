@@ -9,7 +9,7 @@ try {
     $stmt1 = $pdo->query("SELECT id, name, email FROM users ORDER BY name ASC");
     $customers = $stmt1->fetchAll();
 
-    $stmt2 = $pdo->query("SELECT id, service_name, base_price AS basePrice FROM services where status = 'active' ORDER BY service_name ASC");
+    $stmt2 = $pdo->query("SELECT id, service_name, base_price AS basePrice FROM services where status = 'Live' ORDER BY service_name ASC");
     $services = $stmt2->fetchAll();
 
     echo json_encode(["customers" => $customers, "services" => $services]);

@@ -326,32 +326,11 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="servicePrice">Price</label>
+              <label for="servicePrice">Base Price</label>
               <input type="number" id="servicePrice" placeholder="0.00" step="0.01">
             </div>
-            <div class="form-group">
-              <label for="servicePriceType">Price Type</label>
-              <select id="servicePriceType">
-                <option value="fixed">Fixed</option>
-                <option value="hourly">Per Hour</option>
-                <option value="visit">Per Visit</option>
-                <option value="project">Per Project</option>
-                <option value="starting">Starting at</option>
-              </select>
-            </div>
           </div>
-          <div class="form-group">
-            <label for="serviceCategory">Category</label>
-            <select id="serviceCategory">
-              <option value="">Select category...</option>
-              <option value="lawn">Lawn Care</option>
-              <option value="garden">Garden Design</option>
-              <option value="hardscape">Hardscaping</option>
-              <option value="irrigation">Irrigation</option>
-              <option value="tree">Tree Services</option>
-              <option value="maintenance">Maintenance</option>
-            </select>
-          </div>
+          
           <div class="form-group">
             <label for="serviceImage">Service Image</label>
             <div class="upload-zone" style="padding: 2rem;">
@@ -397,40 +376,22 @@
         <form id="editServiceForm">
           <div class="form-group">
             <label for="editServiceName">Service Name</label>
-            <input type="text" id="editServiceName" value="Lawn Maintenance Service">
+            <input type="text" id="editServiceName" value="">
           </div>
           <div class="form-group">
             <label for="editServiceDescription">Description</label>
-            <textarea id="editServiceDescription" rows="3">Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful.</textarea>
+            <textarea id="editServiceDescription" rows="3"></textarea>
           </div>
           <div class="form-row">
             <div class="form-group">
               <label for="editServicePrice">Price</label>
-              <input type="number" id="editServicePrice" value="199" step="0.01">
+              <input type="number" id="editServicePrice" value="" step="0.01">
             </div>
             <div class="form-group">
               <label for="editServicePriceType">Price Type</label>
-              <select id="editServicePriceType">
-                <option value="fixed">Fixed</option>
-                <option value="hourly">Per Hour</option>
-                <option value="visit" selected>Per Visit</option>
-                <option value="project">Per Project</option>
-                <option value="starting">Starting at</option>
-              </select>
             </div>
           </div>
-          <div class="form-group">
-            <label for="editServiceCategory">Category</label>
-            <select id="editServiceCategory">
-              <option value="">Select category...</option>
-              <option value="lawn" selected>Lawn Care</option>
-              <option value="garden">Garden Design</option>
-              <option value="hardscape">Hardscaping</option>
-              <option value="irrigation">Irrigation</option>
-              <option value="tree">Tree Services</option>
-              <option value="maintenance">Maintenance</option>
-            </select>
-          </div>
+          
           <div class="form-group">
             <label>Current Image</label>
             <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=400" alt="Service" style="width: 200px; border-radius: 8px;">
@@ -438,7 +399,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="editServiceDuration">Duration</label>
-              <input type="text" value="1-2 hours">
+              <input id="editServiceDuration" type="text" value="">
             </div>
             <div class="form-group">
               <label for="editServiceStatus">Status</label>
@@ -466,44 +427,39 @@
       </div>
       <div class="modal-body">
         <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="Service" style="width: 100%; border-radius: 8px; margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
-            <h2 id="viewServiceModalName">Lawn Maintenance Service</h2>
-            <p id="viewServiceModalCategory" style="color: var(--text-gray);"><i class="fas fa-folder" style="margin-right: 0.5rem;"></i> Lawn Care</p>
+            <h2 id="viewServiceModalName"></h2>
           </div>
           <div style="text-align: right;">
-            <h2 id="viewServiceModalPrice" style="color: var(--primary-green);">$199<span style="font-size: 1rem; color: var(--text-gray);">/base price</span></h2>
+            <h2 id="viewServiceModalPrice" style="color: var(--primary-green);"><span style="font-size: 1rem; color: var(--text-gray);">/base price</span></h2>
             <span id="viewServiceModalStatus" class="status-badge active">Active</span>
           </div>
         </div>
-        <p id="viewServiceModalDescription" style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;">Regular lawn care including mowing, edging, and fertilizing to keep your lawn healthy and beautiful. Our professional team uses eco-friendly products and modern equipment to ensure the best results.</p>
+        <h4 style="margin-bottom: 0.75rem;">Description</h4>
+        <p id="viewServiceModalDescription" style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;"></p>
         <div style="margin-bottom: 1.5rem;">
           <h4 style="margin-bottom: 0.75rem;">Features</h4>
-          <ul style="list-style: none; color: var(--text-dark);">
-            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Professional mowing and edging</li>
-            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Eco-friendly fertilizing</li>
-            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Weed control</li>
-            <li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> Debris cleanup</li>
-          </ul>
+          <ul id="viewServiceModalFeatures" style="list-style: none; color: var(--text-dark);"></ul>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; text-align: center;">
           <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
             <p style="color: var(--text-gray); font-size: 0.85rem;">Duration</p>
-            <p style="font-weight: 600;">1-2 hours</p>
+            <p style="font-weight: 600;"><span id="viewServiceModalDuration"></span></p>
           </div>
           <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
             <p style="color: var(--text-gray); font-size: 0.85rem;">Rating</p>
-            <p style="font-weight: 600;"><i class="fas fa-star" style="color: var(--star-orange);"></i> <span id="viewServiceModalRating">4.8</span></p>
+            <p style="font-weight: 600;"><i class="fas fa-star" style="color: var(--star-orange);"></i> <span id="viewServiceModalRating"></span></p>
           </div>
           <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
             <p style="color: var(--text-gray); font-size: 0.85rem;">Bookings</p>
-            <p style="font-weight: 600;">124 this month</p>
+            <p style="font-weight: 600;"><span id="viewServiceModalCount"></span> this month</p>
           </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewServiceModal()">Close</button>
-        <button class="btn btn-primary btn-small" onclick="closeViewServiceModal(); editService('Lawn Maintenance')">Edit Service</button>
+        <button id="viewServiceModalEditButton" class="btn btn-primary btn-small" >Edit Service</button>
       </div>
     </div>
   </div>
@@ -523,11 +479,6 @@
       closeAddServiceModal();
     }
 
-    // Edit Service Modal
-    function editService(serviceName) {
-      document.getElementById('editServiceModal').style.display = 'flex';
-    }
-
     function closeEditServiceModal() {
       document.getElementById('editServiceModal').style.display = 'none';
     }
@@ -537,21 +488,54 @@
       closeEditServiceModal();
     }
 
+    // Edit Service Modal
+    function editService(id, data=null) {
+      document.getElementById('editServiceModal').style.display = 'flex';
+      if (data){
+        console.log(data.service_name)
+        putTextinElementById('editServiceName', data.service_name, 'value');
+        putTextinElementById('editServiceDescription', data.description || 'No description available', 'value');
+        putTextinElementById('editServicePrice', data.base_price, 'value');
+        putTextinElementById('editServiceDuration', data.duration || 'N/A', 'value');
+      }
+    }
+
+    function putTextinElementById(id, text, property=null){
+      if(property){
+        document.getElementById(id)[property] = text;
+      }else{
+        document.getElementById(id).textContent = text;
+      }
+    }
     // View Service Modal
     function viewService(id) {
       document.getElementById('viewServiceModal').style.display = 'flex';
       getServiceRecord(id).then(data => { 
         console.log(data);
         if (data.success && data.data) {
-          document.getElementById('viewServiceModalName').textContent = data.data.service_name + " Services";
-          document.getElementById('viewServiceModalCategory').textContent = data.data.category;
-          document.getElementById('viewServiceModalPrice').textContent = '$' + data.data.base_price;
-          document.getElementById('viewServiceModalStatus').textContent = data.data.status;
-          document.getElementById('viewServiceModalRating').textContent = (data.data.rating ?? 0.0);
-          document.getElementById('viewServiceModalDescription').textContent = data.data.description;
-        }
-      });
-    }
+          putTextinElementById('viewServiceModalName', (data.data.service_name || 'Unknown') + " Services");
+          putTextinElementById('viewServiceModalPrice', '$' + (data.data.base_price || 0));
+          putTextinElementById('viewServiceModalStatus', data.data.status || 'Inactive');
+          putTextinElementById('viewServiceModalRating', (data.data.rating ?? 0.0));
+          putTextinElementById('viewServiceModalDescription', data.data.description || 'No description available');
+          putTextinElementById('viewServiceModalCount', data.data.count || 0);
+          putTextinElementById('viewServiceModalDuration', data.data.duration || 'N/A');
+          // Handle features list
+          const featuresList = document.querySelector('#viewServiceModal ul');
+          if (data.data.features && Array.isArray(data.data.features)) {
+            featuresList.innerHTML = data.data.features.map(feature => 
+              `<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> ${feature}</li>`
+            ).join('');
+          } else {
+            featuresList.innerHTML = '<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> No features listed</li>';
+          }
+          document.getElementById("viewServiceModalEditButton")
+          .addEventListener('click', ()=>{
+            closeViewServiceModal();
+            editService(id, data.data);
+          });
+      }
+    })}
 
     function closeViewServiceModal() {
       document.getElementById('viewServiceModal').style.display = 'none';

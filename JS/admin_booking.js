@@ -25,7 +25,8 @@ async function fetchData(page = state.currentPage) {
     category: state.category
   })
 
-  const apiURL = `/landscape/USER_API/bookings.php?${params.toString()}`
+  const apiURL = `/landscape/USER_API/BookingsController.php?action=list&${params.toString()}`
+  
 
   try {
     const response = await fetch(apiURL)

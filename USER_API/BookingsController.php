@@ -206,7 +206,7 @@ class BookingsController
                          ORDER BY id DESC LIMIT 1)
                     ELSE NULL 
                 END AS cancelled_initial_amount,
-                S.category, S.service_name,
+                S.service_name, S.service_name,
                 U.name, U.email, U.phone_number
                 FROM bookings AS B
                 INNER JOIN services AS S ON B.service_id = S.id

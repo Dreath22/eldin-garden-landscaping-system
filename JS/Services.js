@@ -6,12 +6,13 @@ const state = {
     order: 'newest',
     limit: 6,
     total_pages: 1,
+    service_list: []
 }
 
 
 const fetchData = (params) => {
     const queryString = new URLSearchParams(params).toString();
-    return fetch(`USER_API/UploadsController.php?action=list&${queryString}`)
+    return fetch(`USER_API/ServicesController.php?action=list&${queryString}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -52,7 +53,7 @@ const displayData = (data)=>{
 }
 
 window.getServiceRecord = (id) => {
-    return fetch(`USER_API/UploadsController.php?action=list&id=${id}`)
+    return fetch(`USER_API/ServicesController.php?action=list&id=${id}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -66,6 +67,11 @@ window.getServiceRecord = (id) => {
             console.error("Error in fetching:", error);
         });
 }
+
+window.getServiceCategory = () =>{
+    return []
+}
+
 
 document.addEventListener('DOMContentLoaded', ()=> {
     fetchData(state);
