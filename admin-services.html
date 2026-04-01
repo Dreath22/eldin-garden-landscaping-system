@@ -120,7 +120,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>12</h3>
+                <h3 id="total_services"></h3>
                 <p>Total Services</p>
               </div>
               <div class="stat-card-icon blue">
@@ -131,7 +131,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>10</h3>
+                <h3 id="active_services"></h3>
                 <p>Active</p>
               </div>
               <div class="stat-card-icon green">
@@ -142,7 +142,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>2</h3>
+                <h3 id="inactive_services"></h3>
                 <p>Inactive</p>
               </div>
               <div class="stat-card-icon orange">
@@ -153,7 +153,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>$4,250</h3>
+                <h3 id="avg_order_value"></h3>
                 <p>Avg. Order Value</p>
               </div>
               <div class="stat-card-icon purple">
@@ -165,10 +165,11 @@
 
         <!-- Tabs -->
         <div class="tabs">
-          <div class="tab active" onclick="switchTab('all')">All Services</div>
-          <div class="tab" onclick="switchTab('active')">Active</div>
-          <div class="tab" onclick="switchTab('inactive')">Inactive</div>
-          <div class="tab" onclick="switchTab('popular')">Most Popular</div>
+          <div class="tab active" data-tab="all">All Services</div>
+          <div class="tab" data-tab="active">Active</div>
+          <div class="tab" data-tab="inactive">Inactive</div>
+          <div class="tab" data-tab="cancelled">Cancelled</div>
+          <div class="tab" data-tab="popular">Most Popular</div>
         </div>
 
         <!-- Services List -->
@@ -384,11 +385,8 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="editServicePrice">Price</label>
-              <input type="number" id="editServicePrice" value="" step="0.01">
-            </div>
-            <div class="form-group">
-              <label for="editServicePriceType">Price Type</label>
+              <label for="editServicePrice">Price (<span class="moneySign"></span>)</label>
+              <input type="number" id="editServicePrice" step="0.01">
             </div>
           </div>
           
@@ -404,8 +402,6 @@
             <div class="form-group">
               <label for="editServiceStatus">Status</label>
               <select id="editServiceStatus">
-                <option value="active" selected>Active</option>
-                <option value="inactive">Inactive</option>
               </select>
             </div>
           </div>
@@ -465,94 +461,32 @@
   </div>
 <script type="module" src="JS/Services.js"></script>
   <script>
-    // Add Service Modal
+    document.querySelectorAll(".inputFields").forEach((input)=>input.value = "")
     function showAddServiceModal() {
       document.getElementById('addServiceModal').style.display = 'flex';
     }
 
-    function closeAddServiceModal() {
-      document.getElementById('addServiceModal').style.display = 'none';
-    }
 
     function confirmAddService() {
+      console.log('confirmAddService')
       alert('New service has been added successfully.');
-      closeAddServiceModal();
-    }
-
-    function closeEditServiceModal() {
-      document.getElementById('editServiceModal').style.display = 'none';
+      
     }
 
     function saveServiceChanges() {
+      console.log('saveServiceChanges')
       alert('Service has been updated successfully.');
       closeEditServiceModal();
     }
 
-    // Edit Service Modal
-    function editService(id, data=null) {
-      document.getElementById('editServiceModal').style.display = 'flex';
-      if (data){
-        console.log(data.service_name)
-        putTextinElementById('editServiceName', data.service_name, 'value');
-        putTextinElementById('editServiceDescription', data.description || 'No description available', 'value');
-        putTextinElementById('editServicePrice', data.base_price, 'value');
-        putTextinElementById('editServiceDuration', data.duration || 'N/A', 'value');
-      }
-    }
-
-    function putTextinElementById(id, text, property=null){
-      if(property){
-        document.getElementById(id)[property] = text;
-      }else{
-        document.getElementById(id).textContent = text;
-      }
-    }
-    // View Service Modal
-    function viewService(id) {
-      document.getElementById('viewServiceModal').style.display = 'flex';
-      getServiceRecord(id).then(data => { 
-        console.log(data);
-        if (data.success && data.data) {
-          putTextinElementById('viewServiceModalName', (data.data.service_name || 'Unknown') + " Services");
-          putTextinElementById('viewServiceModalPrice', '$' + (data.data.base_price || 0));
-          putTextinElementById('viewServiceModalStatus', data.data.status || 'Inactive');
-          putTextinElementById('viewServiceModalRating', (data.data.rating ?? 0.0));
-          putTextinElementById('viewServiceModalDescription', data.data.description || 'No description available');
-          putTextinElementById('viewServiceModalCount', data.data.count || 0);
-          putTextinElementById('viewServiceModalDuration', data.data.duration || 'N/A');
-          // Handle features list
-          const featuresList = document.querySelector('#viewServiceModal ul');
-          if (data.data.features && Array.isArray(data.data.features)) {
-            featuresList.innerHTML = data.data.features.map(feature => 
-              `<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> ${feature}</li>`
-            ).join('');
-          } else {
-            featuresList.innerHTML = '<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> No features listed</li>';
-          }
-          document.getElementById("viewServiceModalEditButton")
-          .addEventListener('click', ()=>{
-            closeViewServiceModal();
-            editService(id, data.data);
-          });
-      }
-    })}
-
-    function closeViewServiceModal() {
-      document.getElementById('viewServiceModal').style.display = 'none';
-    }
-
     // Delete Service
     function deleteService(serviceName) {
+      console.log('deleteService')
       if (confirm('Are you sure you want to delete "' + serviceName + '"?')) {
         alert('Service deleted successfully!');
       }
     }
 
-    // Tab Switching
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-    }
 
     // Close modals when clicking outside
     document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -561,7 +495,10 @@
           this.style.display = 'none';
         }
       });
-    });
+    }); 
+
+
   </script>
 </body>
 </html>
+

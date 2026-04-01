@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../utils/sanitizeInput.php';
-
+require_once __DIR__ . '/Summary.php';
 /**
  * Fetches a single record by ID
  */
@@ -77,10 +77,12 @@ function listRecords($inputParams, $pdo) {
         $stmt->execute();
         $uploads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $summary = summary($pdo);
         echo json_encode([
             'success' => true,
             'data' => [
                 'uploads' => $uploads,
+                'summary' => $summary,
                 'pagination' => [
                     'currentPage'  => (int)$currentPage,
                     'totalPages'   => $totalPages,

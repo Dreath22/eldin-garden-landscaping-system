@@ -9,6 +9,8 @@ export function switchTab(tab, event, fetchItems) {
   fetchItems(1)
 }
 
+export const moneySign = '₱';
+
 export function formatToCalendar(dateString) {
   if (!dateString) return 'N/A'
 
@@ -162,4 +164,27 @@ export const log = (message, type = 'info') => {
     default:
       console.log('System notification updated.')
   }
+}
+
+
+
+export function putTextinElementById(id, text, property=null){
+    if(!document.getElementById(id)){
+        console.error("Element not found:", id);
+        return;
+    }
+    if(property){
+        document.getElementById(id)[property] = text;
+    }else{
+        document.getElementById(id).textContent = text;
+    }
+}
+
+export const ButtonsEventListener = (selector, callback) => {
+    const buttons = document.querySelectorAll(selector);
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          callback(btn);
+        });
+    });
 }
