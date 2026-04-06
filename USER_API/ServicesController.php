@@ -1,6 +1,4 @@
 <?php
-// Temporary debug line
-file_put_contents('debug.log', print_r($_GET, true));
 $action = $_GET['action'] ?? 'summary'; 
 require_once __DIR__ . '/../config/config.php';
 // 3. Delegate to the right file

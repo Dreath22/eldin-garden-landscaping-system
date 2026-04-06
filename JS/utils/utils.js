@@ -1,12 +1,16 @@
-export function switchTab(tab, event, fetchItems) {
-  document
-    .querySelectorAll('.tab')
-    .forEach((t) => t.classList.remove('active'))
-  if (event && event.target) {
-    event.target.classList.add('active')
-  }
-
-  fetchItems(1)
+export function switchTab(tabs, state, actionEvent, fetchItems) {
+  tabs.forEach((tab) => {
+    tab.addEventListener(actionEvent, (event)=>{
+    tabs.forEach((t) => t.classList.remove('active'))
+    if (event && event.target) {
+      event.target.classList.add('active')
+      state.currentTab = tab.getAttribute('data-tab')
+      fetchItems(1)
+      
+    } 
+  })
+  return null
+})
 }
 
 export const moneySign = '₱';
@@ -180,11 +184,8 @@ export function putTextinElementById(id, text, property=null){
     }
 }
 
-export const ButtonsEventListener = (selector, callback) => {
-    const buttons = document.querySelectorAll(selector);
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          callback(btn);
-        });
-    });
+export const buttonEventListener = (el, callback=null, onAction='click') => {
+  el.addEventListener(onAction, () => {
+    callback?.(el);
+  });
 }

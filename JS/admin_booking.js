@@ -2,7 +2,7 @@ import { switchTab, formatToCalendar, renderPagination, capitalize, log } from '
 // --- 1. Centralized State Object ---
 const state = {
   currentPage: 1,
-  status: 'all',
+  currentTab: 'all',
   category: 0,
   order: 'newest',
   dateFrom: '',
@@ -19,7 +19,7 @@ async function fetchData(page = state.currentPage) {
   // Use URLSearchParams for clean URL building
   const params = new URLSearchParams({
     page: state.currentPage,
-    status: state.status,
+    status: state.currentTab,
     order: state.order,
     from: state.dateFrom,
     category: state.category
@@ -1645,14 +1645,9 @@ function setupInputFilter(elementId, stateProperty) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('#userTabsContainer .tab').forEach((tabElement) => {
-    tabElement.addEventListener('click', (event) => {
-      const tabName = tabElement.getAttribute('data-tab')
-      state.status = tabName
-      switchTab(tabName, event, fetchData)
-    })
-  })
-
+  const tabs = document.querySelectorAll('#userTabsContainer .tab')
+  switchTab(tabs, state, 'click', fetchData)
+  
   // Setup filters using DRY helper functions
   setupInputFilter('dateFilter', 'dateFrom')
   

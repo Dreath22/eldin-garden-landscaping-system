@@ -169,10 +169,10 @@
 
         <!-- Tabs -->
         <div class="tabs">
-          <div class="tab active" onclick="switchTab('all')">All Transactions</div>
-          <div class="tab" onclick="switchTab('income')">Income</div>
-          <div class="tab" onclick="switchTab('expenses')">Expenses</div>
-          <div class="tab" onclick="switchTab('refunds')">Refunds</div>
+          <div class="tab active" data-tab="all">All Transactions</div>
+          <div class="tab" data-tab="income">Income</div>
+          <div class="tab" data-tab="expenses">Expenses</div>
+          <div class="tab" data-tab="refunds">Refunds</div>
         </div>
 
         <!-- Filters -->
@@ -405,11 +405,7 @@
     }
 
    
-    // Tab Switching
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-    }
+  
 
     // Close modals when clicking outside
     document.querySelectorAll('.modal-overlay').forEach(modal => {

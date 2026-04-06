@@ -1,9 +1,8 @@
-import { moneySign, switchTab, putTextinElementById, ButtonsEventListener, renderPagination, capitalize, log } from './utils/utils.js'
+import { moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
 const state = {
     currentPage: 1,
     currentTab: 'all',
-    status: "all",
-    order: 'newest',
+    order: 'DESC',
     limit: 6,
     total_pages: 1,
     allService_name_basePrice: []
@@ -18,18 +17,19 @@ const serviceStatus = [
 /*  REUSABLE FUNCTION  */
 const toggleModal = (selector, show, hide="none") => {
     try{
-        element = document.querySelector(selector)
+        const element = document.querySelector(selector)
         if(element){
             if(element.style.display == show){
                 element.style.display = hide;
                 return;
             }
             element.style.display = show;
+        }else{
+            console.log("selector not found", selector);
         }
     }catch(error){
         console.error("Error in toggling modal:", error);
     }
-    
 }
 
 
@@ -49,10 +49,12 @@ const getServiceRecord = (id) => {
         });
 }
 
-
-
-const fetchData = (params) => {
-    const queryString = new URLSearchParams(params).toString();
+const fetchData = (tab=state.currentTab) => {
+    const queryString = new URLSearchParams({
+    page: tab,
+    currentTab: state.currentTab,
+    order: state.order,
+    } ).toString();
     return fetch(`USER_API/ServicesController.php?action=list&${queryString}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
@@ -60,9 +62,8 @@ const fetchData = (params) => {
         })
         .then(data => {
             console.log("Success:", data.data);
-            displayData(data.data.uploads)
+            displayData(data.data)
             stats(data.data.summary)
-            renderPagination(fetchData, data.data.pagination.totalRecords, state, () => fetchData())
         })
         .catch(error => {
             console.error("Error in fetching:", error);
@@ -79,9 +80,11 @@ const stats = (data) => {
 }
 
 const displayData = (data)=>{
-    console.log("Displaying data:", data);
+    
+    console.log("Displaying data:", data.uploads.length);
     let html = ''
-    data.forEach(item => {
+    if(data.uploads.length > 0){
+        data.uploads.forEach(item => {
         html += `<div class="service-item">
                     <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=200" alt="Service" class="service-item-image">
                     <div class="service-item-info">
@@ -99,15 +102,23 @@ const displayData = (data)=>{
                       <button class="table-btn delete click-deletes" title="Delete" data-id="${item.id}"><i class="fas fa-trash"></i></button>
                     </div>
                   </div>`;
-    });
+        });
+        renderPagination(fetchData, data.pagination.totalRecords, state, () => fetchData(state.currentTab))
+        document.getElementById('pagination').style.display = 'flex';
+    }else{
+        html = "<h4>No Content</h4>";
+        putTextinElementById('pagination', '', 'innerHTML');
+        document.getElementById('pagination').style.display = 'none';
+    }
+
     putTextinElementById('services_list', html, 'innerHTML');
     setupButtonListeners();
+    
 }
 
 const viewService = (id) => {
       toggleModal('#viewServiceModal', 'flex');
       getServiceRecord(id).then(data => { 
-        console.log(data);
         if (data) {
           putTextinElementById('viewServiceModalName', (data.service_name || 'Unknown') + " Services");
           putTextinElementById('viewServiceModalPrice', moneySign + (data.base_price || 0));
@@ -125,7 +136,7 @@ const viewService = (id) => {
           } else {
             featuresList.innerHTML = '<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> No features listed</li>';
           }
-          ButtonsEventListener("#viewServiceModalEditButton", ()=>{
+          buttonEventListener("#viewServiceModalEditButton", ()=>{
             toggleModal('#viewServiceModal', 'none');
             editService(id, data.data);
           });
@@ -133,7 +144,6 @@ const viewService = (id) => {
     })
 }
 
-// Edit Service Modal
 const editService = async (id, data=null) => {
     toggleModal('#editServiceModal', 'flex');
     if (!data){ 
@@ -143,7 +153,7 @@ const editService = async (id, data=null) => {
     putTextinElementById('editServiceDescription', data.description || 'No description available', 'value');
     putTextinElementById('editServicePrice',  (data.base_price || 0), 'value');
     putTextinElementById('editServiceDuration', data.duration || 'N/A', 'value');
-     
+    putTextinElementById('editServiceStatus', '', 'innerHTML');
     serviceStatus.forEach((status)=>{
         const option = document.createElement('option');
         option.value = status.value;
@@ -153,33 +163,171 @@ const editService = async (id, data=null) => {
         }
         document.getElementById('editServiceStatus').appendChild(option);
     })
-    
+    buttonEventListener(document.querySelector("#saveServiceChanges"), ()=>{
+        updateService(id, data);
+    })
+
+    // Iterate over the elements with the class 'md-close'
+    // and add an event listener to each one. When the button is clicked,
+    // toggle the visibility of the #editServiceModal modal to 'none'.
+    document.querySelectorAll('.md-close').forEach(button => {
+        buttonEventListener(button, () => {
+            toggleModal('#editServiceModal', 'none');
+        });
+    });
 }
 
-// Set up button event listeners
+/** 
+ * Validates if a value has changed and returns the new value or null
+ * @param {string} selector - The CSS selector for the input element
+ * @param {any} original - The original value to compare against
+ * @param {string} type - The type of the value ('string', 'number', 'float')
+ * @returns {any} - The new value if it changed, otherwise null
+ */
+const valueValidator = (selector, original, type) => {
+    const inputElement = document.querySelector(selector);
+    if (!inputElement) return null;
+    let value = inputElement.value;
+
+    if (type === 'number') {
+        value = parseFloat(value);
+        original = parseFloat(original);
+    }
+    return value !== original ? value : null;
+};
+
+//Update Service Fetch
+const updateService = async(id, data) => {
+    const editServiceName = document.querySelector('#editServiceName').value;
+    const editServiceDescription = document.querySelector('#editServiceDescription').value;
+    const editServicePrice = document.querySelector('#editServicePrice').value;
+    const editServiceDuration = document.querySelector('#editServiceDuration').value;
+    const editServiceStatus = document.querySelector('#editServiceStatus').value;
+    
+    console.log("Form values:", {
+        name: editServiceName,
+        description: editServiceDescription == 'No description available' ? '': editServiceDescription,
+        price: editServicePrice,
+        duration: editServiceDuration == 'N/A' ? '' : editServiceDuration,
+        status: editServiceStatus === data.status ? null : editServiceStatus
+    });
+    
+    // Build params with all values (since we're not using valueValidator anymore)
+    const params = new URLSearchParams();
+    
+    // Add all fields (they'll be validated on the backend)
+    params.append('name', editServiceName);
+    params.append('description', editServiceDescription === 'No description available' ? '' : editServiceDescription);
+    params.append('baseprice', editServicePrice);
+    params.append('duration', editServiceDuration === 'N/A' ? '' : editServiceDuration);
+    params.append('status', editServiceStatus);
+
+  fetch(`USER_API/ServicesController.php?action=update&id=${id}`, {
+    method: 'POST',
+    body: params
+  }).then((response)=>{
+    return response.json();
+
+  }).then((data)=>{
+    if (data.success) {
+        
+      toggleModal('#editServiceModal', 'flex')
+      fetchData(state.currentTab);
+    } else {
+      console.log("Update failed:", data.message, data.errors);
+    }
+  }).catch((e)=>{
+    console.log("ERROR UPDATING USER ", id, " ", e);
+  })
+}
+
 function setupButtonListeners() {
-    ButtonsEventListener('.click-views', (clickedBtn)=>{
-        console.log("Btn Listener 1 Clicked")
-        const id = clickedBtn.getAttribute('data-id');
-        viewService(id);
+    document.querySelectorAll('.click-views').forEach((el)=>{
+        buttonEventListener(el, (clickedBtn)=>{
+            const id = clickedBtn.getAttribute('data-id');
+            viewService(id);
+        })
     })
-    ButtonsEventListener('.click-edits', (clickedBtn)=>{
-        const id = clickedBtn.getAttribute('data-id');
-        editService(id);
+    document.querySelectorAll('.click-edits').forEach((el)=>{
+        buttonEventListener(el, (clickedBtn)=>{
+            const id = clickedBtn.getAttribute('data-id');
+            editService(id);
+        })
     })
-    ButtonsEventListener('.click-deletes', (clickedBtn)=>{
-        const id = clickedBtn.getAttribute('data-id');
-        deleteService(id);
+    document.querySelectorAll('.click-deletes').forEach((el)=>{
+        buttonEventListener(el, (clickedBtn)=>{
+            const id = clickedBtn.getAttribute('data-id');
+            deleteService(id);
+        })
+    })
+}
+/**
+ * a function  that would add a services, has create as start name for the variables
+ * would send it via POST oR Create to the Service Controller with the action create
+ * done using fetch and then function
+ */
+const createService = () =>{
+    const createServiceName = document.querySelector('#serviceName').value;
+    const createServiceDescription = document.querySelector('#serviceDescription').value;
+    const createServiceFeatures = document.querySelector('#serviceFeatures').value;
+    const createServicePrice = document.querySelector('#servicePrice').value;
+    const createServiceDuration = document.querySelector('#serviceDuration').value;
+    const createServiceStatus = document.querySelector('#serviceStatus').value;
+    
+    // Build params with all values
+    const params = new URLSearchParams();
+    
+    // Add all fields (they'll be validated on the backend)
+    params.append('name', createServiceName);
+    params.append('description', createServiceDescription);
+    params.append('features', createServiceFeatures);
+    params.append('baseprice', createServicePrice);
+    params.append('duration', createServiceDuration);
+    params.append('status', createServiceStatus);
+    
+    fetch(`USER_API/ServicesController.php?action=create`, {
+        method: 'POST',
+        body: params
+    }).then((response)=>{
+        return response.json();
+    }).then((data)=>{
+        if (data.success) {
+            console.log("Service created successfully:", data.message);
+            // Close modal and refresh data
+            toggleModal('#addServiceModal', 'none');
+            fetchData(state.currentTab);
+        } else {
+            console.log("Create failed:", data.message, data.errors);
+        }
+    }).catch((e)=>{
+        console.log("ERROR CREATING SERVICE: ", e);
     })
 }
 
 document.addEventListener('DOMContentLoaded', ()=> {
-    fetchData(state);
+    fetchData(1);
     document.querySelectorAll('.moneySign').forEach(element => element.textContent = moneySign);
-    document.querySelectorAll('#userTabsContainer .tab').forEach((tabElement) => {
-        tabElement.addEventListener('click', (event) => {
-            state.currentTab = tabElement.getAttribute('data-tab')
-            switchTab(state.currentTab, event, fetchData)
-        })
-    })
+
+    const tabs = document.querySelectorAll('#userTabsContainer .tab');
+    state.currentTab = switchTab(tabs, state, 'click', fetchData);
+    setupButtonListeners();
+
+const magicSort = document.getElementById('magic-sort');
+
+buttonEventListener(magicSort, () => {
+    if(state.order == "DESC") {
+        fetchData(1)
+        state.order = "ASC";
+        magicSort.innerHTML = '<i class="fas fa-sort-asc"></i> Ascending';
+    }else{
+        fetchData(1)
+        state.order = "DESC";
+        magicSort.innerHTML = '<i class="fas fa-sort-desc"></i> Descending';
+    }
+});
+
+const confirmAddService = document.getElementById('confirmAddService');
+buttonEventListener(confirmAddService, ()=>{
+    createService()
+})
 });

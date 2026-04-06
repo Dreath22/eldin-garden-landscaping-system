@@ -575,14 +575,8 @@ document.addEventListener('DOMContentLoaded', () => {
   fromInput?.addEventListener('change', onDateChange)
   toInput?.addEventListener('change', onDateChange)
 
-  document.querySelectorAll('#userTabsContainer .tab').forEach((tabElement) => {
-    tabElement.addEventListener('click', (event) => {
-      const tabName = tabElement.getAttribute('data-tab')
-      // Call the private function
-      state.currentTab = tabName
-      switchTab(tabName, event, fetchUsers)
-    })
-  })
+  const tabs = document.querySelectorAll('#userTabsContainer .tab')
+  state.currentTab = switchTab(tabs, state, 'click', fetchUsers)
   // Initial Data Fetch
   fetchUsers(1)
 })

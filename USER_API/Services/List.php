@@ -29,25 +29,26 @@ function getIdRecord($id, $pdo) {
 function listRecords($inputParams, $pdo) {
     // Sanitize inputs using your existing utility
     $currentPage = sanitizeInput($inputParams['currentPage'] ?? 1, 'int') ?: 1;
-    $currentTab  = sanitizeInput($inputParams['currentTab'] ?? 'all', 'alpha');
-    $status      = sanitizeInput($inputParams['status'] ?? 'all', 'status');
-    $order       = sanitizeInput($inputParams['order'] ?? 'newest', 'order');
+    $currentTab  = validateInput($inputParams['currentTab'] ?? 'all', ['all', 'active', 'inactive', 'cancelled', 'popular']);
+    $order       = validateInput($inputParams['order'] ?? 'DESC', ['DESC', 'ASC']);
     $limit       = sanitizeInput($inputParams['limit'] ?? 6, 'int') ?: 6;
-
     $offset = ($currentPage - 1) * $limit;
 
     $whereConditions = [];
     $sqlParams = [];
+    $orderBy = "";
+    
+    if ($currentTab && $currentTab == 'popular') {
+        $orderBy = " ORDER BY rating" . $order .", review_count DESC,". $order . " service_name ASC";
+    } else {
+        $orderBy = " ORDER BY created_at " . $order;
+    }
 
-    if ($status && $status !== 'all') {
+    if ($currentTab && $currentTab !== 'all' && $currentTab !== 'popular') {
         $whereConditions[] = "status = :status";
-        $sqlParams[':status'] = $status;
+        $sqlParams[':status'] = $currentTab;
     }
 
-    if ($currentTab && $currentTab !== 'all') {
-        $whereConditions[] = "category = :category";
-        $sqlParams[':category'] = $currentTab;
-    }
 
     $whereClause = !empty($whereConditions) ? 'WHERE ' . implode(' AND ', $whereConditions) : '';
 
@@ -59,8 +60,7 @@ function listRecords($inputParams, $pdo) {
         $totalRecords = (int)$countStmt->fetchColumn();
         $totalPages = ceil($totalRecords / $limit);
 
-        // 2. Build Order By
-        $orderBy = ($order === 'oldest') ? 'ORDER BY created_at ASC' : 'ORDER BY created_at DESC';
+        
 
         // 3. Fetch Paginated Data
         $sql = "SELECT * FROM services $whereClause $orderBy LIMIT :limit OFFSET :offset";
