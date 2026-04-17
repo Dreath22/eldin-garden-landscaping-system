@@ -20,13 +20,14 @@ function getEmailsSimple($inputParams, $pdo, $currentUser) {
     //     $whereConditions[] = "e.user_id = :user_id";
     //     $sqlParams[':user_id'] = $currentUser['id'];
     // }
-
+    $sqlParams = [':user_id' => (int)$currentUser['id']];
+    
     // Handle service filtering
     if ($serviceId) {
         $whereConditions[] = "e.service_id = :service_id";
         $sqlParams[':service_id'] = $serviceId;
     }
-
+    
     // Handle tab filtering
     switch ($currentTab) {
         case 'read':
@@ -34,6 +35,10 @@ function getEmailsSimple($inputParams, $pdo, $currentUser) {
             break;
         case 'unread':
             $whereConditions[] = "e.status = 'unread'";
+            break;
+        case 'saved':
+            $whereConditions[] = "se.user_id = :user_id2";
+            $sqlParams[':user_id2'] = (int)$currentUser['id'];
             break;
         // 'all' or any other value - no additional filtering
     }
@@ -47,12 +52,12 @@ function getEmailsSimple($inputParams, $pdo, $currentUser) {
         // Get total count
         $countSql = "SELECT COUNT(*) as total 
                     FROM emails e
+                    LEFT JOIN saved_emails se ON e.id = se.email_id AND se.user_id = :user_id
                     $whereClause";
         $countStmt = $pdo->prepare($countSql);
         $countStmt->execute($sqlParams);
         $totalRecords = (int)$countStmt->fetchColumn();
         $totalPages = ceil($totalRecords / $limit);
-        
         // Get paginated data with user and service information
         $sql = "SELECT 
                     e.id, 
@@ -65,12 +70,14 @@ function getEmailsSimple($inputParams, $pdo, $currentUser) {
                     e.status,
                     e.full_content,
                     u2.name as read_by_name,
+                    se.id as save_id,
                     DATE_FORMAT(e.created_at, '%M %d, %Y') as formatted_date,
                     DATE_FORMAT(e.created_at, '%h:%i %p') as formatted_time
                 FROM emails e
                 LEFT JOIN users u ON e.user_id = u.id
                 LEFT JOIN users u2 ON e.read_id = u2.id
                 LEFT JOIN services s ON e.service_id = s.id
+                LEFT JOIN saved_emails se ON e.id = se.email_id AND se.user_id = :user_id
                 $whereClause
                 $orderBy 
                 LIMIT :limit 
@@ -101,7 +108,8 @@ function getEmailsSimple($inputParams, $pdo, $currentUser) {
                 'preview' => $email['preview'],
                 'status' => $email['status'],
                 "full_content" => $email['full_content'],
-                "read_by_name" => $email['read_by_name'] ?: 'None'
+                "read_by_name" => $email['read_by_name'] ?: 'None',
+                "save" => $email['save_id'] ? true : false
             ];
         }, $emails);
 
@@ -153,6 +161,7 @@ function getEmailsSimple($inputParams, $pdo, $currentUser) {
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }
+
 
 if (!isset($currentUser)) {
     $currentUser = [

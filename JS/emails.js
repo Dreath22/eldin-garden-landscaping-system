@@ -80,6 +80,26 @@ const deleteEmail = async (id)=>{
     }
 }
 
+const saveEmail = async (id)=>{
+    const queryString = new URLSearchParams({
+        action: 'save',
+        id: id,
+    });
+    try {
+        const response = await fetch(`${controllerPath}?${queryString}`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        if (data.success) {
+            console.log("Email saved successfully");
+            fetchEmails(state.currentTab);
+        } else {
+            console.error("Failed to save email:", data.message);
+        }
+    } catch (error) {
+        console.error("Error saving email:", error);
+    }
+}
+
 const fetchEmails = async (tab = state.currentTab) => {
     const queryString = new URLSearchParams({
         action: 'list',
@@ -133,6 +153,7 @@ const displayList = () => {
                 
                 // Status indicators
             let statusBadge = '';
+            const saved = email.save ? "<i class='far fa-star' style='color: yellow;'></i>" : "<i class='fas fa-star'></i>";
             switch (status) {
                 case 'read':
                 const readersName = email.read_by_name
@@ -150,7 +171,8 @@ const displayList = () => {
                 </div>
                 <div class="email-content">
                   <div class="email-header">
-                    <h4>${senderName} - ${senderEmail} ${statusBadge}</h4> 
+                    <h4>${senderName} - ${senderEmail} 
+                    <span class="save-btn" data-id="${emailID}">${saved}</span>${statusBadge}</h4> 
                     <span>${date} - ${time}</span>
                   </div>
                   <p class="email-subject">${subject}</p>
@@ -184,7 +206,9 @@ const displayList = () => {
             if (email) {
                 toggleModal("#viewEmailModal", "flex");
                 viewEmail(email);
-                readUpdate(email.id);
+                if (email.status === 'unread') {
+                    readUpdate(email.id);
+                }
             } else {
                 console.error("No email found with ID:", emailID);
             }
@@ -203,6 +227,23 @@ const displayList = () => {
             if (email) {
                 console.log("Deleting email:", email);
                 deleteEmail(email.id);
+            } else {
+                console.error("No email found with ID:", emailID);
+            }
+        });
+    });
+    document.querySelectorAll('.save-btn').forEach(el => {
+        buttonEventListener(el, (e) => {
+            e.preventDefault(); // Now 'e' is the event object!
+            
+            const emailID = e.currentTarget.getAttribute('data-id');
+            
+            // Using == is fine if data-id is a string and id is a number
+            const email = state.emails.find(email => email.id == emailID);
+            
+            if (email) {
+                console.log("Saving email:", email);
+                saveEmail(email.id);
             } else {
                 console.error("No email found with ID:", emailID);
             }

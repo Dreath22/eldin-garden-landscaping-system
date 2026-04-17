@@ -15,10 +15,11 @@ function UpdateRead($id, $pdo, $currentUser){
     // }
     
     // 3. Update read status
-    $stmt = $pdo->prepare("UPDATE emails SET status='read', read_id=:admin_id WHERE id = :id");
+    $stmt = $pdo->prepare("UPDATE emails SET status='read', read_id=:admin_id, time_update=:timenow WHERE id = :id");
     $stmt->execute([
         'id' => $id,
-        'admin_id' => $currentUser['id']
+        'admin_id' => $currentUser['id'],
+        'timenow' => date('Y-m-d H:i:s')
     ]);
     
     echo json_encode(['success' => true, 'message' => 'Email marked as read']);

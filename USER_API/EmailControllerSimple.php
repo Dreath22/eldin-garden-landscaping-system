@@ -25,6 +25,13 @@ $action = $_GET['action'] ?? 'list';
 //     exit;
 // }
 
+
+if (!isset($currentUser)) {
+    $currentUser = [
+        'id' => 7,
+
+    ];
+}
 try {
     switch ($action) {
         case 'list':
@@ -41,6 +48,9 @@ try {
             break;
         case 'updateread':
             include __DIR__ . '/EmailsSimple/UpdateRead.php';
+            break;
+        case 'save':
+            include __DIR__ . '/EmailsSimple/SaveUnsave.php';
             break;
         default:
             http_response_code(404);
