@@ -2,8 +2,6 @@
 /**
  * Get transaction summary statistics
  */
-
-
 function summary($pdo) {
     try {
         $stmt = $pdo->query('
@@ -11,6 +9,7 @@ function summary($pdo) {
             SELECT 
                 COUNT(*) AS total_services,
                 SUM(CASE WHEN status="Active" THEN 1 ELSE 0  END) AS live_services,
+                SUM(CASE WHEN status="Inactive" THEN 1 ELSE 0 END) AS inactive_services,
                 SUM(CASE WHEN status="Cancelled" THEN 1 ELSE 0 END) AS cancelled_services,
                 SUM(CASE WHEN status="Active" THEN base_price ELSE 0 END) AS total_baseprice
             FROM services)

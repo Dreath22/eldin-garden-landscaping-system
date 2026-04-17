@@ -50,7 +50,7 @@ switch ($action) {
         $controller->update($_GET);
         break;
     case 'cancel':
-        $controller->cancel($_GET);
+        $controller->cancel($_POST);
         break;
     case 'get':
         $controller->get($_GET);
@@ -66,6 +66,7 @@ class BookingsController
     public function __construct($pdo)
     {
         $this->pdo = $pdo;
+        $this->pdo->exec("SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO'");
     }
 
 
@@ -598,13 +599,12 @@ class BookingsController
     // 4. Cancel Booking (Replaces cancelled_booking.php)
     public function cancel($params)
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->jsonError("Method Not Allowed. Expected POST, got " . $_SERVER['REQUEST_METHOD'], 405);
-        }
+        // if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        //     $this->jsonError("Method Not Allowed. Expected POST, got " . $_SERVER['REQUEST_METHOD'], 405);
+        // }
 
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
-
         if (!$data || !isset($data['id'])) {
             $this->jsonError("Missing Booking ID", 400);
         }

@@ -60,10 +60,6 @@
             <i class="fas fa-envelope"></i>
             <span>Email Updates</span>
           </a>
-          <a href="admin-notifications.html" class="admin-nav-item">
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
-          </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
@@ -88,10 +84,6 @@
           <input type="text" placeholder="Search services...">
         </div>
         <div class="admin-header-actions">
-          <a href="admin-notifications.html" class="admin-notification">
-            <i class="fas fa-bell"></i>
-            <span class="admin-notification-badge">5</span>
-          </a>
           <div class="admin-user">
             <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" alt="Admin">
             <div>
@@ -110,7 +102,7 @@
             <h2>Services Management</h2>
             <p>Manage your landscaping services and pricing.</p>
           </div>
-          <button class="btn btn-primary" onclick="showAddServiceModal()">
+          <button class="btn btn-primary" id="showAddServiceModal">
             <i class="fas fa-plus"></i> Add New Service
           </button>
         </div>
@@ -313,7 +305,7 @@
     <div class="modal modal-large">
       <div class="modal-header">
         <h3><i class="fas fa-plus-circle" style="color: var(--primary-green);"></i> Add New Service</h3>
-        <button class="modal-close" onclick="closeAddServiceModal()">&times;</button>
+        <button class="modal-close md-close">&times;</button>
       </div>
       <div class="modal-body">
         <form id="addServiceForm">
@@ -360,7 +352,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeAddServiceModal()">Cancel</button>
+        <button class="btn btn-small md-close" style="background-color: #f1f5f9; color: var(--text-dark);">Cancel</button>
         <button class="btn btn-primary btn-small" id ="confirmAddService"">Add Service</button>
       </div>
     </div>
@@ -382,6 +374,10 @@
           <div class="form-group">
             <label for="editServiceDescription">Description</label>
             <textarea id="editServiceDescription" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editServiceFeatures">Features</label>
+            <textarea id="editServiceFeatures" rows="2" placeholder="Enter service features"></textarea>
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -419,7 +415,7 @@
     <div class="modal modal-large">
       <div class="modal-header">
         <h3><i class="fas fa-tools" style="color: var(--primary-green);"></i> Service Details</h3>
-        <button class="modal-close" onclick="closeViewServiceModal()">&times;</button>
+        <button class="modal-close viewCloseModal" >&times;</button>
       </div>
       <div class="modal-body">
         <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="Service" style="width: 100%; border-radius: 8px; margin-bottom: 1.5rem;">
@@ -454,7 +450,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewServiceModal()">Close</button>
+        <button class="btn btn-small viewCloseModal" style="background-color: #f1f5f9; color: var(--text-dark);">Close</button>
         <button id="viewServiceModalEditButton" class="btn btn-primary btn-small" >Edit Service</button>
       </div>
     </div>
@@ -462,18 +458,7 @@
 <script type="module" src="JS/Services.js"></script>
   <script>
     document.querySelectorAll(".inputFields").forEach((input)=>input.value = "")
-    function showAddServiceModal() {
-      document.getElementById('addServiceModal').style.display = 'flex';
-    }
-
-    // Delete Service
-    function deleteService(serviceName) {
-      console.log('deleteService')
-      if (confirm('Are you sure you want to delete "' + serviceName + '"?')) {
-        alert('Service deleted successfully!');
-      }
-    }
-
+    
 
     // Close modals when clicking outside
     document.querySelectorAll('.modal-overlay').forEach(modal => {

@@ -12,11 +12,16 @@ class ServiceRepository {
     private const FIELD_MAPPING = [
         'name' => 'service_name',
         'baseprice' => 'base_price',
+        'features' => 'features',
         'duration' => 'duration' // Map duration to duration column
     ];
     
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
+    }
+    
+    public function getPdo(): PDO {
+        return $this->pdo;
     }
     
     public function findById(int $id): ?array {

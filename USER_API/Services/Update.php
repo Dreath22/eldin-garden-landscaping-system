@@ -33,6 +33,7 @@ $requestData = [
     'description' => $_POST['description'] ?? null,
     'baseprice' => $_POST['baseprice'] ?? null,
     'duration' => $_POST['duration'] ?? null,
+    'features' => $_POST['features'] ?? null,
     'status' => $_POST['status'] ?? null
 ];
 

@@ -6,6 +6,70 @@
   <title>Email Updates - GreenScape Admin</title>
   <link rel="stylesheet" href="admin-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Email System Styles */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+    
+    .status-badge.read {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .status-badge.unread {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    
+    .email-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .email-stats {
+      display: flex;
+      gap: 1rem;
+      margin: 0.5rem 0;
+      font-size: 0.85rem;
+      color: var(--text-gray);
+    }
+    
+    .email-stats span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .sender-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sender-info h4 {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+    
+    .service-name {
+      font-size: 0.8rem;
+      color: var(--text-gray);
+      font-weight: normal;
+    }
+    
+    .auth-required {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-gray);
+    }
+  </style>
 </head>
 <body>
   <div class="admin-page">
@@ -110,9 +174,9 @@
             <h2>Email Updates & Announcements</h2>
             <p>Send newsletters, promotions, and announcements to your customers.</p>
           </div>
-          <button class="btn btn-primary" onclick="showComposeModal()">
+          <!--<button class="btn btn-primary" onclick="showComposeModal()">
             <i class="fas fa-pen"></i> Compose Email
-          </button>
+          </button>-->
         </div>
 
         <!-- Stats Cards -->
@@ -120,7 +184,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>48</h3>
+                <h3 id="total_email">48</h3>
                 <p>Total Emails</p>
               </div>
               <div class="stat-card-icon blue">
@@ -131,8 +195,8 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>1,284</h3>
-                <p>Subscribers</p>
+                <h3 id="total_unread">1,284</h3>
+                <p>Opened</p>
               </div>
               <div class="stat-card-icon green">
                 <i class="fas fa-users"></i>
@@ -142,7 +206,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>68%</h3>
+                <h3 id="total_reed">68%</h3>
                 <p>Open Rate</p>
               </div>
               <div class="stat-card-icon orange">
@@ -150,26 +214,15 @@
               </div>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div>
-                <h3>24%</h3>
-                <p>Click Rate</p>
-              </div>
-              <div class="stat-card-icon purple">
-                <i class="fas fa-mouse-pointer"></i>
-              </div>
-            </div>
-          </div>
+          
         </div>
 
         <!-- Tabs -->
         <div class="tabs">
-          <div class="tab active" onclick="switchTab('all')">All Emails</div>
-          <div class="tab" onclick="switchTab('sent')">Sent</div>
-          <div class="tab" onclick="switchTab('drafts')">Drafts</div>
-          <div class="tab" onclick="switchTab('scheduled')">Scheduled</div>
-          <div class="tab" onclick="switchTab('templates')">Templates</div>
+          <div class="tab active" data-tab="all">All</div>
+          <div class="tab" data-tab="read">Read</div>
+          <div class="tab" data-tab="unread">Unread</div>
+          <div class="tab" data-tab="saved">Saved</div>
         </div>
 
         <!-- Email List -->
@@ -197,12 +250,6 @@
                   <p class="email-subject">Spring Season Promotion - 20% Off All Services!</p>
                   <p class="email-preview">We're excited to announce our spring season promotion! Get 20% off all landscaping services booked before March 31st. Don't miss this opportunity to transform your outdoor space...</p>
                   <div class="email-actions">
-                    <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
-                      <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers
-                    </span>
-                    <span style="color: var(--success-green); font-size: 0.85rem; margin-right: 1rem;">
-                      <i class="fas fa-eye"></i> 72% opened
-                    </span>
                     <button class="btn btn-primary btn-small" onclick="viewEmail('Spring Season Promotion')"><i class="fas fa-eye"></i> View</button>
                     <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="duplicateEmail('Spring Season Promotion')"><i class="fas fa-copy"></i> Duplicate</button>
                     <button class="btn btn-small" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-trash"></i> Delete</button>
@@ -235,6 +282,7 @@
                   </div>
                 </div>
               </div>
+
 
               <!-- Email Item 3 -->
               <div class="email-item">
@@ -316,17 +364,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="pagination">
-              <p class="pagination-info">Showing 1-5 of 48 emails</p>
-              <div class="pagination-controls">
-                <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">2</button>
-                <button class="pagination-btn">3</button>
-                <span style="padding: 0.5rem;">...</span>
-                <button class="pagination-btn">10</button>
-                <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
-              </div>
+            <div class="pagination" id="pagination">
             </div>
           </div>
         </div>
@@ -335,6 +373,7 @@
   </div>
 
   <!-- Compose Email Modal -->
+  <!--
   <div class="modal-overlay" id="composeModal" style="display: none;">
     <div class="modal modal-large">
       <div class="modal-header">
@@ -394,12 +433,13 @@
       </div>
     </div>
   </div>
+  -->
 
   <!-- View Email Modal -->
   <div class="modal-overlay" id="viewEmailModal" style="display: none;">
     <div class="modal modal-large">
       <div class="modal-header">
-        <h3><i class="fas fa-envelope" style="color: var(--primary-green);"></i> Email Preview</h3>
+        <h3><i class="fas fa-envelope" style="color: var(--primary-green);"></i> Email Content</h3>
         <button class="modal-close" onclick="closeViewEmailModal()">&times;</button>
       </div>
       <div class="modal-body">
@@ -408,20 +448,9 @@
           <h3 id="viewEmailSubject">Spring Season Promotion - 20% Off All Services!</h3>
         </div>
         <div style="padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 8px;">
-          <p style="margin-bottom: 1rem;">Dear Valued Customer,</p>
-          <p style="margin-bottom: 1rem;">We're excited to announce our spring season promotion! Get 20% off all landscaping services booked before March 31st.</p>
-          <p style="margin-bottom: 1rem;">Don't miss this opportunity to transform your outdoor space and prepare your garden for the beautiful spring season ahead.</p>
-          <p style="margin-bottom: 1rem;">Our services include:</p>
-          <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
-            <li>Lawn Maintenance</li>
-            <li>Garden Design</li>
-            <li>Hardscaping</li>
-            <li>Irrigation Systems</li>
-          </ul>
-          <p style="margin-bottom: 1rem;">Use code <strong>SPRING20</strong> at checkout to claim your discount.</p>
-          <p>Best regards,<br>The GreenScape Team</p>
+          <p id="email-content"></p>
         </div>
-        <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
+        <!-- <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
           <div style="padding: 1rem; background-color: #f8fafc; border-radius: 8px;">
             <p style="color: var(--text-gray); font-size: 0.85rem;">Sent To</p>
             <p style="font-weight: 600;">1,284</p>
@@ -438,16 +467,14 @@
             <p style="color: var(--text-gray); font-size: 0.85rem;">Bounced</p>
             <p style="font-weight: 600; color: var(--danger-red);">12 (0.9%)</p>
           </div>
-        </div>
+        </div> -->
       </div>
       <div class="modal-footer">
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewEmailModal()">Close</button>
-        <button class="btn btn-secondary btn-small" onclick="duplicateEmail(document.getElementById('viewEmailSubject').textContent)"><i class="fas fa-copy"></i> Duplicate</button>
-        <button class="btn btn-primary btn-small"><i class="fas fa-redo"></i> Resend</button>
       </div>
     </div>
   </div>
-
+  <script type="module" src="JS/emails.js"></script>>
   <script>
     // Compose Modal
     function showComposeModal() {
@@ -468,11 +495,6 @@
       closeComposeModal();
     }
 
-    // View Email Modal
-    function viewEmail(subject) {
-      document.getElementById('viewEmailSubject').textContent = subject;
-      document.getElementById('viewEmailModal').style.display = 'flex';
-    }
 
     function closeViewEmailModal() {
       document.getElementById('viewEmailModal').style.display = 'none';
@@ -484,14 +506,14 @@
     }
 
     // Schedule Date Toggle
-    document.getElementById('sendOption').addEventListener('change', function() {
-      const scheduleGroup = document.getElementById('scheduleDateGroup');
-      if (this.value === 'schedule') {
-        scheduleGroup.style.display = 'block';
-      } else {
-        scheduleGroup.style.display = 'none';
-      }
-    });
+    // document.getElementById('sendOption').addEventListener('change', function() {
+    //   const scheduleGroup = document.getElementById('scheduleDateGroup');
+    //   if (this.value === 'schedule') {
+    //     scheduleGroup.style.display = 'block';
+    //   } else {
+    //     scheduleGroup.style.display = 'none';
+    //   }
+    // });
 
     // Tab Switching
     function switchTab(tab) {

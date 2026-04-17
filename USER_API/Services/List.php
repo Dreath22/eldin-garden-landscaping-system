@@ -39,7 +39,7 @@ function listRecords($inputParams, $pdo) {
     $orderBy = "";
     
     if ($currentTab && $currentTab == 'popular') {
-        $orderBy = " ORDER BY rating" . $order .", review_count DESC,". $order . " service_name ASC";
+        $orderBy = " ORDER BY rating " . $order . ", review_count DESC, service_name ASC";
     } else {
         $orderBy = " ORDER BY created_at " . $order;
     }

@@ -14,6 +14,8 @@ const serviceStatus = [
     {value: 'cancelled', label: 'Cancelled'}
 ]
 
+const controllerPath = 'USER_API/ServicesController.php'
+
 /*  REUSABLE FUNCTION  */
 const toggleModal = (selector, show, hide="none") => {
     try{
@@ -34,7 +36,7 @@ const toggleModal = (selector, show, hide="none") => {
 
 
 const getServiceRecord = (id) => {
-    return fetch(`USER_API/ServicesController.php?action=list&id=${id}`)
+    return fetch(`${controllerPath}?action=list&id=${id}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -55,7 +57,7 @@ const fetchData = (tab=state.currentTab) => {
     currentTab: state.currentTab,
     order: state.order,
     } ).toString();
-    return fetch(`USER_API/ServicesController.php?action=list&${queryString}`)
+    return fetch(`${controllerPath}?action=list&${queryString}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
@@ -74,8 +76,8 @@ const stats = (data) => {
     if(data){
         putTextinElementById('total_services', data.total_services);
         putTextinElementById('active_services', data.live_services);
-        putTextinElementById('inactive_services', data.cancelled_services);
-        putTextinElementById('avg_order_value', `${moneySign}${data.total_baseprice}`);
+        putTextinElementById('inactive_services', data.inactive_services);
+        putTextinElementById('avg_order_value', `${moneySign}${data.total_baseprice/data.total_services}`);
     }
 }
 
@@ -133,9 +135,18 @@ const viewService = (id) => {
             featuresList.innerHTML = data.features.map(feature => 
               `<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> ${feature}</li>`
             ).join('');
-          } else {
+          } else if(data.features){
+            featuresList.innerHTML = `<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> ${data.features}</li>`;
+          }else {
             featuresList.innerHTML = '<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> No features listed</li>';
           }
+
+          document.querySelectorAll('.viewCloseModal').forEach(button => {
+            buttonEventListener(button, ()=>{
+              console.log('Close button clicked');    
+              toggleModal('#viewServiceModal', 'none');
+            });
+          });
           buttonEventListener("#viewServiceModalEditButton", ()=>{
             toggleModal('#viewServiceModal', 'none');
             editService(id, data.data);
@@ -153,12 +164,16 @@ const editService = async (id, data=null) => {
     putTextinElementById('editServiceDescription', data.description || 'No description available', 'value');
     putTextinElementById('editServicePrice',  (data.base_price || 0), 'value');
     putTextinElementById('editServiceDuration', data.duration || 'N/A', 'value');
+    putTextinElementById('editServiceFeatures', data.features || 'No features available', 'value');
     putTextinElementById('editServiceStatus', '', 'innerHTML');
+    
+    // Clear existing options and add new ones
     serviceStatus.forEach((status)=>{
         const option = document.createElement('option');
         option.value = status.value;
         option.textContent = status.label;
-        if(status.value === data.status){
+        // Set selected attribute if status matches current data
+        if(status.value === data.status.toLowerCase()) {
             option.selected = true;
         }
         document.getElementById('editServiceStatus').appendChild(option);
@@ -202,6 +217,7 @@ const updateService = async(id, data) => {
     const editServiceDescription = document.querySelector('#editServiceDescription').value;
     const editServicePrice = document.querySelector('#editServicePrice').value;
     const editServiceDuration = document.querySelector('#editServiceDuration').value;
+    const editServiceFeatures = document.querySelector('#editServiceFeatures').value;
     const editServiceStatus = document.querySelector('#editServiceStatus').value;
     
     console.log("Form values:", {
@@ -209,7 +225,8 @@ const updateService = async(id, data) => {
         description: editServiceDescription == 'No description available' ? '': editServiceDescription,
         price: editServicePrice,
         duration: editServiceDuration == 'N/A' ? '' : editServiceDuration,
-        status: editServiceStatus === data.status ? null : editServiceStatus
+        features: editServiceFeatures,
+        status: editServiceStatus
     });
     
     // Build params with all values (since we're not using valueValidator anymore)
@@ -220,9 +237,10 @@ const updateService = async(id, data) => {
     params.append('description', editServiceDescription === 'No description available' ? '' : editServiceDescription);
     params.append('baseprice', editServicePrice);
     params.append('duration', editServiceDuration === 'N/A' ? '' : editServiceDuration);
+    params.append('features', editServiceFeatures);
     params.append('status', editServiceStatus);
 
-  fetch(`USER_API/ServicesController.php?action=update&id=${id}`, {
+  fetch(`${controllerPath}?action=update&id=${id}`, {
     method: 'POST',
     body: params
   }).then((response)=>{
@@ -267,25 +285,52 @@ function setupButtonListeners() {
  * done using fetch and then function
  */
 const createService = () =>{
-    const createServiceName = document.querySelector('#serviceName').value;
-    const createServiceDescription = document.querySelector('#serviceDescription').value;
-    const createServiceFeatures = document.querySelector('#serviceFeatures').value;
-    const createServicePrice = document.querySelector('#servicePrice').value;
-    const createServiceDuration = document.querySelector('#serviceDuration').value;
-    const createServiceStatus = document.querySelector('#serviceStatus').value;
+    // Define field selectors as a list for cleaner code
+    const fieldSelectors = {
+        name: '#serviceName',
+        description: '#serviceDescription', 
+        features: '#serviceFeatures',
+        price: '#servicePrice',
+        duration: '#serviceDuration',
+        status: '#serviceStatus'
+    };
+    
+    // Loop through selectors to get values
+    const formData = {};
+    const requiredFields = ['name', 'price'];
+    const emptyFields = [];
+    
+    Object.keys(fieldSelectors).forEach(field => {
+        const element = document.querySelector(fieldSelectors[field]);
+        if (element) {
+            const value = element.value.trim();
+            formData[field] = value;
+            
+            // Check for empty required fields
+            if (requiredFields.includes(field) && !value) {
+                emptyFields.push(field);
+            }
+        }
+    });
     
     // Build params with all values
     const params = new URLSearchParams();
     
-    // Add all fields (they'll be validated on the backend)
-    params.append('name', createServiceName);
-    params.append('description', createServiceDescription);
-    params.append('features', createServiceFeatures);
-    params.append('baseprice', createServicePrice);
-    params.append('duration', createServiceDuration);
-    params.append('status', createServiceStatus);
-    
-    fetch(`USER_API/ServicesController.php?action=create`, {
+    // Add all fields using loop (they'll be validated on the backend)
+    Object.keys(formData).forEach(field => {
+        let value = formData[field];
+        if (value !== undefined && value !== null) {
+            // Convert price field to number and map to baseprice
+            if (field === 'price') {
+                value = Number(value);
+                params.append('baseprice', value);
+            } else {
+                params.append(field, value);
+            }
+        }
+    });
+
+    fetch(`${controllerPath}?action=create`, {
         method: 'POST',
         body: params
     }).then((response)=>{
@@ -303,6 +348,37 @@ const createService = () =>{
         console.log("ERROR CREATING SERVICE: ", e);
     })
 }
+
+const deleteService = (id) => {
+    console.log("clicked 1")
+    fetch(controllerPath+"?action=delete&id="+id)
+    .then((response)=>{
+        return response.json();
+    })
+    .then((data)=>{
+        if (data.success) {
+            console.log('clicked2')
+            fetchData(state.currentTab);
+        }else{
+            console.log("Delete failed:", data);
+        }
+    }).catch((e)=>{
+        console.log("error: ", e)
+    })
+}
+
+
+buttonEventListener("#showAddServiceModal", () => {
+    toggleModal('#addServiceModal', 'flex');
+    buttonEventListener("#confirmAddService", ()=>{
+        createService();
+    })
+    document.querySelectorAll('.md-close').forEach(button => {
+        buttonEventListener(button, () => {
+            toggleModal('#addServiceModal', 'none');
+        });
+    });
+})
 
 document.addEventListener('DOMContentLoaded', ()=> {
     fetchData(1);
@@ -325,9 +401,4 @@ buttonEventListener(magicSort, () => {
         magicSort.innerHTML = '<i class="fas fa-sort-desc"></i> Descending';
     }
 });
-
-const confirmAddService = document.getElementById('confirmAddService');
-buttonEventListener(confirmAddService, ()=>{
-    createService()
-})
 });

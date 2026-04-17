@@ -184,8 +184,19 @@ export function putTextinElementById(id, text, property=null){
     }
 }
 
-export const buttonEventListener = (el, callback=null, onAction='click') => {
-  el.addEventListener(onAction, () => {
-    callback?.(el);
+export const buttonEventListener = (el, callback = null, onAction = 'click') => {
+  let element = el;
+  if (typeof el === 'string') {
+    element = document.querySelector(el);
+  }
+  
+  if (!element) {
+    console.error("Element not found:", el);
+    return;
+  }
+
+  // Pass 'e' (the event) to the callback
+  element.addEventListener(onAction, (e) => {
+    callback?.(e, element); 
   });
 }

@@ -23,17 +23,15 @@ class ServiceValidator {
         // FIELD WHITELISTING - Prevent injection via field names
         $data = array_intersect_key($data, array_flip(self::ALLOWED_CREATE_FIELDS));
         
-        // Validate required fields
-        if (!isset($data['name']) || $data['name'] === null) {
+        // Validate name (required)
+        if (!isset($data['name']) || $data['name'] === null || $data['name'] === '') {
             $errors['name'] = 'Name is required';
         } else {
             $name = sanitizeInput($data['name']);
-            if ($name === null || $name === '') {
-                $errors['name'] = 'Name cannot be empty';
-            } elseif (strlen($name) > 255) {
-                $errors['name'] = 'Name must be less than 255 characters';
-            } else {
+            if ($name !== null && strlen($name) <= 255) {
                 $validated['name'] = $name;
+            } else {
+                $errors['name'] = 'Name must be less than 255 characters';
             }
         }
         
@@ -55,7 +53,7 @@ class ServiceValidator {
         if (!isset($data['baseprice']) || $data['baseprice'] === null) {
             $errors['baseprice'] = 'Base price is required';
         } else {
-            $baseprice = sanitizeInput($data['baseprice'], 'int');
+            $baseprice = sanitizeInput($data['baseprice'], 'float');
             if ($baseprice === null || $baseprice === false) {
                 $errors['baseprice'] = 'Invalid price format';
             } elseif (!is_numeric($baseprice) || $baseprice < ServiceConfig::MIN_PRICE || $baseprice > ServiceConfig::MAX_PRICE) {
@@ -109,6 +107,34 @@ class ServiceValidator {
             'data' => $validated,
             'errors' => $errors
         ];
+    }
+    
+    public static function validateCreateDataWithDuplicateCheck(array $data, PDO $pdo): array {
+        // First do basic validation
+        $validation = self::validateCreateData($data);
+        
+        if (!$validation['valid']) {
+            return $validation;
+        }
+        
+        // Check for duplicate service name
+        if (isset($validation['data']['name'])) {
+            try {
+                $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM services WHERE service_name = :name");
+                $stmt->execute([':name' => $validation['data']['name']]);
+                $count = (int)$stmt->fetchColumn();
+                
+                if ($count > 0) {
+                    $validation['valid'] = false;
+                    $validation['errors']['name'] = 'Service name already exists. Please choose a different name.';
+                }
+            } catch (PDOException $e) {
+                // If we can't check for duplicates, still allow the creation but log the error
+                error_log("Duplicate check error: " . $e->getMessage());
+            }
+        }
+        
+        return $validation;
     }
     
     public static function validateUpdateData(array $data): array {
@@ -173,6 +199,20 @@ class ServiceValidator {
             }
         }
         
+        // Validate features (always process if provided)
+        if (array_key_exists('features', $data)) {
+            if ($data['features'] === null || $data['features'] === '') {
+                $validated['features'] = null; // Allow empty features
+            } else {
+                $features = sanitizeInput($data['features']);
+                if ($features !== null && strlen($features) <= 2000) {
+                    $validated['features'] = $features;
+                } else {
+                    $errors['features'] = 'Features must be less than 2000 characters';
+                }
+            }
+        }
+        
         // Validate status (always process if provided)
         if (array_key_exists('status', $data)) {
             if ($data['status'] === null || $data['status'] === '') {
@@ -191,5 +231,33 @@ class ServiceValidator {
             'data' => $validated,
             'errors' => $errors
         ];
+    }
+    
+    public static function validateUpdateDataWithDuplicateCheck(array $data, int $serviceId, PDO $pdo): array {
+        // First do basic validation
+        $validation = self::validateUpdateData($data);
+        
+        if (!$validation['valid']) {
+            return $validation;
+        }
+        
+        // Check for duplicate service name (excluding current service)
+        if (isset($validation['data']['name'])) {
+            try {
+                $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM services WHERE service_name = :name AND id != :id");
+                $stmt->execute([':name' => $validation['data']['name'], ':id' => $serviceId]);
+                $count = (int)$stmt->fetchColumn();
+                
+                if ($count > 0) {
+                    $validation['valid'] = false;
+                    $validation['errors']['name'] = 'Service name already exists. Please choose a different name.';
+                }
+            } catch (PDOException $e) {
+                // If we can't check for duplicates, still allow the update but log the error
+                error_log("Duplicate check error: " . $e->getMessage());
+            }
+        }
+        
+        return $validation;
     }
 }

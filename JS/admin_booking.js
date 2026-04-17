@@ -1187,9 +1187,9 @@ window.cancelBooking = (bookingId) => {
 /**
  * Generic function to send status updates to the API
  */
-async function updateBookingStatus(url, data) {
+async function updateBookingStatus(url, data, methods="POST") {
   const response = await fetch(url, {
-    method: 'POST',
+    method: methods,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -1398,31 +1398,43 @@ async function confirmCancel(bookingId) {
   }
 
   try {
-    // 2. Define API endpoint and payload
-    const url = '/landscape/USER_API/cancelled_booking.php'
+    // 2. Validate cancellation reason
+    const cancellationReason = document.getElementById('cancellationReason').value.trim();
+    
+    if (!cancellationReason) {
+      alert('Please provide a cancellation reason.');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class=\'fas fa-times\'></i> Cancel';
+      }
+      return;
+    }
+    
+    // 3. Define API endpoint and payload
+    const url = '/USER_API/cancelled_booking.php'
     const payload = {
       id: bookingId,
-      notes: document.getElementById('cancellationReason').value.trim(),
+      notes: cancellationReason,
     }
+    
+    // 4. Call the generic fetch function
+    await updateBookingStatus(url, payload, "POST")
 
-    // 3. Call the generic fetch function
-    await updateBookingStatus(url, payload)
-
-    // 4. Success Handling
-    alert(`Booking ID ${bookingId} has been confirmed.`)
+    // 5. Success Handling
+    alert(`Booking ID ${bookingId} has been cancelled.`)
 
     if (typeof fetchData === 'function') {
       fetchData()
     }
 
   } catch (error) {
-    console.error('Confirmation failed:', error)
+    console.error('Cancellation failed:', error)
     alert('Error: ' + error.message)
   } finally {
-    // 5. Reset UI
+    // 6. Reset UI
     if (btn) {
       btn.disabled = false
-      btn.innerHTML = '<i class=\'fas fa-check\'></i> Confirmed'
+      btn.innerHTML = '<i class=\'fas fa-times\'></i> Cancel'
     }
   }
 }
