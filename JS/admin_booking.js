@@ -1502,21 +1502,25 @@ async function loadData() {
   const serviceList = document.getElementById('serviceList')
 
   try {
-    const response = await fetch('/landscape/USER_API/get_customers.php')
-    const data = await response.json()
+    const customers = await fetch('/landscape/USER_API/UsersController.php?action=getClients')
+    const customersData = await customers.json()
 
-    console.log('loaded data: ', data)
+    const services = await fetch('/landscape/USER_API/ServicesController.php?action=getServices')
+    const servicesData = await services.json()
+
+    console.log('loaded data: ', customers)
+    console.log('loaded data: ', servicesData)
     // Clear and Populate the datalist
-    customerlist.innerHTML = data.customers.map(user =>
+    customerlist.innerHTML = customersData.customers.map(user =>
       `<option value="${user.name} (${user.email})" data-id="${user.id}">`
     ).join('')
-    serviceList.innerHTML = data.services.map(s =>
-      `<option value="${s.service_name}" data-id="${s.id}">${s.service_name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} - $${s.basePrice}</option>`
+    serviceList.innerHTML = servicesData.services.map(s =>
+      `<option value="${capitalize(s.service_name)}" data-id="${s.id}">${capitalize(s.service_name)} - $${s.basePrice}</option>`
     ).join('')
 
     const filterOptions = [
       '<option value="all" data-id="0">All Services</option>',
-      ...data.services.map(s => `<option value="${s.id}" data-id="${s.id}">${capitalize(s.service_name)}</option>`)
+      ...servicesData.services.map(s => `<option value="${s.id}" data-id="${s.id}">${capitalize(s.service_name)}</option>`)
     ].join('')
     document.getElementById('serviceFilter').innerHTML = filterOptions;
   } catch (error) {

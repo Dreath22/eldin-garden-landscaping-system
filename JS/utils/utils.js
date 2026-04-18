@@ -172,31 +172,87 @@ export const log = (message, type = 'info') => {
 
 
 
-export function putTextinElementById(id, text, property=null){
-    if(!document.getElementById(id)){
-        console.error("Element not found:", id);
-        return;
-    }
-    if(property){
-        document.getElementById(id)[property] = text;
-    }else{
-        document.getElementById(id).textContent = text;
-    }
+const getElement = (el) => (typeof el === 'string') ? document.querySelector(el) : el;
+
+const withElement = (fn) => (el, ...args) =>{
+  let element = getElement(el);
+  if (!element) {
+    return console.error("Element not found:", el);
+  }
+  return fn(element, ...args);
 }
 
-export const buttonEventListener = (el, callback = null, onAction = 'click') => {
-  let element = el;
-  if (typeof el === 'string') {
-    element = document.querySelector(el);
-  }
-  
-  if (!element) {
-    console.error("Element not found:", el);
-    return;
-  }
-
-  // Pass 'e' (the event) to the callback
-  element.addEventListener(onAction, (e) => {
-    callback?.(e, element); 
+export const buttonEventListener = withElement((el, callback = null, onAction = 'click') => {
+  el.addEventListener(onAction, (e) => {
+    callback?.(e, el); 
   });
+})
+
+
+export const putTextinElementById = withElement((el, text, property = null) => {
+    if (property === 'style') {
+        el.style.cssText = text; // This handles the string correctly
+    } else if (property) {
+        el[property] = text;
+    } else {
+        el.textContent = text;
+    }
+})
+
+
+export const emptyElement = withElement((element, errorMessage = null) => {
+  if (element.value.trim() === ""){
+    element.style.borderColor = "red";
+    element.style.backgroundColor = "#fff5f5";
+    
+    // Add error message if provided
+    if (errorMessage) {
+      // Remove existing error message
+      const existingError = element.parentNode.querySelector('.field-error');
+      if (existingError) existingError.remove();
+      
+      // Add new error message
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'field-error';
+      errorDiv.style.color = 'red';
+      errorDiv.style.fontSize = '12px';
+      errorDiv.style.marginTop = '4px';
+      errorDiv.textContent = errorMessage;
+      element.parentNode.appendChild(errorDiv);
+    }
+    return true; // Field is empty
+  }
+  return false; // Field is not empty
+})
+
+export const clearElementError = withElement((element) => {
+  element.style.borderColor = "";
+  element.style.backgroundColor = "";
+
+  // Remove error message
+  const errorDiv = element.parentNode.querySelector('.field-error');
+  if (errorDiv) errorDiv.remove();
+})
+export const  generateCsrfToken = () => {
+  fetch('/landscape/USER_API/utils/csrf_token.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.token) {
+        // Add CSRF token to form
+        const form = document.getElementById('uploadForm');
+        if (form) {
+          let csrfInput = document.querySelector('input[name="csrf_token"]');
+          if (!csrfInput) {
+            csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            form.appendChild(csrfInput);
+          }
+          csrfInput.value = data.token;
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Failed to get CSRF token:', error);
+    });
 }

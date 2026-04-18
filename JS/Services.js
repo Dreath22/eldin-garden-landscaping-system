@@ -4,8 +4,7 @@ const state = {
     currentTab: 'all',
     order: 'DESC',
     limit: 6,
-    total_pages: 1,
-    allService_name_basePrice: []
+    total_pages: 1
 }
 
 const serviceStatus = [
@@ -74,10 +73,10 @@ const fetchData = (tab=state.currentTab) => {
 
 const stats = (data) => {
     if(data){
-        putTextinElementById('total_services', data.total_services);
-        putTextinElementById('active_services', data.live_services);
-        putTextinElementById('inactive_services', data.inactive_services);
-        putTextinElementById('avg_order_value', `${moneySign}${data.total_baseprice/data.total_services}`);
+        putTextinElementById('##total_services', data.total_services);
+        putTextinElementById('#active_services', data.live_services);
+        putTextinElementById('#inactive_services', data.inactive_services);
+        putTextinElementById('#avg_order_value', `${moneySign}${data.total_baseprice/data.total_services}`);
     }
 }
 
@@ -109,11 +108,11 @@ const displayData = (data)=>{
         document.getElementById('pagination').style.display = 'flex';
     }else{
         html = "<h4>No Content</h4>";
-        putTextinElementById('pagination', '', 'innerHTML');
+        putTextinElementById('#pagination', '', 'innerHTML');
         document.getElementById('pagination').style.display = 'none';
     }
 
-    putTextinElementById('services_list', html, 'innerHTML');
+    putTextinElementById('#services_list', html, 'innerHTML');
     setupButtonListeners();
     
 }
@@ -122,13 +121,13 @@ const viewService = (id) => {
       toggleModal('#viewServiceModal', 'flex');
       getServiceRecord(id).then(data => { 
         if (data) {
-          putTextinElementById('viewServiceModalName', (data.service_name || 'Unknown') + " Services");
-          putTextinElementById('viewServiceModalPrice', moneySign + (data.base_price || 0));
-          putTextinElementById('viewServiceModalStatus', data.status || 'Inactive');
-          putTextinElementById('viewServiceModalRating', (data.rating ?? 0.0));
-          putTextinElementById('viewServiceModalDescription', data.description || 'No description available');
-          putTextinElementById('viewServiceModalCount', data.count || 0);
-          putTextinElementById('viewServiceModalDuration', data.duration || 'N/A');
+          putTextinElementById('#viewServiceModalName', (data.service_name || 'Unknown') + " Services");
+          putTextinElementById('#viewServiceModalPrice', moneySign + (data.base_price || 0));
+          putTextinElementById('#viewServiceModalStatus', data.status || 'Inactive');
+          putTextinElementById('#viewServiceModalRating', (data.rating ?? 0.0));
+          putTextinElementById('#viewServiceModalDescription', data.description || 'No description available');
+          putTextinElementById('#viewServiceModalCount', data.count || 0);
+          putTextinElementById('#viewServiceModalDuration', data.duration || 'N/A');
           // Handle features list
           const featuresList = document.querySelector('#viewServiceModal ul');
           if (data.features && Array.isArray(data.features)) {
@@ -160,12 +159,12 @@ const editService = async (id, data=null) => {
     if (!data){ 
         data = await getServiceRecord(id);
     }
-    putTextinElementById('editServiceName', data.service_name, 'value');
-    putTextinElementById('editServiceDescription', data.description || 'No description available', 'value');
-    putTextinElementById('editServicePrice',  (data.base_price || 0), 'value');
-    putTextinElementById('editServiceDuration', data.duration || 'N/A', 'value');
-    putTextinElementById('editServiceFeatures', data.features || 'No features available', 'value');
-    putTextinElementById('editServiceStatus', '', 'innerHTML');
+    putTextinElementById('#editServiceName', data.service_name, 'value');
+    putTextinElementById('#editServiceDescription', data.description || 'No description available', 'value');
+    putTextinElementById('#editServicePrice',  (data.base_price || 0), 'value');
+    putTextinElementById('#editServiceDuration', data.duration || 'N/A', 'value');
+    putTextinElementById('#editServiceFeatures', data.features || 'No features available', 'value');
+    putTextinElementById('#editServiceStatus', '', 'innerHTML');
     
     // Clear existing options and add new ones
     serviceStatus.forEach((status)=>{
@@ -192,24 +191,6 @@ const editService = async (id, data=null) => {
     });
 }
 
-/** 
- * Validates if a value has changed and returns the new value or null
- * @param {string} selector - The CSS selector for the input element
- * @param {any} original - The original value to compare against
- * @param {string} type - The type of the value ('string', 'number', 'float')
- * @returns {any} - The new value if it changed, otherwise null
- */
-const valueValidator = (selector, original, type) => {
-    const inputElement = document.querySelector(selector);
-    if (!inputElement) return null;
-    let value = inputElement.value;
-
-    if (type === 'number') {
-        value = parseFloat(value);
-        original = parseFloat(original);
-    }
-    return value !== original ? value : null;
-};
 
 //Update Service Fetch
 const updateService = async(id, data) => {

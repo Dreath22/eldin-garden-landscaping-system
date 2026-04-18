@@ -54,9 +54,9 @@ const toggleModal = (selector, show, hide="none") => {
 const stats = (data) => {
     console.log("logger: ", data)
     if(data) {
-        putTextinElementById("total_email", data.total_emails || "0");
-        putTextinElementById("total_unread", data.total_opened || "0");
-        putTextinElementById("total_reed", data.avg_open_rate ? `${data.avg_open_rate}%` : "0%");
+        putTextinElementById("##################total_email", data.total_emails || "0");
+        putTextinElementById("##total_unread", data.total_opened || "0");
+        putTextinElementById("#total_reed", data.avg_open_rate ? `${data.avg_open_rate}%` : "0%");
     }
 }
 
@@ -312,6 +312,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Email action functions
 const viewEmail = (email) => {
-    putTextinElementById("viewEmailSubject", email.subject);
-    putTextinElementById("email-content", email.full_content, "innerHTML");
+    putTextinElementById("#viewEmailSubject", email.subject);
+    putTextinElementById("#email-content", email.full_content, "innerHTML");
 }

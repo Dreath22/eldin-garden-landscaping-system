@@ -1,6 +1,6 @@
 <?php
 $action = $_GET['action'] ?? 'summary'; 
-require_once __DIR__ . '/../config/config.php';
+require_once '../config/config.php';
 // 3. Delegate to the right file
 switch($action) {
     case 'summary':
@@ -8,6 +8,9 @@ switch($action) {
         break;
     case 'list':
         include __DIR__ . '/Services/List.php';
+        break;
+    case 'getServices':
+        include __DIR__ . '/Services/get_services.php';
         break;
     case 'create':
         // FIX: Changed REQUEST_REQUEST to REQUEST_METHOD

@@ -1,6 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../utils/sanitizeInput.php';
+require_once __DIR__ . '/../utils/InputValidator.php';
+require_once __DIR__ . '/../utils/ApiResponse.php';
 require_once __DIR__ . '/ServiceConfig.php';
 
 class ServiceValidator {
@@ -9,11 +10,15 @@ class ServiceValidator {
     private const ALLOWED_UPDATE_FIELDS = ['name', 'description', 'baseprice', 'duration', 'status'];
     
     public static function validateId($id): array {
-        $id = sanitizeInput($id, 'int');
-        if (!$id) {
+        $validator = new InputValidator();
+        $validator->validate(['id' => $id], ['id' => ['int' => ['min' => 1]]]);
+        
+        if ($validator->hasErrors()) {
             return ['valid' => false, 'value' => null, 'error' => 'Invalid service ID'];
         }
-        return ['valid' => true, 'value' => $id, 'error' => null];
+        
+        $sanitized = $validator->getSanitized();
+        return ['valid' => true, 'value' => $sanitized['id'], 'error' => null];
     }
     
     public static function validateCreateData(array $data): array {

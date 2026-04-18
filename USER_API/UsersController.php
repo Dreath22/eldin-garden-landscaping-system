@@ -27,6 +27,9 @@ switch ($action) {
     case 'delete':
         handleDelete($pdo);
         break;
+    case 'getClients':
+        include __DIR__ . '/Users/get_clients.php';
+        break;
     default:
         jsonError("Unknown action. Valid actions: list, get, add, ban, update, delete.", 400);
 }

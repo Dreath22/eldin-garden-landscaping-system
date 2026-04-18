@@ -1,6 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../utils/sanitizeInput.php';
+require_once __DIR__ . '/../utils/InputValidator.php';
+require_once __DIR__ . '/../utils/ApiResponse.php';
 require_once __DIR__ . '/BookingConfig.php';
 require_once __DIR__ . '/BookingCriteria.php';
 
@@ -12,11 +13,14 @@ class BookingValidator {
         
         // Validate page
         if (isset($params['page'])) {
-            $page = sanitizeInput($params['page'], 'int');
-            if ($page === null || $page === false || $page < 1 || $page > BookingConfig::MAX_PAGE_NUMBER) {
+            $validator = new InputValidator();
+            $validator->validate(['page' => $params['page']], ['page' => ['int' => ['min' => 1, 'max' => BookingConfig::MAX_PAGE_NUMBER]]]);
+            
+            if ($validator->hasErrors()) {
                 $errors['page'] = 'Page must be between 1 and ' . BookingConfig::MAX_PAGE_NUMBER;
             } else {
-                $validated['page'] = $page;
+                $sanitized = $validator->getSanitized();
+                $validated['page'] = $sanitized['page'];
             }
         } else {
             $validated['page'] = 1;
@@ -24,11 +28,14 @@ class BookingValidator {
         
         // Validate status
         if (isset($params['status'])) {
-            $status = sanitizeInput($params['status']);
-            if (!in_array($status, BookingConfig::VALID_STATUSES)) {
+            $validator = new InputValidator();
+            $validator->validate(['status' => $params['status']], ['status' => ['enum' => ['values' => BookingConfig::VALID_STATUSES]]]);
+            
+            if ($validator->hasErrors()) {
                 $errors['status'] = 'Invalid status. Must be one of: ' . implode(', ', BookingConfig::VALID_STATUSES);
             } else {
-                $validated['status'] = $status;
+                $sanitized = $validator->getSanitized();
+                $validated['status'] = $sanitized['status'];
             }
         } else {
             $validated['status'] = 'all';
@@ -36,11 +43,14 @@ class BookingValidator {
         
         // Validate category
         if (isset($params['category'])) {
-            $category = sanitizeInput($params['category'], 'int');
-            if ($category === null || $category === false || $category < 0) {
+            $validator = new InputValidator();
+            $validator->validate(['category' => $params['category']], ['category' => ['int' => ['min' => 0]]]);
+            
+            if ($validator->hasErrors()) {
                 $errors['category'] = 'Category must be a valid positive integer';
             } else {
-                $validated['category'] = $category;
+                $sanitized = $validator->getSanitized();
+                $validated['category'] = $sanitized['category'];
             }
         } else {
             $validated['category'] = '0';
@@ -48,11 +58,14 @@ class BookingValidator {
         
         // Validate order
         if (isset($params['order'])) {
-            $order = sanitizeInput($params['order']);
-            if (!in_array($order, BookingConfig::VALID_SORT_OPTIONS)) {
+            $validator = new InputValidator();
+            $validator->validate(['order' => $params['order']], ['order' => ['enum' => ['values' => BookingConfig::VALID_SORT_OPTIONS]]]);
+            
+            if ($validator->hasErrors()) {
                 $errors['order'] = 'Invalid order. Must be one of: ' . implode(', ', BookingConfig::VALID_SORT_OPTIONS);
             } else {
-                $validated['order'] = $order;
+                $sanitized = $validator->getSanitized();
+                $validated['order'] = $sanitized['order'];
             }
         } else {
             $validated['order'] = 'newest';
