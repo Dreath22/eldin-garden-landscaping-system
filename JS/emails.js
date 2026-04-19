@@ -54,8 +54,8 @@ const toggleModal = (selector, show, hide="none") => {
 const stats = (data) => {
     console.log("logger: ", data)
     if(data) {
-        putTextinElementById("##################total_email", data.total_emails || "0");
-        putTextinElementById("##total_unread", data.total_opened || "0");
+        putTextinElementById("#total_email", data.total_emails || "0");
+        putTextinElementById("#total_unread", data.total_opened || "0");
         putTextinElementById("#total_reed", data.avg_open_rate ? `${data.avg_open_rate}%` : "0%");
     }
 }

@@ -1,11 +1,18 @@
 import { generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
+import { fetchPorfolio } from './utils/apiUtils.js';
 const state = {
     currentPage: 1,
     currentTab: 'all',
-    order: 'DESC',
+    service_id: 1,
+    sort: 'new',
+    csrfToken: "",
     limit: 6,
-    total_pages: 1,
-}
+    uploads: {
+        files: [],
+        fileSize: 0,
+    }
+};
+const controllerPath = "/landscape/USER_API/PortfolioController.php";
 
 // Field configuration for validation
 const uploadFields = {
@@ -62,34 +69,18 @@ function validateUploadFields(fields) {
     return { isValid: errors.length === 0, errors, validFields };
 }
 
-// const fetchData = (tab=state.currentTab) => {
-//     const queryString = new URLSearchParams({
-//     page: tab,
-//     currentTab: state.currentTab,
-//     order: state.order,
-//     } ).toString();
-//     return fetch(`${controllerPath}?action=list&${queryString}`)
-//         .then(response => {
-//             if (!response.ok) throw new Error('Network response was not ok');
-//             return response.json();
-//         })
-//         .then(data => {
-//             console.log("Success:", data.data);
-//             displayData(data.data)
-//             stats(data.data.summary)
-//         })
-//         .catch(error => {
-//             console.error("Error in fetching:", error);
-//         });
-// }
+
+
+const filterTodaysData = (data) =>{
+  if(!data) return
+  console("datas", data.filter(d => d.date === new Date().toISOString().split('T')[0])) 
+}
 const uploads = {
   title: "",
   description: "",
   files: [],
   fileSize: 0,
 }
-let selectedFiles = [];
-let fileSize = 0;
 buttonEventListener("#fileInput", (e, element) => {
     const fileInput = e.target;
   
@@ -103,7 +94,7 @@ buttonEventListener("#fileInput", (e, element) => {
         return;
     }
     uploads.files = uploads.files.concat(newFiles);
-    fileSize = newFileSize;
+    uploads.fileSize = newFileSize;
     renderPreviews();
     updateInputFiles();
 }, 'change')
@@ -125,9 +116,15 @@ buttonEventListener("#contentDescription", (e, element) => {
   uploads.description = updatePreview(element, "#description-changes", "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Neque molestias vitae dolor repellendus molestiae eveniet numquam odio, quas veniam magni in perspiciatis commodi iste sapiente quia asperiores earum provident sed.");
 }, 'input');
 
-function renderPreviews() {
+function renderPreviews(num=null) {
   const preview = document.getElementById('uploadPreview');
   preview.innerHTML = '';
+  if(num){
+    uploads.files = []
+    uploads.fileSize = 0
+    preview.innerHTML = "";
+    return
+  } 
   if(uploads.files.length<=0){
     preview.innerHTML = '<p>No files selected</p>';
     return;
@@ -178,6 +175,7 @@ function updateInputFiles() {
 
 buttonEventListener("#upload-submit", (e, element) => {
     e.preventDefault();
+    e.target.disabled = true;
     
     // 1. Validate all required fields
     const validation = validateUploadFields(uploadFields);
@@ -195,22 +193,25 @@ buttonEventListener("#upload-submit", (e, element) => {
         return;
     }
     
-    // 3. Prepare form data for API submission
-    const formData = {
-        title: document.getElementById('contentTitle').value.trim(),
-        description: document.getElementById('contentDescription').value.trim(),
-        files: uploads.files,
-        serviceId: document.getElementById('contentCategory').value,
-        status: document.getElementById('contentStatus').value
-    };
+    // 3. Get CSRF token and prepare FormData for file upload
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('title', document.getElementById('contentTitle').value.trim());
+    formData.append('description', document.getElementById('contentDescription').value.trim());
+    formData.append('serviceId', document.getElementById('contentCategory').value);
+    formData.append('status', document.getElementById('contentStatus').value);
+    formData.append('csrf_token', state.csrfToken);
+    
+    // Add files to FormData
+    Array.from(uploads.files).forEach((file, index) => {
+        formData.append(`files[${index}]`, file);
+    });
     
     // 4. Submit to API with proper error handling
     fetch('/landscape/USER_API/PortfolioController.php?action=create', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
+        body: formData // Don't set Content-Type header - FormData sets it automatically
     })
     .then(response => {
         if (!response.ok) {
@@ -236,7 +237,7 @@ buttonEventListener("#upload-submit", (e, element) => {
         clearElementError('#contentDescription');
         clearElementError('#contentCategory');
         clearElementError('#contentStatus');
-        
+        renderPreviews(1);
         } else if (data.status === 'error') {
             // Handle validation errors
             if (data.errors) {
@@ -290,11 +291,14 @@ const loader = async () => {
 }
 
 // Add real-time validation to clear errors when users start typing
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async() => {
+  // Generate CSRF token for form
+  await generateCsrfToken();
+  state.csrfToken = document.querySelector('input[name="csrf_token"]')?.value
+  let data = await fetchPorfolio(controllerPath, state, undefined, 2);
+  console.log("data: ", data);
   loader();
   
-  // Generate CSRF token for form
-  generateCsrfToken();
   
   // Clear errors when user starts typing in any field
   Object.values(uploadFields).forEach(fieldConfig => {

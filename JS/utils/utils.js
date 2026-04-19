@@ -233,26 +233,26 @@ export const clearElementError = withElement((element) => {
   const errorDiv = element.parentNode.querySelector('.field-error');
   if (errorDiv) errorDiv.remove();
 })
-export const  generateCsrfToken = () => {
-  fetch('/landscape/USER_API/utils/csrf_token.php')
-    .then(response => response.json())
-    .then(data => {
-      if (data.token) {
-        // Add CSRF token to form
-        const form = document.getElementById('uploadForm');
-        if (form) {
-          let csrfInput = document.querySelector('input[name="csrf_token"]');
-          if (!csrfInput) {
-            csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrf_token';
-            form.appendChild(csrfInput);
-          }
-          csrfInput.value = data.token;
+export const  generateCsrfToken = async() => {
+  try{
+    const response =  await fetch('/landscape/USER_API/utils/csrf_token.php')
+    const data = await response.json()
+      
+    if (data.token) {
+      // Add CSRF token to form
+      const form = document.getElementById('uploadForm');
+      if (form) {
+        let csrfInput = document.querySelector('input[name="csrf_token"]');
+        if (!csrfInput) {
+          csrfInput = document.createElement('input');
+          csrfInput.type = 'hidden';
+          csrfInput.name = 'csrf_token';
+          form.appendChild(csrfInput);
         }
+        csrfInput.value = data.token;
       }
-    })
-    .catch(error => {
-      console.error('Failed to get CSRF token:', error);
-    });
+    }
+  } catch (error) {
+    console.error('Failed to get CSRF token:', error);
+  }
 }
