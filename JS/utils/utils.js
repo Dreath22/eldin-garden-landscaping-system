@@ -240,19 +240,43 @@ export const  generateCsrfToken = async() => {
       
     if (data.token) {
       // Add CSRF token to form
-      const form = document.getElementById('uploadForm');
-      if (form) {
-        let csrfInput = document.querySelector('input[name="csrf_token"]');
-        if (!csrfInput) {
-          csrfInput = document.createElement('input');
-          csrfInput.type = 'hidden';
-          csrfInput.name = 'csrf_token';
-          form.appendChild(csrfInput);
-        }
-        csrfInput.value = data.token;
+      let form = document.getElementById('uploadForm');
+      if (!form) {
+        // Create form if it doesn't exist
+        form = document.createElement('form');
+        form.id = 'uploadForm';
+        form.method = 'POST';
+        form.enctype = 'multipart/form-data';
+        document.body.appendChild(form);
       }
+      
+      let csrfInput = document.querySelector('input[name="csrf_token"]');
+      if (!csrfInput) {
+        csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        form.appendChild(csrfInput);
+      }
+      csrfInput.value = data.token;
+    
     }
   } catch (error) {
     console.error('Failed to get CSRF token:', error);
   }
 }
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+export const filesizeComputation = (bytes) => {
+  if (!bytes || bytes === 0) return '0 B';
+  
+  const k = 1000; 
+  let i = 0;
+  
+  // Iterative reduction (Faster than Math.log in V8)
+  while (bytes >= k && i < UNITS.length - 1) {
+    bytes /= k;
+    i++;
+  }
+
+  // 4. Efficient rounding and formatting
+  return `${parseFloat(bytes.toFixed(2))} ${UNITS[i]}`;
+};

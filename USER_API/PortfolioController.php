@@ -77,13 +77,13 @@ function processPortfolioUploads($files, $portfolioDir) {
                 
                 // Move file to portfolio directory
                 if (move_uploaded_file($tmpName, $fileName)) {
-                    $uploadedFiles[] = [
-                        'original_name' => $fileInfo['name'],
-                        'file_path' => $fileName,
-                        'file_size' => $fileInfo['size'],
-                        'file_type' => $fileInfo['type']
+                    // Minimal file metadata for JSON storage
+                    $fileMetadata = [
+                        'stored_name' => basename($fileName), // Just "1.jpg", "2.png"
+                        'upload_timestamp' => date('c') // ISO 8601 timestamp
                     ];
                     
+                    $uploadedFiles[] = $fileMetadata;
                     $totalSize += $fileInfo['size'];
                     $fileIndex++;
                 }
@@ -163,8 +163,8 @@ function createPortfolio($pdo, $security) {
         
         // Insert portfolio into database first to get portfolio ID
         $stmt = $pdo->prepare("
-            INSERT INTO portfolios (title, description, services_id, featured, total_file_size, file_count, dir_path) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO portfolios (title, description, services_id, featured, total_file_size, file_count, dir_path, files) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -174,7 +174,8 @@ function createPortfolio($pdo, $security) {
             $sanitized['featured'] ?? 0,
             0, // Initial total_file_size
             0, // Initial file_count
-            '' // Initial dir_path
+            '', // Initial dir_path
+            '' // Initial files JSON
         ]);
         
         $portfolioId = $pdo->lastInsertId();
@@ -186,12 +187,25 @@ function createPortfolio($pdo, $security) {
         $uploadResult = ['files' => [], 'total_size' => 0, 'file_count' => 0];
         if (isset($_FILES['files']) && is_array($_FILES['files'])) {
             $uploadResult = processPortfolioUploads($_FILES['files'], $portfolioDir);
+            
+            // Insert individual files into files table
+            foreach ($uploadResult['files'] as $fileData) {
+                $fileInsertStmt = $pdo->prepare("
+                    INSERT INTO files (parent_id, category, file_name, created_at) 
+                    VALUES (?, 'portfolio', ?, ?)
+                ");
+                $fileInsertStmt->execute([
+                    $portfolioId,
+                    $fileData['stored_name'],
+                    $fileData['upload_timestamp']
+                ]);
+            }
         }
         
         // Update database with file information
         $updateStmt = $pdo->prepare("
             UPDATE portfolios 
-            SET dir_path = ?, total_file_size = ?, file_count = ? 
+            SET dir_path = ?, total_file_size = ?, file_count = ?
             WHERE portfolio_id = ?
         ");
         
@@ -213,7 +227,6 @@ function createPortfolio($pdo, $security) {
             'title' => $sanitized['title'],
             'description' => $sanitized['description'],
             'dir_path' => $portfolioDir,
-            'files' => $uploadResult['files'],
             'total_file_size' => $uploadResult['total_size'],
             'file_count' => $uploadResult['file_count']
         ], 'Portfolio created successfully');
@@ -264,7 +277,7 @@ function listPortfolios($pdo, $security) {
             ],
             'page' => [
                 'required' => ['message' => 'page is required'],
-                'int' => ['min' => 1, 'message' => 'Invalid page']
+                'int' => ['min' => 0, 'message' => 'Invalid page']
             ],
             'sort' => [
                 'required' => ['message' => 'Sort category is required'],
@@ -289,58 +302,112 @@ function listPortfolios($pdo, $security) {
         }
         
         $sanitized = $validator->getSanitized();
-        
+
+        $sanitized['page'] = max(1, (int)($sanitized['page'] ?? 1));
+        $sanitized['limit'] = (int)($sanitized['limit'] ?? 6);
+        $offset = ($sanitized['page'] - 1) * $sanitized['limit'];
         // Check if service exists before selecting
         if($sanitized['category'] !== 1) {
             $serviceCheck = $pdo->prepare("SELECT id FROM services WHERE id = ?");
             $serviceCheck->execute([$sanitized['category']]);
             
             if (!$serviceCheck->fetch()) {
-                ApiResponse::validationError(['category' => 'Invalid service ID']);
+                //ApiResponse::validationError(['category' => 'Invalid service ID']);
+                $sanitized['category'] = 1;
             }
         }
-
-        $statusCondition = match ($sanitized['tab']) {
-            'draft'   => "WHERE status = 'DRAFT'",
-            'live'    => "WHERE status = 'LIVE'",
-            default   => "",
+        // 1. Build the conditions
+        $statusCondition = match ($sanitized['tab'] ?? 'all') {
+            'draft' => "AND p.status = 'DRAFT'",
+            'live'  => "AND p.status = 'LIVE'",
+            "featured" => "",
+            'all'   => "",
+            default => "", 
         };
 
-        $orderCondition = match ($sanitized['sort']) {
-            'old'    => "ORDER BY created_at ASC, portfolio_id ASC",
-            'a-z' => "ORDER BY title ASC",
-            'z-a' => "ORDER BY title DESC",
-            default   => "ORDER BY created_at DESC, portfolio_id DESC",
-        };
-        $offset = ($sanitized['page'] - 1) * $sanitized['limit'];
+        // 2. Identify if we have a service parameter
+        $hasServiceParam = ((int)$sanitized['category'] !== 1);
+        $serviceCondition = $hasServiceParam ? "AND p.services_id = ?" : "";
 
+        $orderCondition = match ($sanitized['sort'] ?? 'new') {
+            'old'   => "ORDER BY p.created_at ASC, p.portfolio_id ASC",
+            'a-z'   => "ORDER BY p.title ASC",
+            'z-a'   => "ORDER BY p.title DESC",
+            'new'   => "ORDER BY p.created_at DESC, p.portfolio_id DESC",
+            default => "ORDER BY p.created_at DESC, p.portfolio_id DESC",
+        };
+
+        // 3. Prepare the statement
         $stmt = $pdo->prepare("
-            SELECT portfolio_id, title, description, dir_path, featured, 
-                   total_file_size, file_count, services_id, status, created_at 
-            FROM portfolios 
+            SELECT p.portfolio_id, p.title, p.description, p.files, p.dir_path, p.featured, 
+                p.total_file_size, p.file_count, s.service_name, p.status, p.created_at,
+                GROUP_CONCAT(f.file_name ORDER BY f.file_name ASC) as filenames
+            FROM portfolios p
+            LEFT JOIN services s ON p.services_id = s.id
+            LEFT JOIN files f ON p.portfolio_id = f.parent_id AND f.category = 'portfolio'
+            WHERE 1=1
             $statusCondition
+            $serviceCondition
+            GROUP BY p.portfolio_id
             $orderCondition
-            LIMIT ?
-            OFFSET ?
+            LIMIT ? OFFSET ?
         ");
-        // 2. Execute with the actual values
-        $stmt->execute([
-            (int)$sanitized['limit'], 
-            (int)$offset
-        ]);
-        
+
+        // 4. Manual Binding (The safest way for LIMIT/OFFSET)
+        $currParam = 1;
+
+        // If category is not 1, it occupies the first '?' (after status which has no ?)
+        if ($hasServiceParam) {
+            $stmt->bindValue($currParam++, (int)$sanitized['category'], PDO::PARAM_INT);
+        }
+
+        // These will now correctly fill the next available '?' placeholders
+        $stmt->bindValue($currParam++, (int)$sanitized['limit'], PDO::PARAM_INT);
+        $stmt->bindValue($currParam++, (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
         $portfolios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Build Count SQL with the same filters as the main query
+        $countSql = "SELECT COUNT(*) FROM portfolios as p WHERE 1=1 $statusCondition $serviceCondition";
+        $countStmt = $pdo->prepare($countSql);
+
+        // If category filter is active, we need to bind it here too!
+        if ($hasServiceParam) {
+            $countStmt->bindValue(1, (int)$sanitized['category'], PDO::PARAM_INT);
+        }
+
+        $countStmt->execute();
+        $totalRecords = (int)$countStmt->fetchColumn();
+        $totalPages = ceil($totalRecords / $sanitized['limit']);
+
+        // Prepare pagination data
+        $paginationData = [
+            'currentPage'  => (int)$sanitized['page'],
+            'totalPages'   => $totalPages,
+            'totalRecords' => $totalRecords,
+            'limit'        => (int)$sanitized['limit'],
+            'hasNextPage'  => $sanitized['page'] < $totalPages,
+            'hasPrevPage'  => $sanitized['page'] > 1
+        ];
+        
         // Log security event
         $security->logSecurityEvent('portfolios_listed', [
             'count' => count($portfolios)
         ]);
-        ApiResponse::success($portfolios, 'Portfolios retrieved successfully');
+        $data = [
+            'data' => $portfolios,
+            'pagination' => $paginationData
+        ];
+        
+        // Send response with both data and pagination
+        ApiResponse::success($data, 'Portfolios retrieved successfully');
         
     } catch (Exception $e) {
         error_log('Portfolio listing error: ' . $e->getMessage());
         ApiResponse::serverError('Failed to retrieve portfolios');
     }
 }
-?>
+
+
 ?>

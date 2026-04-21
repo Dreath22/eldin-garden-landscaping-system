@@ -234,14 +234,14 @@
 
               <div style="margin-top: 1.5rem;">
                 <h5 style="margin-bottom: 0.75rem; color: var(--text-dark);">Recently Uploaded</h5>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div id="recentUploaded" style="display: flex; flex-direction: column; gap: 0.75rem;">
                   <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background-color: #f8fafc; border-radius: 8px;">
-                    <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=100" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                    <img id="recent-image-1" src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=100" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
                     <div style="flex: 1;">
-                      <p style="font-weight: 600; font-size: 0.9rem;">Flower Garden Design</p>
-                      <p style="font-size: 0.8rem; color: var(--text-gray);">Gallery • Feb 18, 2026</p>
+                      <p style="font-weight: 600; font-size: 0.9rem;" id="recent-title-1">Flower Garden Design</p>
+                      <p style="font-size: 0.8rem; color: var(--text-gray);" id="recent-date-1">Gallery • Feb 18, 2026</p>
                     </div>
-                    <span class="status-badge active">Live</span>
+                    <span class="status-badge active" id="status-1">Live</span>
                   </div>
                   <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background-color: #f8fafc; border-radius: 8px;">
                     <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
@@ -278,14 +278,13 @@
                   <th>Preview</th>
                   <th>Title</th>
                   <th>Category</th>
-                  <th>File Type</th>
                   <th>Size</th>
                   <th>Uploaded</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="portfolioTable">
                 <tr>
                   <td><img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=100" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;"></td>
                   <td>Flower Garden Design</td>
@@ -370,17 +369,8 @@
             </table>
 
             <!-- Pagination -->
-            <div class="pagination">
-              <p class="pagination-info">Showing 1-5 of 248 files</p>
-              <div class="pagination-controls">
-                <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
-                <button class="pagination-btn active">1</button>
-                <button class="pagination-btn">2</button>
-                <button class="pagination-btn">3</button>
-                <span style="padding: 0.5rem;">...</span>
-                <button class="pagination-btn">50</button>
-                <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
-              </div>
+            <div class="pagination" id="pagination">
+              
             </div>
           </div>
         </div>

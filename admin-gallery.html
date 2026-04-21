@@ -170,17 +170,17 @@
 
         <!-- Tabs -->
         <div class="tabs">
-          <div class="tab active" onclick="switchTab('all')">All Images</div>
-          <div class="tab" onclick="switchTab('published')">Published</div>
-          <div class="tab" onclick="switchTab('drafts')">Drafts</div>
-          <div class="tab" onclick="switchTab('featured')">Featured</div>
+          <div class="tab active" data-tab='all'>All Images</div>
+          <div class="tab" data-tab='live'>Live</div>
+          <div class="tab" data-tab='draft'>Draft</div>
+          <div class="tab" data-tab='featured'>Featured</div>
         </div>
 
         <!-- Filters -->
         <div class="filters-bar">
           <div class="filter-group">
-            <label>Category:</label>
-            <select>
+            <label for="categories">Category:</label>
+            <select id="categories">
               <option>All Categories</option>
               <option>Landscaping</option>
               <option>Garden Design</option>
@@ -190,12 +190,12 @@
             </select>
           </div>
           <div class="filter-group">
-            <label>Sort:</label>
-            <select>
-              <option>Newest First</option>
-              <option>Oldest First</option>
-              <option>Name A-Z</option>
-              <option>Name Z-A</option>
+            <label for="sortings">Sort:</label>
+            <select id="sortings">
+              <option value="new">Newest First</option>
+              <option value="old">Oldest First</option>
+              <option value="a-z">Name A-Z</option>
+              <option value="z-a">Name Z-A</option>
             </select>
           </div>
           <div class="filter-group">
@@ -370,17 +370,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="pagination">
-          <p class="pagination-info">Showing 1-8 of 156 images</p>
-          <div class="pagination-controls">
-            <button class="pagination-btn" disabled><i class="fas fa-chevron-left"></i></button>
-            <button class="pagination-btn active">1</button>
-            <button class="pagination-btn">2</button>
-            <button class="pagination-btn">3</button>
-            <span style="padding: 0.5rem;">...</span>
-            <button class="pagination-btn">20</button>
-            <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
-          </div>
+        <div class="pagination" id="pagination">
         </div>
       </div>
     </main>
@@ -394,7 +384,9 @@
         <button class="modal-close" onclick="closeViewImageModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <img id="previewImage" src="" alt="Preview" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
+        <div class="upload-preview" id="upload-preview">
+          <!-- <img id="previewImage" src="" alt="Preview" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;"> -->
+        </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div>
             <p style="color: var(--text-gray); font-size: 0.85rem;">Title</p>
@@ -410,7 +402,7 @@
           </div>
           <div>
             <p style="color: var(--text-gray); font-size: 0.85rem;">File Size</p>
-            <p>2.4 MB</p>
+            <p id="previewFilesize">2.4 MB</p>
           </div>
         </div>
       </div>
@@ -469,13 +461,9 @@
       </div>
     </div>
   </div>
-
+  <script type="module" src="JS/Gallery.js"> </script>
   <script>
-    // View Image
-    function viewImage(title) {
-      document.getElementById('previewTitle').textContent = title;
-      document.getElementById('viewImageModal').style.display = 'flex';
-    }
+    
 
     function closeViewImageModal() {
       document.getElementById('viewImageModal').style.display = 'none';

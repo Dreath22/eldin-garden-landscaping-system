@@ -26,7 +26,7 @@ export const baseRequest = async (action, state, params = {}) => {
     }
 };
 
-export const fetchPorfolio = async (path, state, tab = state.currentTab, limit=null) => {
+export const fetchPorfolio = async (path, state, csrfToken, tab = state.currentTab, limit=null) => {
     // 1. GET Parameters (Filters/Pagination)
     const queryString = new URLSearchParams({
         action: 'list',
@@ -39,7 +39,7 @@ export const fetchPorfolio = async (path, state, tab = state.currentTab, limit=n
 
     // 2. POST Data (Security/Sensitive Info)
     const formData = new FormData();
-    formData.append('csrf_token', state.csrfToken);
+    formData.append('csrf_token', csrfToken);
 
     const response = await fetch(`${path}?${queryString}`, {
         method: 'POST', // Changing to POST makes $_POST available

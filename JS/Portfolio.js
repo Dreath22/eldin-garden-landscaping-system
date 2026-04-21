@@ -1,18 +1,27 @@
-import { generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
+import { filesizeComputation, generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
 import { fetchPorfolio } from './utils/apiUtils.js';
 const state = {
     currentPage: 1,
     currentTab: 'all',
     service_id: 1,
     sort: 'new',
-    csrfToken: "",
-    limit: 6,
+    limit: 3,
     uploads: {
         files: [],
         fileSize: 0,
     }
 };
+let csrfToken = ""
+
+const fixedstate = {
+    currentPage: 1,
+    currentTab: 'all',
+    service_id: 1,
+    sort: 'new',
+    limit: 6
+}
 const controllerPath = "/landscape/USER_API/PortfolioController.php";
+const base = "http://localhost/landscape/";
 
 // Field configuration for validation
 const uploadFields = {
@@ -201,7 +210,7 @@ buttonEventListener("#upload-submit", (e, element) => {
     formData.append('description', document.getElementById('contentDescription').value.trim());
     formData.append('serviceId', document.getElementById('contentCategory').value);
     formData.append('status', document.getElementById('contentStatus').value);
-    formData.append('csrf_token', state.csrfToken);
+    formData.append('csrf_token', csrfToken);
     
     // Add files to FormData
     Array.from(uploads.files).forEach((file, index) => {
@@ -229,15 +238,17 @@ buttonEventListener("#upload-submit", (e, element) => {
         }
         
         // Show success feedback to user
-            alert(data.message || 'Content uploaded successfully!');
+        alert(data.message || 'Content uploaded successfully!');
         
-        // Reset form on success
+        if(data.status !== "error"){
+          // Reset form on success
         document.getElementById('uploadForm').reset();
         clearElementError('#contentTitle');
         clearElementError('#contentDescription');
         clearElementError('#contentCategory');
         clearElementError('#contentStatus');
         renderPreviews(1);
+        }
         } else if (data.status === 'error') {
             // Handle validation errors
             if (data.errors) {
@@ -290,13 +301,150 @@ const loader = async () => {
   putTextinElementById('#contentCategory', html, 'innerHTML')
 }
 
+const urlGet = (data) =>{
+  console.log("urlGet: ", data)
+  const files_data = JSON.parse(data.files).files
+  const cleanRelativePath = (data.dir_path + files_data[0].stored_name).replace(/^[\./]+/, "");
+  const absoluteUrl = base + cleanRelativePath;
+  return absoluteUrl;
+}
+
+const rowData = (data) =>{
+  const url = urlGet(data)
+    console.log("url: ", url)
+    
+    // Format date to human readable
+    const formattedDate = new Date(data.created_at).toLocaleDateString('en-US', {
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    });
+    
+    let status = data.status;
+    // Determine status badge class and text
+    let statusClass = '';
+    let statusText = '';
+
+    if (status === 'LIVE') {
+      statusClass = 'active';
+      statusText = 'Live';
+    } else if (status === 'DRAFT') {
+      statusClass = 'pending';
+      statusText = 'Draft';
+    } else {
+      statusClass = 'pending';
+      statusText = 'Draft';
+    }
+
+    const totalFileSize = filesizeComputation(data.total_file_size);
+    
+    // Return data as dictionary/object
+    return {
+      url: url,
+      title: data.title,
+      date: formattedDate,
+      status: status,
+      statusClass: statusClass,
+      statusText: statusText,
+      description: data.description,
+      fileCount: data.file_count,
+      fileSize: data.total_file_size,
+      dirPath: data.dir_path,
+      portfolioId: data.portfolio_id,
+      filesize: totalFileSize,
+      service_name: capitalize(data.service_name),
+    };
+}
+
+// Generic portfolio renderer - DRY principle
+const renderPortfolios = (dataArray, htmlTemplate, elementId, maxItems = 3) => {
+  let accumulatedHtml = '';
+  if (!dataArray || !dataArray.length){
+    accumulatedHtml = "<p>No Recent Data</p>";
+    putTextinElementById(elementId, accumulatedHtml, 'innerHTML');
+    return;
+  };
+  
+  console.log(`Rendering ${maxItems} portfolios to ${elementId}`);
+  
+  // Loop through items and accumulate HTML
+  
+  const itemsToProcess = Math.min(maxItems, dataArray.length);
+  
+  for (let i = 0; i < itemsToProcess; i++) {
+    const portfolioHtml = htmlTemplate(dataArray[i]);
+    accumulatedHtml += portfolioHtml;
+  }
+  
+  // Display the accumulated HTML
+  putTextinElementById(elementId, accumulatedHtml, 'innerHTML');
+  console.log(`Rendered ${itemsToProcess} portfolio items`);
+};
+
+// HTML template for recent uploads (card format)
+const recentCardTemplate = (data) => {
+  const rowInfo = rowData(data);
+  
+  return `
+    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background-color: #f8fafc; border-radius: 8px;">
+      <img src="${rowInfo.url}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+      <div style="flex: 1;">
+        <p style="font-weight: 600; font-size: 0.9rem;">${rowInfo.title}</p>
+        <p style="font-size: 0.8rem; color: var(--text-gray);">${rowInfo.date}</p>
+      </div>
+      <span class="status-badge ${rowInfo.statusClass}">${rowInfo.statusText}</span>
+    </div>
+  `;
+};
+
+// Specific function using the generic renderer
+const recentLoader = (dataArray) => {
+  renderPortfolios(dataArray, recentCardTemplate, "#recentUploaded", 3);
+};
+
+
+// HTML template for table rows
+const tableRowTemplate = (data) => {
+  const rowInfo = rowData(data);
+  
+  return `
+    <tr>
+      <td><img src="${rowInfo.url}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;"></td>
+      <td>${rowInfo.title}</td>
+      <td>${rowInfo.service_name}</td>
+      <td>${rowInfo.filesize}</td>
+      <td>${rowInfo.date}</td>
+      <td><span class="status-badge ${rowInfo.statusClass}">${rowInfo.statusText}</span></td>
+      <td>
+        <div class="table-actions">
+          <button class="table-btn view" title="View"><i class="fas fa-eye"></i></button>
+          <button class="table-btn edit" title="Edit"><i class="fas fa-edit"></i></button>
+          <button class="table-btn delete" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>
+  `;
+};
+
+// Specific function using the generic renderer
+const tableBody = (dataArray) => {
+  renderPortfolios(dataArray, tableRowTemplate, "#portfolioTable", dataArray.length);
+};
+
 // Add real-time validation to clear errors when users start typing
 document.addEventListener('DOMContentLoaded', async() => {
   // Generate CSRF token for form
   await generateCsrfToken();
-  state.csrfToken = document.querySelector('input[name="csrf_token"]')?.value
-  let data = await fetchPorfolio(controllerPath, state, undefined, 2);
+  csrfToken = document.querySelector('input[name="csrf_token"]')?.value
+  let data = await fetchPorfolio(controllerPath, state, csrfToken, undefined, 5);
+  let data1 = await fetchPorfolio(controllerPath, fixedstate, csrfToken);
   console.log("data: ", data);
+  console.log("data pagination: ", data.data.pagination)
+  tableBody(data.data.data)
+  if (data.data.pagination) {
+    renderPagination(fetchPorfolio, data.data.pagination.totalRecords, state, () => fetchData(state.currentTab));
+  }
+  recentLoader(data1.data.data)
   loader();
   
   
