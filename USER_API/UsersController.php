@@ -1,37 +1,50 @@
 <?php
-header("Content-Type: application/json");
 date_default_timezone_set('Asia/Manila');
 
 // $pdo is already created by config.php (PDO::ERRMODE_EXCEPTION, FETCH_ASSOC, no emulated prepares)
 require_once '../config/config.php';
 
+
 // ─── ROUTER ───────────────────────────────────────────────────────────────────
 $action = $_GET['action'] ?? '';
 
-switch ($action) {
-    case 'list':
-        handleList($pdo);
-        break;
-    case 'get':
-        handleGet($pdo);
-        break;
-    case 'add':
-        handleAdd($pdo);
-        break;
-    case 'ban':
-        handleBan($pdo);
-        break;
-    case 'update':
-        handleUpdate($pdo);
-        break;
-    case 'delete':
-        handleDelete($pdo);
-        break;
-    case 'getClients':
-        include __DIR__ . '/Users/get_clients.php';
-        break;
-    default:
-        jsonError("Unknown action. Valid actions: list, get, add, ban, update, delete.", 400);
+if($action !== ''){
+    header("Content-Type: application/json");
+
+    switch ($action) {
+        case 'list':
+            handleList($pdo);
+            break;
+        case 'get':
+            handleGet($pdo);
+            break;
+        case 'add':
+            handleAdd($pdo);
+            break;
+        case 'ban':
+            handleBan($pdo);
+            break;
+        case 'update':
+            handleUpdate($pdo);
+            break;
+        case 'delete':
+            handleDelete($pdo);
+            break;
+        case 'getClients':
+            include __DIR__ . '/Users/get_clients.php';
+            break;
+        default:
+            jsonError("Unknown action. Valid actions: list, get, add, ban, update, delete.", 400);
+    }
+}
+
+
+// New Helper Function: Just gets the data
+function getUserById(PDO $pdo, int $userId): ?array {
+    $stmt = $pdo->prepare("SELECT id, name, email, role, status FROM users WHERE id = :id");
+    $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
 
 
@@ -427,51 +440,17 @@ function handleList(PDO $pdo): void
 // ─── HANDLER: get ─────────────────────────────────────────────────────────────
 // Source: user-action.php 'get' case (L22-51).
 // Column standardized to phone_number (not 'phone') to match the rest of this controller.
-
-function handleGet(PDO $pdo): void
-{
+    
+// Your existing API function now uses the helper
+function handleGet(PDO $pdo): void {
     $userId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+    $userData = getUserById($pdo, $userId);
 
-    if (!$userId) {
-        jsonError("Missing or invalid User ID.", 400);
+    if (!$userData) {
+        jsonError("User not found.", 404);
     }
-
-    try {
-        $stmt = $pdo->prepare("
-            SELECT id, name, email, role, phone_number, joined_date, last_login, status, notes
-            FROM users WHERE id = :id
-        ");
-        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
-        $stmt->execute();
-        $userData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$userData) {
-            jsonError("User not found.", 404);
-        }
-
-        jsonResponse([
-            "status" => "success",
-            "user" => [
-                "id" => (int)$userData['id'],
-                "name" => $userData['name'],
-                "email" => $userData['email'],
-                "phone_number" => $userData['phone_number'],
-                "role" => $userData['role'],
-                "joined_date" => $userData['joined_date'],
-                "last_login" => $userData['last_login'],
-                "status" => $userData['status'],
-                "notes" => $userData['notes'],
-                "avatar_url" => "https://api.dicebear.com/7.x/avataaars/svg?seed=" . urlencode($userData['name']),
-            ],
-        ]);
-
-    }
-    catch (PDOException $e) {
-        error_log("DB Error [handleGet]: " . $e->getMessage());
-        jsonError("Database error.", 500);
-    }
+    jsonResponse(["status" => "success", "user" => $userData]);
 }
-
 
 // ─── HANDLER: delete ──────────────────────────────────────────────────────────
 // Source: user-action.php 'delete' case (L100-111).

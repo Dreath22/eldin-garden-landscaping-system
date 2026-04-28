@@ -1,4 +1,4 @@
-import { moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
+import { moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize } from './utils/utils.js'
 const state = {
     currentPage: 1,
     currentTab: 'all',
@@ -73,7 +73,7 @@ const fetchData = (tab=state.currentTab) => {
 
 const stats = (data) => {
     if(data){
-        putTextinElementById('##total_services', data.total_services);
+        putTextinElementById('#total_services', data.total_services);
         putTextinElementById('#active_services', data.live_services);
         putTextinElementById('#inactive_services', data.inactive_services);
         putTextinElementById('#avg_order_value', `${moneySign}${data.total_baseprice/data.total_services}`);
@@ -193,7 +193,7 @@ const editService = async (id, data=null) => {
 
 
 //Update Service Fetch
-const updateService = async(id, data) => {
+const updateService = async(id,) => {
     const editServiceName = document.querySelector('#editServiceName').value;
     const editServiceDescription = document.querySelector('#editServiceDescription').value;
     const editServicePrice = document.querySelector('#editServicePrice').value;
@@ -242,19 +242,19 @@ const updateService = async(id, data) => {
 
 function setupButtonListeners() {
     document.querySelectorAll('.click-views').forEach((el)=>{
-        buttonEventListener(el, (clickedBtn)=>{
+        buttonEventListener(el, (els, clickedBtn)=>{
             const id = clickedBtn.getAttribute('data-id');
             viewService(id);
         })
     })
     document.querySelectorAll('.click-edits').forEach((el)=>{
-        buttonEventListener(el, (clickedBtn)=>{
+        buttonEventListener(el, (els, clickedBtn)=>{
             const id = clickedBtn.getAttribute('data-id');
             editService(id);
         })
     })
     document.querySelectorAll('.click-deletes').forEach((el)=>{
-        buttonEventListener(el, (clickedBtn)=>{
+        buttonEventListener(el, (els, clickedBtn)=>{
             const id = clickedBtn.getAttribute('data-id');
             deleteService(id);
         })

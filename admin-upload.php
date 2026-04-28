@@ -22,52 +22,52 @@
       <nav class="admin-nav">
         <div class="admin-nav-section">
           <p class="admin-nav-title">Main</p>
-          <a href="admin-dashboard.html" class="admin-nav-item">
+          <a href="admin-dashboard.php" class="admin-nav-item">
             <i class="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
-          <a href="admin-users.html" class="admin-nav-item">
+          <a href="admin-users.php" class="admin-nav-item">
             <i class="fas fa-users"></i>
             <span>Users</span>
           </a>
-          <a href="admin-bookings.html" class="admin-nav-item">
+          <a href="admin-bookings.php" class="admin-nav-item">
             <i class="fas fa-calendar-alt"></i>
             <span>Bookings</span>
           </a>
-          <a href="admin-transactions.html" class="admin-nav-item">
+          <a href="admin-transactions.php" class="admin-nav-item">
             <i class="fas fa-exchange-alt"></i>
             <span>Transactions</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Content</p>
-          <a href="admin-upload.html" class="admin-nav-item active">
+          <a href="admin-upload.php" class="admin-nav-item active">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Content</span>
           </a>
-          <a href="admin-gallery.html" class="admin-nav-item">
+          <a href="admin-gallery.php" class="admin-nav-item">
             <i class="fas fa-images"></i>
             <span>Gallery Manager</span>
           </a>
-          <a href="admin-services.html" class="admin-nav-item">
+          <a href="admin-services.php" class="admin-nav-item">
             <i class="fas fa-tools"></i>
             <span>Services</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.html" class="admin-nav-item">
+          <a href="admin-emails.php" class="admin-nav-item">
             <i class="fas fa-envelope"></i>
             <span>Email Updates</span>
           </a>
-          <a href="admin-notifications.html" class="admin-nav-item">
+          <a href="admin-notifications.php" class="admin-nav-item">
             <i class="fas fa-bell"></i>
             <span>Notifications</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.html" class="admin-nav-item">
+          <a href="admin-settings.php" class="admin-nav-item">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
           </a>
@@ -88,7 +88,7 @@
           <input type="text" placeholder="Search content...">
         </div>
         <div class="admin-header-actions">
-          <a href="admin-notifications.html" class="admin-notification">
+          <a href="admin-notifications.php" class="admin-notification">
             <i class="fas fa-bell"></i>
             <span class="admin-notification-badge">5</span>
           </a>
@@ -110,7 +110,7 @@
             <h2>Content Upload Manager</h2>
             <p>Upload and manage content for your website.</p>
           </div>
-          <a href="admin-gallery.html" class="btn btn-secondary">
+          <a href="admin-gallery.php" class="btn btn-secondary">
             <i class="fas fa-images"></i> View Gallery
           </a>
         </div>
@@ -269,7 +269,7 @@
         <div class="dashboard-card" style="margin-top: 1.5rem;">
           <div class="dashboard-card-header">
             <h3><i class="fas fa-history"></i> Recent Uploads</h3>
-            <a href="admin-gallery.html" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
+            <a href="admin-gallery.php" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
           </div>
           <div class="dashboard-card-body">
             <table class="data-table">
@@ -377,6 +377,92 @@
       </div>
     </main>
   </div>
+  <!-- View Image Modal -->
+  <div class="modal-overlay" id="viewImageModal" style="display: none;">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fas fa-image" style="color: var(--primary-green);"></i> Image Preview</h3>
+        <button class="modal-close close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-preview" id="upload-preview">
+          <!-- <img id="previewImage" src="" alt="Preview" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;"> -->
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Title</p>
+            <p id="previewTitle" style="font-weight: 600;">Beautiful Backyard</p>
+          </div>
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Category</p>
+            <p id="previewCategory">Landscaping</p>
+          </div>
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">Uploaded</p>
+            <p id="previewDate">Feb 18, 2026</p>
+          </div>
+          <div>
+            <p style="color: var(--text-gray); font-size: 0.85rem;">File Size</p>
+            <p id="previewFilesize">2.4 MB</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small close" style="background-color: #f1f5f9; color: var(--text-dark);">Close</button>
+        <button class="table-btn edit close" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="table-btn delete close" title="Delete" ><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Image Modal -->
+  <div class="modal-overlay" id="editImageModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3><i class="fas fa-edit" style="color: var(--primary-green);"></i> Edit Image</h3>
+        <button class="modal-close close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="editImageForm">
+          <div class="form-group">
+            <label for="editImageTitle">Title</label>
+            <input type="text" id="editImageTitle" value="Beautiful Backyard">
+          </div>
+          <div class="form-group">
+            <label for="editImageDescription">Description</label>
+            <textarea id="editImageDescription" rows="2">A stunning backyard transformation with native plants.</textarea>
+          </div>
+          <div class="form-group">
+            <label for="editImageCategory">Category</label>
+            <select id="editImageCategory">
+              <option value="landscaping" selected>Landscaping</option>
+              <option value="garden">Garden Design</option>
+              <option value="lawn">Lawn Care</option>
+              <option value="hardscape">Hardscaping</option>
+              <option value="beforeafter">Before & After</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editImageStatus">Status</label>
+            <select id="editImageStatus">
+              <option value="live" selected>Live</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+          <input type="hidden" id="hidden_data_id" data-id=""/>
+          <div class="form-group">
+            <label for="isFeatured">
+              <input type="checkbox" id="isFeatured"> Featured Image
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-small close" style="background-color: #f1f5f9; color: var(--text-dark);">Cancel</button>
+        <button class="btn btn-primary btn-small" id="saveEdit">Save Changes</button>
+      </div>
+    </div>
+  </div>
   <script type="module" src="JS/Portfolio.js"></script>
   <script>
 
@@ -422,6 +508,27 @@
           preview.appendChild(div);
         };
         reader.readAsDataURL(file);
+      });
+    });
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    });
+
+    // Close modals when clicking close buttons
+    document.querySelectorAll('.close').forEach(closeBtn => {
+      closeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Find the closest modal overlay and close it
+        const modalOverlay = this.closest('.modal-overlay');
+        if (modalOverlay) {
+          modalOverlay.style.display = 'none';
+        }
       });
     });
   </script>

@@ -26,8 +26,10 @@ switch ($action) {
         deletePortfolio($pdo, $security);
         break;
     case 'list':
-    default:
         listPortfolios($pdo, $security);
+        break;
+    case 'stats':
+        stats($pdo, $security);
         break;
 }
 
@@ -163,14 +165,15 @@ function createPortfolio($pdo, $security) {
         
         // Insert portfolio into database first to get portfolio ID
         $stmt = $pdo->prepare("
-            INSERT INTO portfolios (title, description, services_id, featured, total_file_size, file_count, dir_path, files) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO portfolios (title, description, services_id, status, featured, total_file_size, file_count, dir_path, files) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
             $sanitized['title'],
             $sanitized['description'],
             $sanitized['serviceId'],
+            $sanitized['status'],
             $sanitized['featured'] ?? 0,
             0, // Initial total_file_size
             0, // Initial file_count
@@ -239,12 +242,255 @@ function createPortfolio($pdo, $security) {
 
 function updatePortfolio($pdo, $security) {
     // Handle portfolio update
-    ApiResponse::error('Update functionality not yet implemented', 501);
+    // Validate CSRF token from FormData
+    if (!isset($_POST['csrf_token']) || !$security->validateCsrf()) {
+        ApiResponse::forbidden('Invalid CSRF token');
+    }
+    
+    // Check rate limiting
+    $clientIp = $security->getClientIp();
+    if (!$security->checkRateLimit($clientIp)) {
+        ApiResponse::error('Rate limit exceeded', 429);
+    }
+    
+    // Get data from FormData instead of JSON
+    $data = [
+        'id' => $_POST['id'] ?? null,
+        'title' => $_POST['title'] ?? '',
+        'description' => $_POST['description'] ?? '',
+        'serviceId' => $_POST['serviceId'] ?? '',
+        'status' => $_POST['status'] ?? 'draft',
+        'featured' => $_POST['featured'] ?? 0
+    ];
+    
+    $rules = [
+        'id' => [
+            'required' => ['message' => 'Portfolio ID is required'],
+            'int' => ['min' => 1, 'message' => 'Invalid portfolio ID']
+        ],
+        'title' => [
+            'required' => ['message' => 'Title is required'],
+            'string' => ['min' => 3, 'max' => 255, 'message' => 'Title must be between 3 and 255 characters']
+        ],
+        'description' => [
+            'required' => ['message' => 'Description is required'],
+            'string' => ['min' => 10, 'max' => 2000, 'message' => 'Description must be between 10 and 2000 characters']
+        ],
+        'serviceId' => [
+            'required' => ['message' => 'Service category is required'],
+            'int' => ['min' => 1, 'message' => 'Invalid service ID']
+        ],
+        'status' => [
+            'required' => ['message' => 'Status is required'],
+            'enum' => ['values' => ['draft', 'live'], 'message' => 'Status must be either draft or live']
+        ],
+        'featured' => [
+            'int' => ['min' => 0, 'max' => 1, 'message' => 'Featured must be 0 or 1']
+        ]
+    ];
+
+    $validator = new InputValidator();
+    $validator->validate($data, $rules);
+    
+    if ($validator->hasErrors()) {
+        ApiResponse::validationError($validator->getErrors());
+    }
+    
+    $sanitized = $validator->getSanitized();
+    
+    try{
+        // Verify if portfolio exists
+        $checkStmt = $pdo->prepare("SELECT * FROM portfolios WHERE portfolio_id = ?");
+        $checkStmt->execute([$sanitized['id']]);
+        $existingPortfolio = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$existingPortfolio) {
+            ApiResponse::notFound('Portfolio not found');
+        }
+        
+        // Compare values and build update query dynamically
+        $updateFields = [];
+        $updateValues = [];
+        
+        if ($existingPortfolio['title'] !== $sanitized['title']) {
+            $updateFields[] = "title = ?";
+            $updateValues[] = $sanitized['title'];
+        }
+        
+        if ($existingPortfolio['description'] !== $sanitized['description']) {
+            $updateFields[] = "description = ?";
+            $updateValues[] = $sanitized['description'];
+        }
+        
+        if ($existingPortfolio['services_id'] != $sanitized['serviceId']) {
+            $updateFields[] = "services_id = ?";
+            $updateValues[] = $sanitized['serviceId'];
+        }
+        
+        if ($existingPortfolio['status'] !== $sanitized['status']) {
+            $updateFields[] = "status = ?";
+            $updateValues[] = $sanitized['status'];
+        }
+        
+        if ($existingPortfolio['featured'] != $sanitized['featured']) {
+            $updateFields[] = "featured = ?";
+            $updateValues[] = $sanitized['featured'];
+        }
+        
+
+        /* Destroy existing files and database records - COMMENTED OUT
+        if (!empty($existingPortfolio['dir_path'])) {
+            // Delete files from database
+            $deleteFilesStmt = $pdo->prepare("DELETE FROM files WHERE parent_id = ? AND category = 'portfolio'");
+            $deleteFilesStmt->execute([$sanitized['id']]);
+            
+            // Delete physical files from directory
+            // Clean the dir_path to handle both relative and absolute paths
+            $cleanDirPath = str_replace(['../uploads/', 'uploads/'], '', $existingPortfolio['dir_path']);
+            $cleanDirPath = ltrim($cleanDirPath, './');
+            $fullDirPath = __DIR__ . '/../uploads/' . $cleanDirPath;
+            if (is_dir($fullDirPath)) {
+                $files = glob($fullDirPath . '/*');
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        unlink($file);
+                    }   
+                }
+                // Try to remove the directory (optional, will fail if not empty)
+                @rmdir($fullDirPath);
+            }
+        }
+        */
+        
+        /* Handle file uploads if present - COMMENTED OUT
+        $uploadResult = ['files' => [], 'total_size' => 0, 'file_count' => 0];
+        if (isset($_FILES['files']) && is_array($_FILES['files'])) {
+            $uploadResult = processPortfolioUploads($_FILES['files'], $existingPortfolio['dir_path']);
+            
+            // Insert individual files into files table
+            foreach ($uploadResult['files'] as $fileData) {
+                $fileInsertStmt = $pdo->prepare("
+                    INSERT INTO files (parent_id, category, file_name, created_at) 
+                    VALUES (?, 'portfolio', ?, ?)
+                ");
+                $fileInsertStmt->execute([
+                    $sanitized['id'],
+                    $fileData['stored_name'],
+                    $fileData['upload_timestamp']
+                ]);
+            }
+            
+            // Update file-related fields
+            $updateFields[] = "total_file_size = ?";
+            $updateValues[] = $uploadResult['total_size'];
+            $updateFields[] = "file_count = ?";
+            $updateValues[] = $uploadResult['file_count'];
+        }
+        */
+        
+        // Only update if there are changes
+        if (!empty($updateFields)) {
+            $updateFields[] = "updated_at = CURRENT_TIMESTAMP";
+            $updateValues[] = $sanitized['id'];
+            
+            $updateSql = "UPDATE portfolios SET " . implode(', ', $updateFields) . " WHERE portfolio_id = ?";
+            $updateStmt = $pdo->prepare($updateSql);
+            $updateStmt->execute($updateValues);
+        }
+        
+        // Log security event
+        $security->logSecurityEvent('portfolio_updated', [
+            'content_id' => $sanitized['id'],
+            'title' => $sanitized['title']
+        ]);
+        
+        // Get updated portfolio data
+        $updatedStmt = $pdo->prepare("SELECT * FROM portfolios WHERE portfolio_id = ?");
+        $updatedStmt->execute([$sanitized['id']]);
+        $updatedPortfolio = $updatedStmt->fetch(PDO::FETCH_ASSOC);
+        
+        ApiResponse::success([
+            'id' => $updatedPortfolio['portfolio_id'],
+            'title' => $updatedPortfolio['title'],
+            'description' => $updatedPortfolio['description'],
+            'service_id' => $updatedPortfolio['services_id'],
+            'status' => $updatedPortfolio['status'],
+            'featured' => $updatedPortfolio['featured'],
+            'updated_at' => $updatedPortfolio['updated_at']
+        ], 'Portfolio updated successfully');
+        
+    }catch(Exception $e){
+        error_log('Portfolio Update error: '. $e->getMessage());
+        ApiResponse::serverError('Failed to update portfolio');
+    }
 }
 
 function deletePortfolio($pdo, $security) {
-    // Handle portfolio deletion
-    ApiResponse::error('Delete functionality not yet implemented', 501);
+    // Handle portfolio deletion\
+
+
+    // Validate CSRF token from FormData
+    if (!isset($_POST['csrf_token']) || !$security->validateCsrf()) {
+        ApiResponse::forbidden('Invalid CSRF token');
+    }
+    
+    // Check rate limiting
+    $clientIp = $security->getClientIp();
+    if (!$security->checkRateLimit($clientIp)) {
+        ApiResponse::error('Rate limit exceeded', 429);
+    }
+    
+    // Get data from FormData instead of JSON
+    $data = [
+        'id' => $_POST['id'] ?? null,
+    ];
+    
+    $rules = [
+        'id' => [
+            'required' => ['message' => 'Portfolio ID is required'],
+            'int' => ['min' => 1, 'message' => 'Invalid portfolio ID']
+        ],
+    ];
+
+    $validator = new InputValidator();
+    $validator->validate($data, $rules);
+    
+    if ($validator->hasErrors()) {
+        ApiResponse::validationError($validator->getErrors());
+    }
+    
+    $sanitized = $validator->getSanitized();
+    try{
+        // Verify if portfolio exists
+        $checkStmt = $pdo->prepare("SELECT * FROM portfolios WHERE portfolio_id = ?");
+        $checkStmt->execute([$sanitized['id']]);
+        $existingPortfolio = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$existingPortfolio) {
+            ApiResponse::notFound('Portfolio not found');
+        }
+
+        $deleteFilesStmt = $pdo->prepare("DELETE FROM files WHERE parent_id = ? AND category = 'portfolio'");
+        $deleteFilesStmt->execute([$sanitized['id']]);
+
+        $deleteStmt = $pdo->prepare("DELETE FROM portfolios WHERE portfolio_id = ?");
+        $deleteStmt->execute([$sanitized['id']]);
+        
+        // Log security event
+        $security->logSecurityEvent('portfolio_deleted', [
+            'content_id' => $sanitized['id'],
+            'title' => $existingPortfolio['title']
+        ]);
+        
+        ApiResponse::success([
+            'id' => $sanitized['id'],
+            'title' => $existingPortfolio['title']
+        ], 'Portfolio deleted successfully');
+        
+    }catch(Exception $e){
+        error_log('Portfolio Update error: '. $e->getMessage());
+        ApiResponse::serverError('Failed to update portfolio');
+    }
 }
 
 function listPortfolios($pdo, $security) {
@@ -273,7 +519,7 @@ function listPortfolios($pdo, $security) {
         $rules = [
             'tab' => [
                 'required' => ['message' => 'tab is required'],
-                 'enum' => ['values' => ['all' ,'draft', 'live'], 'message' => 'tab must be either draft, live or featured']//, 'featured'
+                 'enum' => ['values' => ['all' ,'draft', 'live'], 'message' => 'tab must be either all, draft, or live']
             ],
             'page' => [
                 'required' => ['message' => 'page is required'],
@@ -320,7 +566,6 @@ function listPortfolios($pdo, $security) {
         $statusCondition = match ($sanitized['tab'] ?? 'all') {
             'draft' => "AND p.status = 'DRAFT'",
             'live'  => "AND p.status = 'LIVE'",
-            "featured" => "",
             'all'   => "",
             default => "", 
         };
@@ -409,5 +654,42 @@ function listPortfolios($pdo, $security) {
     }
 }
 
+function stats($pdo, $security) {
+    try {
+        // Get portfolio statistics
+        $statsSql = "SELECT 
+                        COUNT(*) as total_portfolios,
+                        SUM(CASE WHEN status = 'LIVE' THEN 1 ELSE 0 END) as live_portfolios,
+                        SUM(CASE WHEN status = 'DRAFT' THEN 1 ELSE 0 END) as draft_portfolios,
+                        SUM(total_file_size) as total_file_size
+                    FROM portfolios p";
+        
+        $stmt = $pdo->query($statsSql);
+        $portfolioStats = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        
+        // Prepare response data
+        $stats = [
+            'overview' => [
+                'total_portfolios' => (int)$portfolioStats['total_portfolios'],
+                'live_portfolios' => (int)$portfolioStats['live_portfolios'],
+                'draft_portfolios' => (int)$portfolioStats['draft_portfolios'],
+                'total_file_size' => (int)$portfolioStats['total_file_size']
+            ],
+        ];
+        
+        // Log security event
+        $security->logSecurityEvent('portfolio_stats_accessed', [
+            'user_id' => $currentUser['id']
+        ]);
+        
+        ApiResponse::success($stats, 'Portfolio statistics retrieved successfully');
+        
+    } catch (PDOException $e) {
+        error_log('Portfolio stats error: ' . $e->getMessage());
+        ApiResponse::serverError('Failed to retrieve portfolio statistics');
+    }
+}
 
+?>
 ?>

@@ -4,14 +4,18 @@ require_once __DIR__ . '/RateLimiter.php';
 class SecurityMiddleware {
     private $csrfTokenLife = 3600; // 1 hour
     
-    public function validateCsrf(): bool {
-        $token = $_POST['csrf_token'] ?? '';
+    public function validateCsrf($token = null): bool {
+        $token = $token 
+             ?? $_SERVER['HTTP_X_CSRF_TOKEN'] // Look for the header
+             ?? $_POST['csrf_token']          // Look for traditional form data
+             ?? '';
         $sessionToken = $_SESSION['csrf_token'] ?? '';
         
         return hash_equals($sessionToken, $token) && 
                !empty($sessionToken) && 
                (time() - $_SESSION['csrf_token_time'] < $this->csrfTokenLife);
     }
+
     
     public function generateCsrfToken(): string {
         $token = bin2hex(random_bytes(32));

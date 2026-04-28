@@ -41,7 +41,7 @@
     <!-- Sidebar -->
     <aside class="admin-sidebar">
         <div class="admin-sidebar-header">
-            <a href="admin-dashboard.html" class="logo">
+            <a href="admin-dashboard.php" class="logo">
                 <div class="logo-icon">
                     <i class="fas fa-leaf"></i>
                 </div>
@@ -51,48 +51,48 @@
         <nav class="admin-nav">
             <div class="admin-nav-section">
                 <p class="admin-nav-title">Main</p>
-                <a href="admin-dashboard.html" class="admin-nav-item">
+                <a href="admin-dashboard.php" class="admin-nav-item">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="admin-users.html" class="admin-nav-item">
+                <a href="admin-users.php" class="admin-nav-item">
                     <i class="fas fa-users"></i>
                     <span>Users</span>
                 </a>
-                <a href="admin-bookings.html" class="admin-nav-item">
+                <a href="admin-bookings.php" class="admin-nav-item">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Bookings</span>
                 </a>
-                <a href="admin-transactions.html" class="admin-nav-item">
+                <a href="admin-transactions.php" class="admin-nav-item">
                     <i class="fas fa-exchange-alt"></i>
                     <span>Transactions</span>
                 </a>
             </div>
             <div class="admin-nav-section">
                 <p class="admin-nav-title">Content</p>
-                <a href="admin-upload.html" class="admin-nav-item">
+                <a href="admin-upload.php" class="admin-nav-item">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <span>Upload Content</span>
                 </a>
-                <a href="admin-gallery.html" class="admin-nav-item">
+                <a href="admin-gallery.php" class="admin-nav-item">
                     <i class="fas fa-images"></i>
                     <span>Gallery Manager</span>
                 </a>
-                <a href="admin-services.html" class="admin-nav-item">
+                <a href="admin-services.php" class="admin-nav-item">
                     <i class="fas fa-tools"></i>
                     <span>Services</span>
                 </a>
             </div>
             <div class="admin-nav-section">
                 <p class="admin-nav-title">Billing</p>
-                <a href="admin-invoices.html" class="admin-nav-item active">
+                <a href="admin-invoices.php" class="admin-nav-item active">
                     <i class="fas fa-file-invoice"></i>
                     <span>Invoices</span>
                 </a>
             </div>
             <div class="admin-nav-section">
                 <p class="admin-nav-title">Settings</p>
-                <a href="admin-settings.html" class="admin-nav-item">
+                <a href="admin-settings.php" class="admin-nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
                 </a>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - GreenScape Admin</title>
   <link rel="stylesheet" href="admin-style.css">
+  <link rel="stylesheet" href="/landscape/assets/uPlot.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -22,52 +23,52 @@
       <nav class="admin-nav">
         <div class="admin-nav-section">
           <p class="admin-nav-title">Main</p>
-          <a href="admin-dashboard.html" class="admin-nav-item active">
+          <a href="admin-dashboard.php" class="admin-nav-item active">
             <i class="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
-          <a href="admin-users.html" class="admin-nav-item">
+          <a href="admin-users.php" class="admin-nav-item">
             <i class="fas fa-users"></i>
             <span>Users</span>
           </a>
-          <a href="admin-bookings.html" class="admin-nav-item">
+          <a href="admin-bookings.php" class="admin-nav-item">
             <i class="fas fa-calendar-alt"></i>
             <span>Bookings</span>
           </a>
-          <a href="admin-transactions.html" class="admin-nav-item">
+          <a href="admin-transactions.php" class="admin-nav-item">
             <i class="fas fa-exchange-alt"></i>
             <span>Transactions</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Content</p>
-          <a href="admin-upload.html" class="admin-nav-item">
+          <a href="admin-upload.php" class="admin-nav-item">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Content</span>
           </a>
-          <a href="admin-gallery.html" class="admin-nav-item">
+          <a href="admin-gallery.php" class="admin-nav-item">
             <i class="fas fa-images"></i>
             <span>Gallery Manager</span>
           </a>
-          <a href="admin-services.html" class="admin-nav-item">
+          <a href="admin-services.php" class="admin-nav-item">
             <i class="fas fa-tools"></i>
             <span>Services</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.html" class="admin-nav-item">
+          <a href="admin-emails.php" class="admin-nav-item">
             <i class="fas fa-envelope"></i>
             <span>Email Updates</span>
           </a>
-          <a href="admin-notifications.html" class="admin-nav-item">
+          <a href="admin-notifications.php" class="admin-nav-item">
             <i class="fas fa-bell"></i>
             <span>Notifications</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.html" class="admin-nav-item">
+          <a href="admin-settings.php" class="admin-nav-item">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
           </a>
@@ -88,7 +89,7 @@
           <input type="text" placeholder="Search users, bookings, transactions...">
         </div>
         <div class="admin-header-actions">
-          <a href="admin-notifications.html" class="admin-notification">
+          <a href="admin-notifications.php" class="admin-notification">
             <i class="fas fa-bell"></i>
             <span class="admin-notification-badge">5</span>
           </a>
@@ -120,69 +121,69 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>1,284</h3>
+                <h3 id="total-user">1,284</h3>
                 <p>Total Users</p>
               </div>
               <div class="stat-card-icon blue">
                 <i class="fas fa-users"></i>
               </div>
             </div>
-            <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +12% from last month</p>
+            <!-- <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +12% from last month</p> -->
           </div>
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>$48,250</h3>
+                <h3 id="monthly-revenue">$48,250</h3>
                 <p>Revenue This Month</p>
               </div>
               <div class="stat-card-icon green">
                 <i class="fas fa-dollar-sign"></i>
               </div>
             </div>
-            <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +8% from last month</p>
+            <!-- <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +8% from last month</p> -->
           </div>
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>156</h3>
+                <h3 id="active-bookings">156</h3>
                 <p>Active Bookings</p>
               </div>
               <div class="stat-card-icon orange">
                 <i class="fas fa-calendar-check"></i>
               </div>
             </div>
-            <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +5% from last month</p>
+            <!-- <p class="stat-card-change positive"><i class="fas fa-arrow-up"></i> +5% from last month</p> -->
           </div>
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>23</h3>
+                <h3 id="pending-bookings">23</h3>
                 <p>Pending Requests</p>
               </div>
               <div class="stat-card-icon red">
                 <i class="fas fa-clock"></i>
               </div>
             </div>
-            <p class="stat-card-change negative"><i class="fas fa-arrow-down"></i> -3% from last month</p>
+            <!-- <p class="stat-card-change negative"><i class="fas fa-arrow-down"></i> -3% from last month</p> -->
           </div>
         </div>
 
         <!-- Quick Actions -->
         <h3 style="margin-bottom: 1rem; color: var(--text-dark);">Quick Actions</h3>
         <div class="quick-actions" style="margin-bottom: 2rem;">
-          <a href="admin-users.html" class="quick-action-card">
+          <a href="admin-users.php" class="quick-action-card">
             <i class="fas fa-user-plus"></i>
             <h4>Add User</h4>
           </a>
-          <a href="admin-bookings.html" class="quick-action-card">
+          <a href="admin-bookings.php" class="quick-action-card">
             <i class="fas fa-calendar-plus"></i>
             <h4>New Booking</h4>
           </a>
-          <a href="admin-upload.html" class="quick-action-card">
+          <a href="admin-upload.php" class="quick-action-card">
             <i class="fas fa-cloud-upload-alt"></i>
             <h4>Upload Content</h4>
           </a>
-          <a href="admin-emails.html" class="quick-action-card">
+          <a href="admin-emails.php" class="quick-action-card">
             <i class="fas fa-paper-plane"></i>
             <h4>Send Email</h4>
           </a>
@@ -193,20 +194,17 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3><i class="fas fa-chart-line"></i> Revenue Overview</h3>
-              <select style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px;">
-                <option>Last 7 Days</option>
-                <option>Last 30 Days</option>
-                <option>This Year</option>
+              <select id="charts-filter" style="padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <option value="weeks">Last 7 Days</option>
+                <option value="months">Last 30 Days</option>
+                <option value="years">This Year</option>
               </select>
             </div>
-            <div class="chart-placeholder">
-              <div style="text-align: center;">
-                <i class="fas fa-chart-area" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                <p>Revenue Chart Visualization</p>
-              </div>
+            <div class="chart-placeholder" id="chart-wrapper" style="width: 100%; max-width: 100%; overflow: hidden; border: 1px solid #ccc;">
+              
             </div>
           </div>
-          <div class="chart-container">
+          <!-- <div class="chart-container">
             <div class="chart-header">
               <h3><i class="fas fa-chart-pie"></i> Service Distribution</h3>
             </div>
@@ -216,7 +214,7 @@
                 <p>Service Chart Visualization</p>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
 
         <!-- Dashboard Grid -->
@@ -225,7 +223,7 @@
           <div class="dashboard-card">
             <div class="dashboard-card-header">
               <h3><i class="fas fa-users"></i> Recent Users</h3>
-              <a href="admin-users.html" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
+              <a href="admin-users.php" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
             </div>
             <div class="dashboard-card-body">
               <table class="data-table">
@@ -236,8 +234,8 @@
                     <th>Status</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
+                <tbody id="recent-user-tbody">
+                  <!-- <tr>
                     <td>
                       <div class="table-user">
                         <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
@@ -288,49 +286,9 @@
                     </td>
                     <td>Feb 10, 2026</td>
                     <td><span class="status-badge banned">Banned</span></td>
-                  </tr>
+                  </tr> -->
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          <!-- Recent Activity -->
-          <div class="dashboard-card">
-            <div class="dashboard-card-header">
-              <h3><i class="fas fa-history"></i> Recent Activity</h3>
-              <a href="#" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
-            </div>
-            <div class="dashboard-card-body">
-              <div class="timeline">
-                <div class="timeline-item">
-                  <div class="timeline-content">
-                    <h4>New booking received</h4>
-                    <p>Sarah Johnson booked Lawn Maintenance Service</p>
-                    <p class="timeline-time">10 minutes ago</p>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-content">
-                    <h4>Payment processed</h4>
-                    <p>Received $599 from Michael Chen</p>
-                    <p class="timeline-time">1 hour ago</p>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-content">
-                    <h4>New user registered</h4>
-                    <p>Emily Rodriguez created an account</p>
-                    <p class="timeline-time">3 hours ago</p>
-                  </div>
-                </div>
-                <div class="timeline-item">
-                  <div class="timeline-content">
-                    <h4>Service completed</h4>
-                    <p>Garden Design Package completed for Robert Kim</p>
-                    <p class="timeline-time">5 hours ago</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -339,10 +297,10 @@
         <div class="dashboard-card" style="margin-top: 1.5rem;">
           <div class="dashboard-card-header">
             <h3><i class="fas fa-exchange-alt"></i> Recent Transactions</h3>
-            <a href="admin-transactions.html" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
+            <a href="admin-transactions.php" style="color: var(--primary-green); font-size: 0.9rem;">View All</a>
           </div>
           <div class="dashboard-card-body">
-            <div class="transaction-list">
+            <div class="transaction-list" id="recent-transactions-body">
               <div class="transaction-item">
                 <div class="transaction-icon income">
                   <i class="fas fa-arrow-down"></i>
@@ -401,5 +359,20 @@
       </div>
     </main>
   </div>
+
+  
+    <style>
+      /* .bar-graph svg {
+        margin: 0 auto;
+      } */
+      rect:hover { fill: orange; cursor: pointer; }
+    </style>
+  
+<!-- Dashboard JavaScript Module -->
+<script src="/landscape/assets/uPlot.js"></script>
+
+<script type="module" src="/landscape/JS/Dashboard.js"></script>
+<script>
+</script>
 </body>
 </html>

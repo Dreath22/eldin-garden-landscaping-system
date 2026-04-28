@@ -1,3 +1,5 @@
+import { ModalSystem, ToastSystem } from './utils/modal.js';
+
 class InvoiceManager {
     constructor() {
         this.apiBase = '/landscape/USER_API/invoices.php';
@@ -236,7 +238,7 @@ class InvoiceManager {
 
         } catch (error) {
             console.error('Show invoice details error:', error);
-            alert('Failed to load invoice details: ' + error.message);
+            ToastSystem.error('Failed to load invoice details: ' + error.message, 'Invoice Error');
         }
     }
 
@@ -253,7 +255,7 @@ class InvoiceManager {
             window.open(pdfUrl, '_blank');
         } catch (error) {
             console.error('Generate invoice PDF error:', error);
-            alert('Failed to generate invoice PDF: ' + error.message);
+            ToastSystem.error('Failed to generate invoice PDF: ' + error.message, 'PDF Generation Error');
         }
     }
 }

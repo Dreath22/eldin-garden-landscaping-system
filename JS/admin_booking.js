@@ -1,4 +1,5 @@
-import { switchTab, formatToCalendar, renderPagination, capitalize, log } from './utils/utils.js'
+import { switchTab, formatToCalendar, renderPagination, capitalize, log, toggleModal } from './utils/utils.js'
+import { ModalSystem, ToastSystem } from './utils/modal.js';
 // --- 1. Centralized State Object ---
 const state = {
   currentPage: 1,
@@ -803,10 +804,22 @@ window.confirmAddBooking = async () => {
   console.log('Form Data JSON size:', JSON.stringify(formData).length, 'bytes')
 
   // 2. Validation Logic
-  if (!formData.user_id) return alert('Please select a valid customer from the list.')
-  if (!formData.service_id) return alert('Please select a valid service from the list.')
-  if (!date || !time) return alert('Please select both a date and a time.')
-  if (!formData.address) return alert('Please enter a complete service address.')
+  if (!formData.user_id) {
+    ToastSystem.error('Please select a valid customer from the list.', 'Validation Error');
+    return;
+  }
+  if (!formData.service_id) {
+    ToastSystem.error('Please select a valid service from the list.', 'Validation Error');
+    return;
+  }
+  if (!date || !time) {
+    ToastSystem.error('Please select both a date and a time.', 'Validation Error');
+    return;
+  }
+  if (!formData.address) {
+    ToastSystem.error('Please enter a complete service address.', 'Validation Error');
+    return;
+  }
 
   // 3. UI Feedback
   // Since this is a standalone function, we target the button by ID or specific selector
@@ -836,21 +849,21 @@ window.confirmAddBooking = async () => {
     const result = await response.json()
 
     if (result.status === 'success') {
-      alert('Booking created successfully!')
+      ModalSystem.success("Booking Created", "Booking has been successfully created!", "OK", () => {
+        // Reset form manually since 'this' no longer refers to the form
+        document.getElementById('addBookingForm').reset()
 
-      // Reset form manually since 'this' no longer refers to the form
-      document.getElementById('addBookingForm').reset()
+        // Refresh the list
+        if (typeof fetchData === 'function') fetchData(1)
 
-      // Refresh the list
-      if (typeof fetchData === 'function') fetchData(1)
-
-      // Close modal if you have a closeModal function
+        // Close modal if you have a closeModal function
+      });
     } else {
-      alert('Error: ' + result.message)
+      ModalSystem.error("Booking Error", result.message || "Failed to create booking");
     }
   } catch (error) {
     console.error('Submission error:', error)
-    alert('Network error. Failed to save booking.')
+    ToastSystem.error('Network error. Failed to save booking.', 'Network Error');
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false
@@ -1047,7 +1060,7 @@ window.confirmBooking = async (btn, bookingId) => {
         portfolioFileCount: portfolioFiles.length
       });
 
-      closeModal('completeModal');
+      toggleModal('#completeModal', "flex");
       
     } else if (actionType === 'confirm') {
       Logger.log('Processing confirm action', 'info');
@@ -1113,14 +1126,13 @@ window.confirmBooking = async (btn, bookingId) => {
         files: [blueprint[0]?.name, quotation[0]?.name, agreement[0]?.name],
         amount: initialPayment 
       });
-      closeModal('confirmModal');
+      toggleModal('#confirmModal', 'flex');
       
     } else {
       throw new Error('Invalid action type');
     }
 
     // Disable button and show loading state
-    const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Processing...';
     
@@ -1151,7 +1163,7 @@ window.confirmBooking = async (btn, bookingId) => {
     
     // Success handling
     const successMessage = `Booking ID ${sanitizedBookingId} has been successfully ${actionType === 'complete' ? 'completed' : 'confirmed'}.`;
-    alert(successMessage);
+    ToastSystem.success(successMessage, 'Booking Updated');
     Logger.success(successMessage);
     
     // Refresh data if function exists
@@ -1162,7 +1174,7 @@ window.confirmBooking = async (btn, bookingId) => {
 
   } catch (error) {
     Logger.error('Booking confirmation failed', { error: error.message, stack: error.stack });
-    alert('Error: ' + error.message);
+    ToastSystem.error('Error: ' + error.message, 'Booking Error');
   } finally {
     // Reset button state
     if (btn) {
@@ -1175,14 +1187,18 @@ window.confirmBooking = async (btn, bookingId) => {
 }
 
 window.completeBooking = (bookingId) => {
-  alert('Booking ' + bookingId + ' has been marked as completed.')
+  ToastSystem.info('Booking ' + bookingId + ' has been marked as completed.', 'Booking Completed');
 }
 
 window.cancelBooking = (bookingId) => {
-  if (confirm('Are you sure you want to cancel this booking?')) {
-    confirmCancel(bookingId)
-    alert('Booking ' + bookingId + ' has been cancelled.')
-  }
+  ModalSystem.confirm(
+    "Cancel Booking", 
+    `Are you sure you want to cancel booking ${bookingId}?`, 
+    () => {
+      confirmCancel(bookingId);
+      ToastSystem.info(`Booking ${bookingId} has been cancelled.`, 'Booking Cancelled');
+    }
+  );
 }
 /**
  * Generic function to send status updates to the API
@@ -1375,7 +1391,7 @@ window.exportBookingReport = async(btn) => {
     
   } catch (error) {
     Logger.log('Error generating booking report: ' + error.message, 'error');
-    alert('Failed to generate report. Please try again.');
+    ToastSystem.error('Failed to generate report. Please try again.', 'Report Generation Error');
   } finally {
     // Restore button state
     btn.disabled = false;
@@ -1402,7 +1418,7 @@ async function confirmCancel(bookingId) {
     const cancellationReason = document.getElementById('cancellationReason').value.trim();
     
     if (!cancellationReason) {
-      alert('Please provide a cancellation reason.');
+      ModalSystem.warning("Required Field", "Please provide a cancellation reason.");
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<i class=\'fas fa-times\'></i> Cancel';
@@ -1421,7 +1437,7 @@ async function confirmCancel(bookingId) {
     await updateBookingStatus(url, payload, "POST")
 
     // 5. Success Handling
-    alert(`Booking ID ${bookingId} has been cancelled.`)
+    ToastSystem.success(`Booking ID ${bookingId} has been cancelled.`, 'Cancellation Successful');
 
     if (typeof fetchData === 'function') {
       fetchData()
@@ -1429,7 +1445,7 @@ async function confirmCancel(bookingId) {
 
   } catch (error) {
     console.error('Cancellation failed:', error)
-    alert('Error: ' + error.message)
+    ToastSystem.error('Error: ' + error.message, 'Cancellation Error');
   } finally {
     // 6. Reset UI
     if (btn) {
@@ -1450,8 +1466,8 @@ document.querySelectorAll('.modal-overlay').forEach((modal) => {
 })
 
 window.showAddBookingModal = showAddBookingModal // Expose to global scop
-
-window.updateProgress = (activeStage) => {
+window.updateProgress;
+const updateProgress = (activeStage) => {
   const steps = document.querySelectorAll('.step-item');
   const progressBar = document.getElementById('progress-bar-horizontal');
   const isCancelled = activeStage === 4;

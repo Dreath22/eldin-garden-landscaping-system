@@ -10,7 +10,7 @@
       integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
       crossorigin="anonymous" 
       referrerpolicy="no-referrer" />
-      <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+      <script src="/landscape/assets/tailwind.js"></script>
     <script src="./JS/invoice.js"></script>
     <script type="module" src="./JS/admin_booking.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -54,52 +54,52 @@
         <nav class="admin-nav">
           <div class="admin-nav-section">
             <p class="admin-nav-title">Main</p>
-            <a href="admin-dashboard.html" class="admin-nav-item">
+            <a href="admin-dashboard.php" class="admin-nav-item">
               <i class="fas fa-tachometer-alt"></i>
               <span>Dashboard</span>
             </a>
-            <a href="admin-users.html" class="admin-nav-item">
+            <a href="admin-users.php" class="admin-nav-item">
               <i class="fas fa-users"></i>
               <span>Users</span>
             </a>
-            <a href="admin-bookings.html" class="admin-nav-item active">
+            <a href="admin-bookings.php" class="admin-nav-item active">
               <i class="fas fa-calendar-alt"></i>
               <span>Bookings</span>
             </a>
-            <a href="admin-transactions.html" class="admin-nav-item">
+            <a href="admin-transactions.php" class="admin-nav-item">
               <i class="fas fa-exchange-alt"></i>
               <span>Transactions</span>
             </a>
           </div>
           <div class="admin-nav-section">
             <p class="admin-nav-title">Content</p>
-            <a href="admin-upload.html" class="admin-nav-item">
+            <a href="admin-upload.php" class="admin-nav-item">
               <i class="fas fa-cloud-upload-alt"></i>
               <span>Upload Content</span>
             </a>
-            <a href="admin-gallery.html" class="admin-nav-item">
+            <a href="admin-gallery.php" class="admin-nav-item">
               <i class="fas fa-images"></i>
               <span>Gallery Manager</span>
             </a>
-            <a href="admin-services.html" class="admin-nav-item">
+            <a href="admin-services.php" class="admin-nav-item">
               <i class="fas fa-tools"></i>
               <span>Services</span>
             </a>
           </div>
           <div class="admin-nav-section">
             <p class="admin-nav-title">Communication</p>
-            <a href="admin-emails.html" class="admin-nav-item">
+            <a href="admin-emails.php" class="admin-nav-item">
               <i class="fas fa-envelope"></i>
               <span>Email Updates</span>
             </a>
-            <a href="admin-notifications.html" class="admin-nav-item">
+            <a href="admin-notifications.php" class="admin-nav-item">
               <i class="fas fa-bell"></i>
               <span>Notifications</span>
             </a>
           </div>
           <div class="admin-nav-section">
             <p class="admin-nav-title">Settings</p>
-            <a href="admin-settings.html" class="admin-nav-item">
+            <a href="admin-settings.php" class="admin-nav-item">
               <i class="fas fa-cog"></i>
               <span>Settings</span>
             </a>
@@ -123,7 +123,7 @@
             />
           </div>
           <div class="admin-header-actions">
-            <a href="admin-notifications.html" class="admin-notification">
+            <a href="admin-notifications.php" class="admin-notification">
               <i class="fas fa-bell"></i>
               <span class="admin-notification-badge">5</span>
             </a>

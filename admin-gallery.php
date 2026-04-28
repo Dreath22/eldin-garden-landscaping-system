@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery Manager - GreenScape Admin</title>
   <link rel="stylesheet" href="admin-style.css">
+  <link rel="stylesheet" href="modal.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -22,52 +23,52 @@
       <nav class="admin-nav">
         <div class="admin-nav-section">
           <p class="admin-nav-title">Main</p>
-          <a href="admin-dashboard.html" class="admin-nav-item">
+          <a href="admin-dashboard.php" class="admin-nav-item">
             <i class="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
-          <a href="admin-users.html" class="admin-nav-item">
+          <a href="admin-users.php" class="admin-nav-item">
             <i class="fas fa-users"></i>
             <span>Users</span>
           </a>
-          <a href="admin-bookings.html" class="admin-nav-item">
+          <a href="admin-bookings.php" class="admin-nav-item">
             <i class="fas fa-calendar-alt"></i>
             <span>Bookings</span>
           </a>
-          <a href="admin-transactions.html" class="admin-nav-item">
+          <a href="admin-transactions.php" class="admin-nav-item">
             <i class="fas fa-exchange-alt"></i>
             <span>Transactions</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Content</p>
-          <a href="admin-upload.html" class="admin-nav-item">
+          <a href="admin-upload.php" class="admin-nav-item">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Content</span>
           </a>
-          <a href="admin-gallery.html" class="admin-nav-item active">
+          <a href="admin-gallery.php" class="admin-nav-item active">
             <i class="fas fa-images"></i>
             <span>Gallery Manager</span>
           </a>
-          <a href="admin-services.html" class="admin-nav-item">
+          <a href="admin-services.php" class="admin-nav-item">
             <i class="fas fa-tools"></i>
             <span>Services</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.html" class="admin-nav-item">
+          <a href="admin-emails.php" class="admin-nav-item">
             <i class="fas fa-envelope"></i>
             <span>Email Updates</span>
           </a>
-          <a href="admin-notifications.html" class="admin-nav-item">
+          <a href="admin-notifications.php" class="admin-nav-item">
             <i class="fas fa-bell"></i>
             <span>Notifications</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.html" class="admin-nav-item">
+          <a href="admin-settings.php" class="admin-nav-item">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
           </a>
@@ -88,7 +89,7 @@
           <input type="text" placeholder="Search gallery images...">
         </div>
         <div class="admin-header-actions">
-          <a href="admin-notifications.html" class="admin-notification">
+          <a href="admin-notifications.php" class="admin-notification">
             <i class="fas fa-bell"></i>
             <span class="admin-notification-badge">5</span>
           </a>
@@ -111,10 +112,10 @@
             <p>Manage your website gallery images.</p>
           </div>
           <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-danger" onclick="deleteSelected()">
+            <button class="btn btn-danger" id="batchdelete">
               <i class="fas fa-trash"></i> Delete Selected
             </button>
-            <a href="admin-upload.html" class="btn btn-primary">
+            <a href="admin-upload.php" class="btn btn-primary">
               <i class="fas fa-plus"></i> Add Images
             </a>
           </div>
@@ -125,8 +126,8 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>156</h3>
-                <p>Total Images</p>
+                <h3 id="total-portfolios">156</h3>
+                <p>Total Portfolios</p>
               </div>
               <div class="stat-card-icon blue">
                 <i class="fas fa-images"></i>
@@ -136,7 +137,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>142</h3>
+                <h3 id="total-live">142</h3>
                 <p>Published</p>
               </div>
               <div class="stat-card-icon green">
@@ -147,7 +148,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>14</h3>
+                <h3 id="total-draft">14</h3>
                 <p>Drafts</p>
               </div>
               <div class="stat-card-icon orange">
@@ -158,7 +159,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3>2.4 GB</h3>
+                <h3 id="total-file-size">2.4 GB</h3>
                 <p>Storage Used</p>
               </div>
               <div class="stat-card-icon purple">
@@ -170,10 +171,9 @@
 
         <!-- Tabs -->
         <div class="tabs">
-          <div class="tab active" data-tab='all'>All Images</div>
+          <div class="tab active" data-tab='all'>All Portfolio</div>
           <div class="tab" data-tab='live'>Live</div>
           <div class="tab" data-tab='draft'>Draft</div>
-          <div class="tab" data-tab='featured'>Featured</div>
         </div>
 
         <!-- Filters -->
@@ -198,12 +198,6 @@
               <option value="z-a">Name Z-A</option>
             </select>
           </div>
-          <div class="filter-group">
-            <label><input type="checkbox" style="margin-right: 0.5rem;">Select All</label>
-          </div>
-          <button class="btn btn-secondary btn-small">
-            <i class="fas fa-filter"></i> Apply
-          </button>
         </div>
 
         <!-- Gallery Grid -->
@@ -448,16 +442,17 @@
               <option value="draft">Draft</option>
             </select>
           </div>
+          <input type="hidden" id="hidden_data_id" data-id=""/>
           <div class="form-group">
-            <label>
-              <input type="checkbox" checked> Featured Image
+            <label for="isFeatured">
+              <input type="checkbox" id="isFeatured"> Featured Image
             </label>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeEditImageModal()">Cancel</button>
-        <button class="btn btn-primary btn-small" onclick="saveImageChanges()">Save Changes</button>
+        <button class="btn btn-primary btn-small" id="saveEdit">Save Changes</button>
       </div>
     </div>
   </div>
@@ -479,29 +474,26 @@
       document.getElementById('editImageModal').style.display = 'none';
     }
 
-    function saveImageChanges() {
-      alert('Image details updated successfully!');
-      closeEditImageModal();
-    }
+    
 
     // Delete Image
-    function deleteImage(title) {
-      if (confirm('Are you sure you want to delete "' + title + '"?')) {
-        alert('Image deleted successfully!');
-      }
-    }
+    // function deleteImage(title) {
+    //   if (confirm('Are you sure you want to delete "' + title + '"?')) {
+    //     alert('Image deleted successfully!');
+    //   }
+    // }
 
-    // Delete Selected
-    function deleteSelected() {
-      const checked = document.querySelectorAll('.gallery-item-admin input[type="checkbox"]:checked');
-      if (checked.length === 0) {
-        alert('Please select at least one image to delete.');
-        return;
-      }
-      if (confirm('Are you sure you want to delete ' + checked.length + ' selected images?')) {
-        alert('Selected images deleted successfully!');
-      }
-    }
+    // // Delete Selected
+    // function deleteSelected() {
+    //   const checked = document.querySelectorAll('.gallery-item-admin input[type="checkbox"]:checked');
+    //   if (checked.length === 0) {
+    //     alert('Please select at least one image to delete.');
+    //     return;
+    //   }
+    //   if (confirm('Are you sure you want to delete ' + checked.length + ' selected images?')) {
+    //     alert('Selected images deleted successfully!');
+    //   }
+    // }
 
     // Tab Switching
     function switchTab(tab) {

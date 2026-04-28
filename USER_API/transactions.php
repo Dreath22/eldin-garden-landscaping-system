@@ -3,6 +3,19 @@ header("Content-Type: application/json");
 date_default_timezone_set('Asia/Manila');
 require_once '../config/config.php';
 
+/**
+ * Send JSON error response
+ */
+function jsonError($message, $code = 400) {
+    http_response_code($code);
+    echo json_encode([
+        "status" => "error",
+        "message" => $message,
+        "timestamp" => date('c')
+    ]);
+    exit;
+}
+
 if(isset($_GET['action'])){
     $action = $_GET['action'] ?? '';
     switch($action){
@@ -144,7 +157,7 @@ function create($pdo, $data) {
         $transaction_id = $pdo->lastInsertId();
         
         echo json_encode([
-            'success' => true,
+            'status' => 'success',
             'message' => 'Transaction created successfully',
             'transaction_id' => $transaction_id,
             'data' => [
@@ -155,7 +168,8 @@ function create($pdo, $data) {
                 'amount' => number_format($sanitized['amount'], 2),
                 'type' => $sanitized['type'],
                 'notes' => $sanitized['notes']
-            ]
+            ],
+            'timestamp' => date('c')
         ]);
 
     } catch (PDOException $e) {
@@ -370,44 +384,46 @@ function getTransactionList($pdo, $params = []) {
 function getTransactionSummary($pdo) {
     try {
         $stmt = $pdo->query("
-            WITH MonthlyStats AS (
-                SELECT 
-                    -- CURRENT MONTH
-                    SUM(CASE WHEN type = 'Payment' AND status = 'Completed' 
-                        AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_rev,
-                    
-                    SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
-                        AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_exp,
-                    
-                    COUNT(CASE WHEN type IN ('Payment', 'Expense') 
-                        AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id ELSE NULL END) as curr_trans,
-                    
-                    -- PREVIOUS MONTH
-                    SUM(CASE WHEN type = 'Payment' AND status = 'Completed' 
-                        AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
-                        AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_rev,
-                    
-                    SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
-                        AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
-                        AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_exp,
-                    
-                    COUNT(CASE WHEN type IN ('Payment', 'Expense') 
-                        AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
-                        AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id ELSE NULL END) as prev_trans
-                FROM transactions
-            )
-            SELECT 
-                curr_rev AS revenue_this_month, 
-                curr_exp AS expenses_this_month,
-                (curr_rev - curr_exp) AS net_profit_this_month,
-                curr_trans AS transactions_this_month,
-                
-                ROUND(((curr_rev - prev_rev) / NULLIF(prev_rev, 0) * 100), 1) as revenue_growth,
-                ROUND(((curr_exp - prev_exp) / NULLIF(prev_exp, 0) * 100), 1) as expense_growth,
-                ROUND(((curr_trans - prev_trans) / NULLIF(prev_trans, 0) * 100), 1) as transactions_growth,
-                
-                ROUND((((curr_rev - curr_exp) - (prev_rev - prev_exp)) / NULLIF((prev_rev - prev_exp), 0) * 100), 1) as profit_growth
-            FROM MonthlyStats
+           WITH MonthlyStats AS (
+    SELECT 
+        -- CURRENT MONTH: Including 'Status Change' where amount > 0 as Revenue
+        SUM(CASE WHEN (type = 'Payment' OR (type = 'Status Change' AND amount > 0)) 
+            AND (status = 'Completed' OR status = 'Active')
+            AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_rev,
+        
+        SUM(CASE WHEN type = 'Expense' AND (status = 'Completed' OR status = 'Active')
+            AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as curr_exp,
+        
+        COUNT(CASE WHEN (type IN ('Payment', 'Expense') OR (type = 'Status Change' AND amount > 0))
+            AND transaction_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id END) as curr_trans,
+        
+        -- PREVIOUS MONTH
+        SUM(CASE WHEN (type = 'Payment' OR (type = 'Status Change' AND amount > 0)) 
+            AND status = 'Completed' 
+            AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
+            AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_rev,
+        
+        SUM(CASE WHEN type = 'Expense' AND status = 'Completed' 
+            AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
+            AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN amount ELSE 0 END) as prev_exp,
+        
+        COUNT(CASE WHEN (type IN ('Payment', 'Expense') OR (type = 'Status Change' AND amount > 0))
+            AND transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01') 
+            AND transaction_date < DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') THEN id END) as prev_trans
+    FROM transactions
+    WHERE transaction_date >= DATE_FORMAT(CURRENT_DATE - INTERVAL 1 MONTH, '%Y-%m-01')
+)
+SELECT 
+    curr_rev AS revenue_this_month, 
+    curr_exp AS expenses_this_month,
+    (curr_rev - curr_exp) AS net_profit_this_month,
+    curr_trans AS transactions_this_month,
+    
+    ROUND(((curr_rev - prev_rev) / NULLIF(prev_rev, 0)) * 100, 1) as revenue_growth,
+    ROUND(((curr_exp - prev_exp) / NULLIF(prev_exp, 0)) * 100, 1) as expense_growth,
+    ROUND(((curr_trans - prev_trans) / NULLIF(prev_trans, 0)) * 100, 1) as transactions_growth,
+    ROUND((((curr_rev - curr_exp) - (prev_rev - prev_exp)) / NULLIF(prev_rev - prev_exp, 0)) * 100, 1) as profit_growth
+FROM MonthlyStats;
         ");
         
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -449,14 +465,10 @@ try {
         $stmt->execute([':transaction_code' => $transaction_code]);
         $transactions = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Debug: Check if we found the transaction and its joins
-        if ($transactions) {
-            error_log("Transaction found: ID=" . $transactions['transaction_id'] . 
-                     ", booking_id=" . ($transactions['booking_id'] ?? 'NULL') . 
-                     ", user_id=" . ($transactions['user_id'] ?? 'NULL') . 
-                     ", full_name=" . ($transactions['full_name'] ?? 'NULL'));
-        } else {
-            error_log("No transaction found with code: " . $transaction_code);
+        // Check if transaction was found
+        if (!$transactions) {
+            jsonError('Transaction not found', 404);
+            return;
         }
         
         // Format amounts and IDs
@@ -493,20 +505,13 @@ try {
     echo json_encode([
         "status" => "success",
         "transactions" => $transactions,
-        "summary" => $summary
+        "summary" => $summary,
+        "timestamp" => date('c')
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode([
-        "status" => "error", 
-        "message" => "Database error: " . $e->getMessage()
-    ]);
+    jsonError('Database error: ' . $e->getMessage(), 500);
 } catch (Exception $e) {
-    http_response_code(400);
-    echo json_encode([
-        "status" => "error", 
-        "message" => $e->getMessage()
-    ]);
+    jsonError($e->getMessage(), 400);
 }
 ?>

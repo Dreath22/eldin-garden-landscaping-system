@@ -22,48 +22,48 @@
       <nav class="admin-nav">
         <div class="admin-nav-section">
           <p class="admin-nav-title">Main</p>
-          <a href="admin-dashboard.html" class="admin-nav-item">
+          <a href="admin-dashboard.php" class="admin-nav-item">
             <i class="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
-          <a href="admin-users.html" class="admin-nav-item">
+          <a href="admin-users.php" class="admin-nav-item">
             <i class="fas fa-users"></i>
             <span>Users</span>
           </a>
-          <a href="admin-bookings.html" class="admin-nav-item">
+          <a href="admin-bookings.php" class="admin-nav-item">
             <i class="fas fa-calendar-alt"></i>
             <span>Bookings</span>
           </a>
-          <a href="admin-transactions.html" class="admin-nav-item">
+          <a href="admin-transactions.php" class="admin-nav-item">
             <i class="fas fa-exchange-alt"></i>
             <span>Transactions</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Content</p>
-          <a href="admin-upload.html" class="admin-nav-item">
+          <a href="admin-upload.php" class="admin-nav-item">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Content</span>
           </a>
-          <a href="admin-gallery.html" class="admin-nav-item">
+          <a href="admin-gallery.php" class="admin-nav-item">
             <i class="fas fa-images"></i>
             <span>Gallery Manager</span>
           </a>
-          <a href="admin-services.html" class="admin-nav-item active">
+          <a href="admin-services.php" class="admin-nav-item active">
             <i class="fas fa-tools"></i>
             <span>Services</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.html" class="admin-nav-item">
+          <a href="admin-emails.php" class="admin-nav-item">
             <i class="fas fa-envelope"></i>
             <span>Email Updates</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.html" class="admin-nav-item">
+          <a href="admin-settings.php" class="admin-nav-item">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
           </a>
@@ -160,7 +160,6 @@
           <div class="tab active" data-tab="all">All Services</div>
           <div class="tab" data-tab="active">Active</div>
           <div class="tab" data-tab="inactive">Inactive</div>
-          <div class="tab" data-tab="cancelled">Cancelled</div>
           <div class="tab" data-tab="popular">Most Popular</div>
         </div>
 

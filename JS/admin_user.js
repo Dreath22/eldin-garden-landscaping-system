@@ -1,5 +1,6 @@
 import { switchTab, renderPagination } from './utils/utils.js'
 import UserAPI from './utils/UserAPI.js'
+import { ModalSystem, ToastSystem } from './utils/modal.js'
 // --- 1. Centralized State Object ---
 const state = {
   currentPage: 1,
@@ -33,7 +34,7 @@ async function exportUsers(exportBtn) {
     const usersToExport = data.users
 
     if (!usersToExport || usersToExport.length === 0) {
-      alert('No users found matching the current filters.')
+      ToastSystem.warning('No users found matching the current filters.', 'Export Error');
       return
     }
 
@@ -60,7 +61,7 @@ async function exportUsers(exportBtn) {
     document.body.removeChild(link)
   } catch (error) {
     console.error('Export Error:', error)
-    alert('There was an error generating the export.')
+    ToastSystem.error('There was an error generating the export.', 'Export Error');
   } finally {
     exportBtn.disabled = false
     exportBtn.innerHTML = originalText
@@ -74,7 +75,7 @@ async function confirmBan(userId) {
 
   // 1. Validation
   if (!reasonElement) {
-    alert('Please select a reason for the ban.')
+    ModalSystem.warning("Required Field", "Please select a reason for the ban.");
     return
   }
 
@@ -93,12 +94,12 @@ async function confirmBan(userId) {
       notes: note,
     })
 
-    alert(`User ${userName} has been banned.`)
+    ToastSystem.success(`User ${userName} has been banned.`, 'User Banned');
     closeBanModal()
     fetchUsers()
   } catch (error) {
     console.error('Ban failed:', error)
-    alert('Error: ' + (error.message || 'Could not reach the server.'))
+    ToastSystem.error('Error: ' + (error.message || 'Could not reach the server.'), 'Ban Error');
   } finally {
     if (banBtn) {
       banBtn.disabled = false
@@ -128,7 +129,7 @@ async function confirmEditUser(userId) {
 
   // 2. Validation
   if (!userData.firstName || !userData.email) {
-    alert('First Name and Email are required.')
+    ModalSystem.warning("Required Fields", "First Name and Email are required.");
     return
   }
 
@@ -138,11 +139,11 @@ async function confirmEditUser(userId) {
 
   try {
     await UserAPI.update(userData)
-    alert('User updated successfully!')
+    ToastSystem.success('User updated successfully!', 'Update Success');
     fetchUsers()
   } catch (error) {
     console.error('Update failed:', error)
-    alert('Error: ' + (error.message || 'Could not reach the server.'))
+    ToastSystem.error('Error: ' + (error.message || 'Could not reach the server.'), 'Update Error');
   } finally {
     if (saveBtn) saveBtn.disabled = false
   }
@@ -157,7 +158,7 @@ async function confirmAddUser() {
 
   // Validation (matches UserAPI.add guard)
   if (!userData.firstName || !userData.email || !userData.temporaryPassword) {
-    alert('Please fill in the required fields (First Name, Email, and Password).')
+    ModalSystem.warning("Required Fields", "Please fill in the required fields (First Name, Email, and Password).");
     return
   }
 
@@ -165,13 +166,13 @@ async function confirmAddUser() {
     const result = await UserAPI.add(userData)
     console.log('Success:', result)
 
-    alert('User added successfully!')
+    ToastSystem.success('User added successfully!', 'User Added');
     form.reset()
     closeAddUserModal()
     fetchUsers(1)
   } catch (error) {
     console.error('Network error:', error)
-    alert('Error: ' + (error.message || 'Could not connect to the server.'))
+    ToastSystem.error('Error: ' + (error.message || 'Could not connect to the server.'), 'Add User Error');
   }
 }
 
@@ -218,7 +219,6 @@ function displayStats(data) {
   const stateMap = {
     totalUser: data.total_users,
     activeUser: data.active_users,
-    pendingUser: data.pending_users,
     bannedUser: data.banned_users,
   }
   for (const [id, value] of Object.entries(stateMap)) {
@@ -256,7 +256,7 @@ function displayUsers(users) {
           <div class="table-actions">
             <button class="table-btn view" onclick="handleAction(${user.id}, 'view')"><i class="fas fa-eye"></i></button>
             <button class="table-btn edit" onclick="handleAction(${user.id}, 'edit')"><i class="fas fa-edit"></i></button>
-            <button class="table-btn ban" onclick="handleAction(${user.id}, 'ban')"><i class="fas fa-ban"></i></button>
+            <button class="table-btn ban" onclick="handleAction(${user.id}, 'ban')" ${user.status.toLowerCase() === 'banned' ? 'disabled style="background-color: #8b5a5a; opacity: 0.6;"' : ''}><i class="fas fa-ban"></i></button>
           </div>
         </td>
       </tr>
@@ -375,7 +375,6 @@ function showEditUserModal(user) {
               <label for="editStatus">Status</label>
               <select id="editStatus">
                 <option value="active" ${user.status.toLowerCase() === 'active' ? 'selected' : ''}>Active</option>
-                <option value="pending" ${user.status.toLowerCase() === 'pending' ? 'selected' : ''}>Pending</option>
                 <option value="banned" ${user.status.toLowerCase() === 'banned' ? 'selected' : ''}>Banned</option>
               </select>
             </div>

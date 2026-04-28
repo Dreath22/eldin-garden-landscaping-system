@@ -30,20 +30,25 @@ export function formatToCalendar(dateString) {
 }
 
 
-export function renderPagination(fetchData, totalData, state, fetchDataCallback) {
+export const renderPagination = (fetchData, totalData, state, fetchDataCallback) => {
   const container = document.getElementById('pagination')
   if (!container) return
 
   // Calculate Total Pages
   const totalPages = (state.total_pages = Math.ceil(totalData / state.limit))
 
+  container.innerHTML = '<div class="pagination-controls"></div>'
+
+  if(state.total_pages <= 1){
+    return;
+  }
+
+  const controls = container.querySelector('.pagination-controls')
   // Fix: If current page is now out of bounds after filtering
   if (state.currentPage > totalPages) {
     state.currentPage = totalPages
   }
 
-  container.innerHTML = '<div class="pagination-controls"></div>'
-  const controls = container.querySelector('.pagination-controls')
 
   // PREV Button
   const prevBtn = document.createElement('button')
@@ -151,18 +156,16 @@ export const log = (message, type = 'info') => {
     styles[type] || ''
   )
 
-  // 2. UI Notification Logic
-  // This is where you swap alert() for SweetAlert or Toastr
+  // 2. UI Notification Logic removed - this is a utility file
+  // UI notifications should be handled by calling code using ModalSystem/ToastSystem
   switch (type) {
     case 'error':
-      // Example: Swal.fire('Error', message, 'error')
-      alert(`🛑 ERROR: ${message}`)
+      console.error('UI notification should be handled by calling code')
       break
     case 'warn':
-      alert(`⚠️ WARNING: ${message}`)
+      console.warn('UI notification should be handled by calling code')
       break
     case 'success':
-      // Successes are often better as silent console logs or small toasts
       console.info('Operation Successful')
       break
     default:
@@ -264,19 +267,90 @@ export const  generateCsrfToken = async() => {
     console.error('Failed to get CSRF token:', error);
   }
 }
+
 const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
 export const filesizeComputation = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B';
+  // Convert string to number if necessary, handle zero/null
+  const byteCount = parseFloat(bytes);
+  if (!byteCount || byteCount === 0) return '0 B';
   
-  const k = 1000; 
+  // Use 1024 for standard binary file size (IEC)
+  const k = 1024; 
   let i = 0;
+  let val = byteCount;
   
-  // Iterative reduction (Faster than Math.log in V8)
-  while (bytes >= k && i < UNITS.length - 1) {
-    bytes /= k;
+  while (val >= k && i < UNITS.length - 1) {
+    val /= k;
     i++;
   }
 
-  // 4. Efficient rounding and formatting
-  return `${parseFloat(bytes.toFixed(2))} ${UNITS[i]}`;
+  // Use Intl.NumberFormat for cleaner local-aware rounding
+  return `${parseFloat(val.toFixed(2))} ${UNITS[i]}`;
 };
+
+export const toggleModal = withElement((selector, show, hide="none") => {
+  if(selector.style.display == show){
+      selector.style.display = hide;
+      return;
+  }
+  selector.style.display = show;
+})
+
+const base = 'http://localhost/landscape/'
+
+
+const urlGet = (data) =>{
+  console.log('urlGet: ', data)
+  const files_data = data.filenames.split(',')
+  const urls = files_data.map(file => {
+    const cleanRelativePath = (data.dir_path + file).replace(/^[./]+/, '')
+    return base + cleanRelativePath
+  })
+  return urls
+}
+
+
+export const rowData = (data) =>{
+  const urls = urlGet(data)
+  console.log('url: ', urls)
+    
+  // Format date to human readable
+  const formattedDate = new Date(data.created_at).toLocaleDateString('en-US', {
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric'
+  })
+    
+  const status = data.status
+  // Determine status badge class and text
+  const statusMap = {
+    'LIVE': { class: 'active', text: 'Live' },
+    'DRAFT': { class: 'pending', text: 'Draft' }
+  };
+  // Fallback to 'DRAFT' logic if status is missing or unknown
+  const currentStatus = statusMap[status] || statusMap['DRAFT'];
+
+  
+
+  const totalFileSize = filesizeComputation(data.total_file_size)
+    
+  // Return data as dictionary/object
+  return {
+    id: data.portfolio_id,
+    url: urls[0],
+    urls: urls,
+    title: data.title,
+    date: formattedDate,
+    status: status,
+    statusClass: currentStatus.class,
+    statusText: currentStatus.text,
+    description: data.description,
+    fileCount: data.file_count,
+    fileSize: data.total_file_size,
+    dirPath: data.dir_path,
+    portfolioId: data.portfolio_id,
+    filesize: totalFileSize,
+    service_name: capitalize(data.service_name),
+  }
+}

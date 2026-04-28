@@ -22,52 +22,52 @@
       <nav class="admin-nav">
         <div class="admin-nav-section">
           <p class="admin-nav-title">Main</p>
-          <a href="admin-dashboard.html" class="admin-nav-item">
+          <a href="admin-dashboard.php" class="admin-nav-item">
             <i class="fas fa-tachometer-alt"></i>
             <span>Dashboard</span>
           </a>
-          <a href="admin-users.html" class="admin-nav-item">
+          <a href="admin-users.php" class="admin-nav-item">
             <i class="fas fa-users"></i>
             <span>Users</span>
           </a>
-          <a href="admin-bookings.html" class="admin-nav-item">
+          <a href="admin-bookings.php" class="admin-nav-item">
             <i class="fas fa-calendar-alt"></i>
             <span>Bookings</span>
           </a>
-          <a href="admin-transactions.html" class="admin-nav-item">
+          <a href="admin-transactions.php" class="admin-nav-item">
             <i class="fas fa-exchange-alt"></i>
             <span>Transactions</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Content</p>
-          <a href="admin-upload.html" class="admin-nav-item">
+          <a href="admin-upload.php" class="admin-nav-item">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Content</span>
           </a>
-          <a href="admin-gallery.html" class="admin-nav-item">
+          <a href="admin-gallery.php" class="admin-nav-item">
             <i class="fas fa-images"></i>
             <span>Gallery Manager</span>
           </a>
-          <a href="admin-services.html" class="admin-nav-item">
+          <a href="admin-services.php" class="admin-nav-item">
             <i class="fas fa-tools"></i>
             <span>Services</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.html" class="admin-nav-item">
+          <a href="admin-emails.php" class="admin-nav-item">
             <i class="fas fa-envelope"></i>
             <span>Email Updates</span>
           </a>
-          <a href="admin-notifications.html" class="admin-nav-item active">
+          <a href="admin-notifications.php" class="admin-nav-item active">
             <i class="fas fa-bell"></i>
             <span>Notifications</span>
           </a>
         </div>
         <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.html" class="admin-nav-item">
+          <a href="admin-settings.php" class="admin-nav-item">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
           </a>
@@ -88,7 +88,7 @@
           <input type="text" placeholder="Search notifications...">
         </div>
         <div class="admin-header-actions">
-          <a href="admin-notifications.html" class="admin-notification">
+          <a href="admin-notifications.php" class="admin-notification">
             <i class="fas fa-bell"></i>
             <span class="admin-notification-badge">5</span>
           </a>
@@ -434,7 +434,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewNotificationModal()">Close</button>
-        <a href="admin-bookings.html" class="btn btn-primary btn-small">View Booking</a>
+        <a href="admin-bookings.php" class="btn btn-primary btn-small">View Booking</a>
       </div>
     </div>
   </div>

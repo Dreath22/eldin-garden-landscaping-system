@@ -195,10 +195,10 @@ const displayList = () => {
 
 
     document.querySelectorAll('.viewModal').forEach(el => {
-        buttonEventListener(el, (e) => {
+        buttonEventListener(el, (e, element) => {
             e.preventDefault(); // Now 'e' is the event object!
             
-            const emailID = e.currentTarget.getAttribute('data-id');
+            const emailID = element.getAttribute('data-id');
             
             // Using == is fine if data-id is a string and id is a number
             const email = state.emails.find(email => email.id == emailID);
@@ -216,10 +216,10 @@ const displayList = () => {
     });
 
     document.querySelectorAll('.clickDelete').forEach(el => {
-        buttonEventListener(el, (e) => {
+        buttonEventListener(el, (e, element) => {
             e.preventDefault(); // Now 'e' is the event object!
             
-            const emailID = e.currentTarget.getAttribute('data-id');
+            const emailID = element.getAttribute('data-id');
             
             // Using == is fine if data-id is a string and id is a number
             const email = state.emails.find(email => email.id == emailID);
@@ -233,10 +233,10 @@ const displayList = () => {
         });
     });
     document.querySelectorAll('.save-btn').forEach(el => {
-        buttonEventListener(el, (e) => {
+        buttonEventListener(el, (e, element) => {
             e.preventDefault(); // Now 'e' is the event object!
             
-            const emailID = e.currentTarget.getAttribute('data-id');
+            const emailID = element.getAttribute('data-id');
             
             // Using == is fine if data-id is a string and id is a number
             const email = state.emails.find(email => email.id == emailID);

@@ -479,7 +479,7 @@ ul {
 /* Dashboard Grid */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: auto;
   gap: 1.5rem;
 }
 

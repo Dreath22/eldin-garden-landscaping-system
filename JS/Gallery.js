@@ -1,11 +1,12 @@
-import { filesizeComputation, generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
+import { toggleModal, filesizeComputation, generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
 import { fetchPorfolio } from './utils/apiUtils.js';
+import { ModalSystem, ToastSystem } from './utils/modal.js';
 const state = {
     currentPage: 1,
     currentTab: 'all',
     service_id: 1,
     sort: 'new',
-    limit: 3,
+    limit: 12,
     uploads: {
         files: [],
         fileSize: 0,
@@ -17,9 +18,9 @@ const base = "http://localhost/landscape/";
 let data;
 const urlGet = (data) =>{
   console.log("urlGet: ", data)
-  const files_data = JSON.parse(data.files).files
+  const files_data = data.filenames.split(",")
   const urls = files_data.map(file => {
-    const cleanRelativePath = (data.dir_path + file.stored_name).replace(/^[\./]+/, "");
+    const cleanRelativePath = (data.dir_path + file).replace(/^[\./]+/, "");
     return base + cleanRelativePath;
   });
   return urls;
@@ -100,19 +101,19 @@ const galleryItemTemplate = (data) =>{
   const rowInfo = rowData(data);
   
   return `
-    <div class="gallery-item-admin">
+    <div class="gallery-item-admin" data-id="${rowInfo.id}">
         <img src="${rowInfo.url}" alt="${rowInfo.service_name}" title=="${rowInfo.service_name}">
         <div class="gallery-item-overlay">
-        <button class="table-btn view" data-id="${rowInfo.id}" title="View" onclick="viewImage('${rowInfo.title}')"><i class="fas fa-eye"></i></button>
-        <button class="table-btn edit" data-id="${rowInfo.id}" title="Edit" onclick="editImage('${rowInfo.title}')"><i class="fas fa-edit"></i></button>
-        <button class="table-btn delete" data-id="${rowInfo.id}" title="Delete" onclick="deleteImage('${rowInfo.title}')"><i class="fas fa-trash"></i></button>
+        <button class="table-btn view" data-id="${rowInfo.id}" title="View" ><i class="fas fa-eye"></i></button>
+        <button class="table-btn edit" data-id="${rowInfo.id}" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="table-btn delete" data-id="${rowInfo.id}" title="Delete"><i class="fas fa-trash"></i></button>
         </div>
         <div class="gallery-item-info">
         <h5>${rowInfo.title}</h5>
         <p>${rowInfo.service_name} * ${rowInfo.date}</p>
         </div>
         <div style="position: absolute; top: 0.5rem; left: 0.5rem;">
-        <input type="checkbox" class="checkbox" style="width: 20px; height: 20px;">
+        <input type="checkbox" class="checkbox" data-id="${rowInfo.id}" style="width: 20px; height: 20px;">
         </div>
         <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
         <span class="status-badge ${rowInfo.statusClass}" style="font-size: 0.65rem;">${rowInfo.statusText}</span>
@@ -123,8 +124,8 @@ const galleryItemTemplate = (data) =>{
 
 const buttonsLoader = () => {
   document.querySelectorAll(".view").forEach(element => {
-  buttonEventListener(element, (el, element)=>{
-    const portfolioId = element.dataset.id;
+  buttonEventListener(element, (el, elementr)=>{
+    const portfolioId = elementr.dataset.id;
     const portfolioItem = data.data.data.find(item => item.portfolio_id == portfolioId);
     
     if (portfolioItem) {
@@ -153,8 +154,301 @@ const buttonsLoader = () => {
       });
     }
   })
-});
+})
+  // Add event listeners for edit buttons
+  document.querySelectorAll(".edit").forEach(element => {
+    buttonEventListener(element, (el, elementr)=>{
+      console.log("Edit Element: ", elementr)
+      const portfolioId = elementr.dataset.id;
+      const portfolioItem = data.data.data.find(item => item.portfolio_id == portfolioId);
+      
+      if (portfolioItem) {
+        const rowInfo = rowData(portfolioItem);
+        
+        // Store portfolio ID in modal dataset
+        document.getElementById('editImageModal').dataset.portfolioId = portfolioId;
+        document.getElementById('hidden_data_id').dataset.id = portfolioId;
+        
+        // Populate edit form fields
+        putTextinElementById("#editImageTitle", rowInfo.title, "value")
+        putTextinElementById("#editImageDescription", rowInfo.description, "value")
+        putTextinElementById("#editImageStatus", rowInfo.status, "value")
+        
+        // Populate and set category dropdown
+        const categorySelect = document.getElementById('editImageCategory');
+        if (categorySelect) {
+          // Clear existing options
+          categorySelect.innerHTML = '';
+          
+          // Add default option
+          const defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.textContent = 'Select Category';
+          categorySelect.appendChild(defaultOption);
+          
+          // Fetch and populate services
+          fetch('/landscape/USER_API/ServicesController.php?action=getServices')
+            .then(response => response.json())
+            .then(servicesData => {
+              if (servicesData.services) {
+                servicesData.services.forEach(service => {
+                  const option = document.createElement('option');
+                  option.value = service.id;
+                  option.textContent = service.service_name;
+                  categorySelect.appendChild(option);
+                });
+              }
+            });
+        }
+        
+        // Set status dropdown
+        const statusSelect = document.getElementById('editImageStatus');
+        if (statusSelect) {
+          // Compare status values (both lowercase)
+          Array.from(statusSelect.options).forEach(option => {
+            if (option.value.toLowerCase() === rowInfo.status.toLowerCase()) {
+              statusSelect.value = option.value;
+            }
+          });
+        }
+        
+        // Set featured checkbox
+        const featuredCheckbox = document.getElementById('isFeatured');
+        if (featuredCheckbox) {
+          featuredCheckbox.checked = rowInfo.featured == 1;
+        }
+        
+        // Show edit modal
+        toggleModal("#editImageModal", "flex");
+      }
+    })
+  })
+
+  // Add event listeners for delete buttons
+  document.querySelectorAll(".delete").forEach(element => {
+    buttonEventListener(element, (el, elementr)=>{
+      const portfolioId = elementr.dataset.id;
+      const portfolioItem = data.data.data.find(item => item.portfolio_id == portfolioId);
+      
+      console.log(" Delete element: ", portfolioItem.portfolio_id)
+    })
+  })
+  
+  // Add batch delete functionality
+  const batchDeleteBtn = document.createElement('button');
+  batchDeleteBtn.className = 'btn btn-danger btn-small';
+  batchDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Selected';
+  batchDeleteBtn.style.marginLeft = '10px';
+  batchDeleteBtn.style.display = 'none';
+  
+  // Insert button after gallery container
+  const galleryContainer = document.querySelector('.gallery-container');
+  if (galleryContainer) {
+    galleryContainer.parentNode.insertBefore(batchDeleteBtn, galleryContainer.nextSibling);
+  }
+  
+  // Add event listener for batch delete button
+  buttonEventListener('#batchdelete', (el, elementr) => {
+    // Collect all checked checkboxes
+    const checkboxes = document.querySelectorAll('.checkbox:checked');
+    
+    if (checkboxes.length === 0) {
+      ToastSystem.warning('Please select at least one item to delete', 'Selection Required');
+      return;
+    }
+    
+    // Confirm before deletion
+    ModalSystem.confirm(
+      "Delete Confirmation", 
+      `Are you sure you want to delete ${checkboxes.length} portfolio item(s)?`, 
+      () => {
+        // Continue with deletion logic
+        performBatchDeletion(checkboxes);
+      }
+    );
+    return;
+  });
 }
+
+// Separate function for batch deletion logic
+function performBatchDeletion(checkboxes) {
+  // Collect all portfolio IDs to delete
+  const portfolioIdsToDelete = [];
+  checkboxes.forEach(checkbox => {
+    const galleryItem = checkbox.closest('.gallery-item-admin');
+    if (galleryItem && galleryItem.dataset.id) {
+      portfolioIdsToDelete.push(galleryItem.dataset.id);
+    }
+  });
+  
+  // Get CSRF token
+  const csrfToken = generateCsrfToken();
+  
+  // Create FormData for batch delete
+  const formData = new FormData();
+  formData.append('action', 'batchDelete');
+  formData.append('ids', JSON.stringify(portfolioIdsToDelete));
+  formData.append('csrf_token', csrfToken);
+  
+  // Send batch delete request
+  fetch(controllerPath, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Batch delete response:', data);
+    
+    // Process results
+    const successful = data.results?.filter(r => r.success) || [];
+    const failed = data.results?.filter(r => !r.success) || [];
+    
+    if (successful.length > 0) {
+      ToastSystem.success(`Successfully deleted ${successful.length} portfolio item(s)`, 'Delete Success');
+    }
+    
+    if (failed.length > 0) {
+      console.error('Failed deletions:', failed);
+      ToastSystem.error(`Failed to delete ${failed.length} portfolio item(s)`, 'Delete Error');
+    }
+    
+    // Reload data if any deletions occurred
+    if (successful.length > 0) {
+      fetchData(state.currentTab);
+    }
+  })
+  .catch(error => {
+    console.error('Batch delete error:', error);
+    ToastSystem.error('Batch delete failed: ' + error.message, 'Delete Error');
+  });
+  
+  // Show/hide batch delete button based on checkbox selection
+  const updateBatchDeleteButton = () => {
+    const checkedBoxes = document.querySelectorAll('.checkbox:checked');
+    if (batchDeleteBtn) {
+      batchDeleteBtn.style.display = checkedBoxes.length > 0 ? 'inline-block' : 'none';
+    }
+  };
+  
+  // Add event listeners to all checkboxes for batch delete button visibility
+  document.querySelectorAll('.checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', updateBatchDeleteButton);
+  });
+  
+  // Initial check
+  updateBatchDeleteButton();
+}
+
+buttonEventListener('#saveEdit', (e, element) => {
+    e.preventDefault();
+    e.target.disabled = true;
+    
+    // 1. Validate all required fields
+    const title = document.getElementById('editImageTitle').value.trim();
+    const description = document.getElementById('editImageDescription').value.trim();
+    const categoryId = document.getElementById('editImageCategory').value;
+    const status = document.getElementById('editImageStatus').value;
+    const isFeatured = document.getElementById('isFeatured').checked;
+    
+    if (!title) {
+        ModalSystem.warning("Required Field", "Title is required");
+        document.getElementById('editImageTitle').focus();
+        e.target.disabled = false;
+        return;
+    }
+    
+    if (!description) {
+        ModalSystem.warning("Required Field", "Description is required");
+        document.getElementById('editImageDescription').focus();
+        e.target.disabled = false;
+        return;
+    }
+    
+    if (!categoryId) {
+        ModalSystem.warning("Required Field", "Category is required");
+        document.getElementById('editImageCategory').focus();
+        e.target.disabled = false;
+        return;
+    }
+    
+    // 2. Get the portfolio ID from the modal (store it when opening the modal)
+    const portfolioId = document.getElementById('editImageModal').dataset.portfolioId;
+    if (!portfolioId) {
+        ModalSystem.error("System Error", "Portfolio ID not found");
+        e.target.disabled = false;
+        return;
+    }
+    
+    // 3. Create FormData for update
+    const formData = new FormData();
+    formData.append('id', portfolioId);
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('serviceId', categoryId);
+    formData.append('status', status);
+    formData.append('featured', isFeatured ? 1 : 0);
+    formData.append('csrf_token', csrfToken);
+    
+    // 4. Submit to API with proper error handling
+    fetch('/landscape/USER_API/PortfolioController.php?action=update', {
+        method: 'POST',
+        body: formData // Don't set Content-Type header - FormData sets it automatically
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('Update successful:', data);
+            
+            // Show success feedback to user
+            ToastSystem.success(data.message || 'Portfolio updated successfully!', 'Update Success');
+            
+            // Close modal and refresh gallery
+            toggleModal("#editImageModal", "none");
+            
+            // Refresh the gallery data
+            updates();
+            
+        } else if (data.status === 'error') {
+            // Handle validation errors
+            if (data.errors) {
+                // Show field-specific errors
+                Object.entries(data.errors).forEach(([field, message]) => {
+                    const element = document.getElementById(field === 'title' ? 'editImageTitle' : 
+                                                             field === 'description' ? 'editImageDescription' :
+                                                             field === 'serviceId' ? 'editImageCategory' :
+                                                             field === 'status' ? 'editImageStatus' : field);
+                    if (element) {
+
+                        //dont empty it, do the empty in the successful one
+                        emptyElement(element, message);
+                    }
+                });
+                ToastSystem.error('Please fix the validation errors.', 'Validation Required');
+            } else {
+                ToastSystem.error(data.message || 'Update failed', 'Update Error');
+            }
+        }
+        
+        e.target.disabled = false;
+    })
+    .catch(error => {
+        console.error('Update failed:', error);
+        
+        // Show user-friendly error message
+        ToastSystem.error('Update failed: ' + error.message, 'Update Error');
+        e.target.disabled = false;
+    });
+}, 'click')
 
 const loader = async () => {
   const response = await fetch('/landscape/USER_API/ServicesController.php?action=getServices')
@@ -200,6 +494,43 @@ document.addEventListener('DOMContentLoaded', async() => {
     // Generate CSRF token for form
     await generateCsrfToken();
     csrfToken = document.querySelector('input[name="csrf_token"]')?.value
+    
+    // Fetch and update portfolio statistics
+    try {
+        const statsResponse = await fetch(`${controllerPath}?action=stats`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            }
+        });
+        
+        if (statsResponse.ok) {
+            const statsData = await statsResponse.json();
+            console.log('Stats data:', statsData);
+            
+            // Update HTML elements with stats data
+            if (statsData.status === 'success' && statsData.data && statsData.data.overview) {
+                const overview = statsData.data.overview;
+                
+                // Update total portfolios
+                putTextinElementById('#total-portfolios', overview.total_portfolios, 'textContent');
+                
+                // Update live portfolios
+                putTextinElementById('#total-live', overview.live_portfolios, 'textContent');
+                
+                // Update draft portfolios
+                putTextinElementById('#total-draft', overview.draft_portfolios, 'textContent');
+                
+                // Update total file size
+                if (overview.total_file_size !== undefined) {
+                    putTextinElementById('#total-file-size', filesizeComputation(overview.total_file_size), 'textContent');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to fetch portfolio statistics:', error);
+    }
     loader()
     updates();
     const tabs = document.querySelectorAll('.tabs .tab')

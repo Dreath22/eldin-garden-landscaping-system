@@ -10,27 +10,15 @@ function getEmailStatsSimple($pdo, $currentUser) {
         
         $emailStatsSql = "SELECT 
                             COUNT(*) as total_emails,
-                            SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent_emails,
-                            SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft_emails,
-                            SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as scheduled_emails,
-                            SUM(total_recipients) as total_recipients,
-                            SUM(sent_count) as total_sent,
-                            SUM(opened_count) as total_opened,
-                            SUM(clicked_count) as total_clicked,
-                            AVG(CASE 
-                                WHEN sent_count > 0 THEN (opened_count / sent_count) * 100 
-                                ELSE 0 
-                            END) as avg_open_rate,
-                            AVG(CASE 
-                                WHEN opened_count > 0 THEN (clicked_count / opened_count) * 100 
-                                ELSE 0 
-                            END) as avg_click_rate
+                            SUM(CASE WHEN status = 'read' THEN 1 ELSE 0 END) as read_emails,
+                            SUM(CASE WHEN status = 'unread' THEN 1 ELSE 0 END) as unread_emails,
+                            ROUND((SUM(CASE WHEN status = 'read' THEN 1 ELSE 0 END) / COUNT(*)) * 100, 1) as avg_open_rate
                         FROM emails 
                         $statsWhere";
         
         $emailStmt = $pdo->query($emailStatsSql);
         $emailStats = $emailStmt->fetch(PDO::FETCH_ASSOC);
-
+        
         // Get service statistics
         $serviceStatsSql = "SELECT 
                               s.id as service_id,
@@ -58,14 +46,7 @@ function getEmailStatsSimple($pdo, $currentUser) {
         $recentActivitySql = "SELECT 
                                 e.subject, 
                                 e.created_at,
-                                e.sent_at,
-                                e.total_sent,
-                                e.opened_count,
-                                e.sent_count,
-                                CASE 
-                                    WHEN e.sent_count > 0 THEN ROUND((e.opened_count / e.sent_count) * 100, 1)
-                                    ELSE 0 
-                                END as open_rate
+                                e.status
                               FROM emails e
                               $recentWhere
                               ORDER BY e.created_at DESC 
@@ -77,15 +58,9 @@ function getEmailStatsSimple($pdo, $currentUser) {
         $stats = [
             'emails' => [
                 'total' => (int)$emailStats['total_emails'],
-                'sent' => (int)$emailStats['sent_emails'],
-                'drafts' => (int)$emailStats['draft_emails'],
-                'scheduled' => (int)$emailStats['scheduled_emails'],
-                'total_recipients' => (int)$emailStats['total_recipients'],
-                'total_sent' => (int)$emailStats['total_sent'],
-                'total_opened' => (int)$emailStats['total_opened'],
-                'total_clicked' => (int)$emailStats['total_clicked'],
+                'read' => (int)$emailStats['read_emails'],
+                'unread' => (int)$emailStats['unread_emails'],
                 'avg_open_rate' => round((float)$emailStats['avg_open_rate'], 1),
-                'avg_click_rate' => round((float)$emailStats['avg_click_rate'], 1)
             ],
             'services' => array_map(function($service) {
                 return [
@@ -102,16 +77,19 @@ function getEmailStatsSimple($pdo, $currentUser) {
                 return [
                     'subject' => $activity['subject'],
                     'created_at' => $activity['created_at'],
-                    'sent_at' => $activity['sent_at'],
-                    'total_sent' => (int)$activity['total_sent'],
-                    'opened' => (int)$activity['opened_count'],
-                    'open_rate' => round((float)$activity['open_rate'], 1)
+                    'status' => $activity['status']
                 ];
             }, $recentActivity)
         ];
 
+        // Debug: Log final stats before response
+        error_log("Final Stats Array: " . print_r($stats, true));
+        
         echo json_encode([
             'success' => true,
+            'total_emails' => $stats['emails']['total'],
+            'total_opened' => $stats['emails']['read'],
+            'avg_open_rate' => $stats['emails']['avg_open_rate'],
             'data' => $stats,
             'user_info' => $currentUser
         ], JSON_PRETTY_PRINT);
