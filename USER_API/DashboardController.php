@@ -86,9 +86,9 @@ function getDashboardStats($pdo, $security) {
             $dashboardData['recent_users'] = $recentUsersStmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Get recent transactions (new to old)
-            $recentTransactionsSql = "SELECT t.id, t.transaction_code, t.booking_id, t.amount, t.status, t.transaction_date, u.name as user_name, u.email as user_email
+            $recentTransactionsSql = "SELECT t.id, t.transaction_code, t.booking_id, t.booking_code, t.amount, t.status, t.transaction_date, u.name as user_name, u.email as user_email
                                      FROM transactions t
-                                     LEFT JOIN bookings b ON b.id = t.booking_id
+                                     LEFT JOIN bookings b ON b.booking_code = t.booking_code
                                      LEFT JOIN users u ON u.id = b.user_id
                                      ORDER BY t.transaction_date DESC 
                                      LIMIT 10";

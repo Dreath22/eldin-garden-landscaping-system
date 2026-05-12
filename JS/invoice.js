@@ -1,4 +1,4 @@
-import { ModalSystem, ToastSystem } from './utils/modal.js';
+import { showModal } from './utils/TrueModal.js';
 
 class InvoiceManager {
     constructor() {
@@ -173,9 +173,9 @@ class InvoiceManager {
                                     <p><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</p>
                                 </div>
                                 <div class="invoice-amounts">
-                                    <p><strong>Subtotal:</strong> $${parseFloat(invoice.subtotal).toFixed(2)}</p>
-                                    <p><strong>Tax (12%):</strong> $${parseFloat(invoice.tax_amount).toFixed(2)}</p>
-                                    <p><strong>Total:</strong> $${parseFloat(invoice.total_amount).toFixed(2)}</p>
+                                    <p><strong>Subtotal:</strong> ₱${parseFloat(invoice.subtotal).toFixed(2)}</p>
+                                    <p><strong>Tax (12%):</strong> ₱${parseFloat(invoice.tax_amount).toFixed(2)}</p>
+                                    <p><strong>Total:</strong> ₱${parseFloat(invoice.total_amount).toFixed(2)}</p>
                                 </div>
                             </div>
                             
@@ -199,7 +199,7 @@ class InvoiceManager {
                                                 <p><small>${new Date(transaction.transaction_date).toLocaleDateString()}</small></p>
                                             </div>
                                             <div class="transaction-amount">
-                                                <p><strong>$${parseFloat(transaction.amount).toFixed(2)}</strong></p>
+                                                <p><strong>₱${parseFloat(transaction.amount).toFixed(2)}</strong></p>
                                                 <span class="status-badge ${transaction.status.toLowerCase()}">${transaction.status}</span>
                                             </div>
                                         </div>
@@ -238,7 +238,7 @@ class InvoiceManager {
 
         } catch (error) {
             console.error('Show invoice details error:', error);
-            ToastSystem.error('Failed to load invoice details: ' + error.message, 'Invoice Error');
+            showModal('error', 'Invoice Error', 'Failed to load invoice details: ' + error.message);
         }
     }
 
@@ -255,7 +255,7 @@ class InvoiceManager {
             window.open(pdfUrl, '_blank');
         } catch (error) {
             console.error('Generate invoice PDF error:', error);
-            ToastSystem.error('Failed to generate invoice PDF: ' + error.message, 'PDF Generation Error');
+            showModal('error', 'PDF Generation Error', 'Failed to generate invoice PDF: ' + error.message);
         }
     }
 }

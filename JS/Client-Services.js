@@ -12,9 +12,11 @@ const controllerPath = 'USER_API/ServicesController.php'
 
 const fetchData = (tab=state.currentTab) => {
     const queryString = new URLSearchParams({
-    page: tab,
-    currentTab: state.currentTab,
-    order: state.order,
+        action: 'list',
+        currentPage: state.currentPage,
+        currentTab: tab,
+        order: state.order,
+        limit: state.limit
     } ).toString();
     return fetch(`${controllerPath}?action=list&${queryString}`)
         .then(response => {
@@ -34,11 +36,18 @@ const fetchData = (tab=state.currentTab) => {
 
 const displayData = (data)=>{
     console.log("Displaying data:", data.uploads.length);
+    const serviceImageMap = {
+        "Aquatic Sanctuaries": "assets/img/WATERFALL AND FISH PONDS.jpg",
+        "Artisan Masonry": "assets/img/STATUE.jpg",
+        "Bespoke Garden Accents": "assets/img/GARDEN SET.jpg",
+        "Outdoor Living Sets": "assets/img/WALL AND FLOORING DESIGN .jpg",
+        "Bamboo Architecture": "assets/img/BAMBOO HOUSE.jpg",
+        "default" : "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600",
+    };
     let html = ''
     if(data.uploads.length > 0){
     data.uploads.forEach(item => {
         const rawFeatures = item?.features ?? "";
-
         // 2. The Logic Chain
         const parsedFeatures = rawFeatures
         .split('\n')
@@ -52,11 +61,12 @@ const displayData = (data)=>{
 
         // Final Output
         const listOfServices = parsedFeatures ? `<ul class="service-features">${parsedFeatures}</ul>` : '<p>No features available.</p>';
+        const backgroundImage = serviceImageMap[item.service_name] || serviceImageMap['default'];
 
         
         html += `
         <div class="service-detail">
-            <div class="service-detail-image" style="background-image: url('https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600')"></div>
+            <div class="service-detail-image" style="background-image: url('${backgroundImage}')"></div>
             <div class="service-detail-content">
             <h3>${capitalize(item.service_name)} Services</h3>
             <p>${item.description}</p>

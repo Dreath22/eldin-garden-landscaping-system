@@ -17,7 +17,8 @@ class BookingRepository {
                 SUM(CASE WHEN status = :pending THEN 1 ELSE 0 END) as pending_count,
                 SUM(CASE WHEN status = :active THEN 1 ELSE 0 END) as active_count,
                 SUM(CASE WHEN status = :completed THEN 1 ELSE 0 END) as completed_count,
-                SUM(CASE WHEN status = :cancelled THEN 1 ELSE 0 END) as cancelled_count
+                SUM(CASE WHEN status = :cancelled THEN 1 ELSE 0 END) as cancelled_count,
+                SUM(CASE WHEN status = :consultation THEN 1 ELSE 0 END) as consultation_count
                 FROM bookings";
         
         try {
@@ -26,7 +27,8 @@ class BookingRepository {
                 ':pending' => 'Pending',
                 ':active' => 'Active',
                 ':completed' => 'Completed',
-                ':cancelled' => 'Cancelled'
+                ':cancelled' => 'Cancelled',
+                ':consultation' => 'Consultation'
             ]);
             return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
         } catch (PDOException $e) {

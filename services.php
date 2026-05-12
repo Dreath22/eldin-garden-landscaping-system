@@ -11,7 +11,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Services - GreenScape Landscaping</title>
+  <title>Our Services - EldinGarden Landscaping</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -28,9 +28,9 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <nav class="navbar">
     <a href="index.php" class="logo">
       <div class="logo-icon">
-        <i class="fas fa-leaf"></i>
+        <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
       </div>
-      GreenScape
+      EldinGarden
     </a>
     <div class="menu-toggle" onclick="toggleMenu()">
       <span></span>
@@ -155,7 +155,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
       </div>
       <div class="service-card" style="text-align: center; padding: 2rem; border: 2px solid var(--primary-green);">
         <div class="service-icon" style="margin: 0 auto 1rem;">
-          <i class="fas fa-leaf"></i>
+          <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
         </div>
         <h3>Premium Care</h3>
         <p style="font-size: 2rem; color: var(--primary-green); font-weight: bold;">$199<span style="font-size: 1rem; color: var(--text-gray);">/month</span></p>
@@ -197,7 +197,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
-        <h3>GreenScape</h3>
+        <h3>EldinGarden</h3>
         <p>Professional landscaping services that bring your outdoor vision to life. We create beautiful, sustainable landscapes for homes and businesses.</p>
       </div>
       <div class="footer-section">
@@ -217,13 +217,13 @@ $isLoggedIn = $sessionData['isLoggedIn'];
       </div>
       <div class="footer-section">
         <h3>Contact Us</h3>
-        <p><i class="fas fa-phone"></i> (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> info@greenscape.com</p>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Garden Lane, Green City</p>
+        <p><i class="fas fa-phone"></i> 0945 547 5152</p>
+        <p><i class="fas fa-envelope"></i> info@EldinGarden.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Bautista St., Brgy. Sampaloc IV, Dasmariñas City, Cavite</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 GreenScape Landscaping. All rights reserved.</p>
+      <p>&copy; 2005 EldinGarden Landscaping. All rights reserved.</p>
     </div>
   </footer>
   <script type="module" src="JS/Client-Services.js"></script>

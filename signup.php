@@ -11,7 +11,7 @@ $isLoggedIn = (bool)$user;
 // If user is already logged in, redirect to appropriate page
 if ($isLoggedIn) {
     if ($user['role'] == 'admin') {
-        header("Location: admin.php");
+        header("Location: admin-dashboard.php");
     } else {
         header("Location: profile.php");
     }
@@ -34,9 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "Email already registered.";
         } else {
             $hashedPass = password_hash($pass, PASSWORD_BCRYPT);
-            $stmt = $pdo->prepare("INSERT INTO users (fullname, email, phone, password) VALUES (?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO users (name, email, phone_number, password) VALUES (?, ?, ?, ?)");
             if ($stmt->execute([$fullname, $email, $phone, $hashedPass])) {
-                header("Location: login.php?success=Account created. Please sign in.");
+                $newUserId = $pdo->lastInsertId();
+                $_SESSION['user_id'] = $newUserId;
+                $_SESSION['user_name'] = $fullname;
+                $_SESSION['role'] = "Customer";
+
+                // Change 'success=' to 'status=success' to match your index.php JS
+                header("Location: index.php?status=success");
                 exit;
             }
         }
@@ -48,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up - GreenScape</title>
+  <title>Sign Up - EldinGarden</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -69,9 +75,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <a href="index.php" class="auth-logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
         <h2>Create Account</h2>
         <?php if(isset($error)): ?><p style="color:red; margin-bottom: 1rem;"><?= $error ?></p><?php endif; ?>
@@ -87,11 +93,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           </div>
           <div class="form-group">
             <label>Phone Number</label>
-            <input type="tel" name="phone" placeholder="Enter your phone number">
+            <input type="tel" name="phone" pattern="[+ 0-9()-]+" title="Please enter a valid phone number" placeholder="Enter your phone number">
           </div>
           <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" placeholder="Create a password" required>
+            <input type="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" placeholder="Create a password" required>
           </div>
           <div class="form-group">
             <label>Confirm Password</label>
@@ -106,5 +112,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       </div>
     </div>
   </div>
+  <script>
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Select elements
+        const phone = document.querySelector('input[name="phone"]');
+        const password = document.querySelector('input[name="password"]');
+        const confirmPassword = document.querySelector('input[name="confirm-password"]');
+        
+        // 1. Phone Number Validation (International Format)
+        // Supports: +1234567890, 123-456-7890, (123) 456-7890
+        const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+        
+        // 2. Password Strength Validation
+        // Requirements: Min 8 chars, 1 Uppercase, 1 Lowercase, 1 Number, 1 Special Char
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        let errors = [];
+
+        if (!phoneRegex.test(phone.value)) {
+            errors.push("Please enter a valid phone number.");
+        }
+
+        if (!passwordRegex.test(password.value)) {
+            errors.push("Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.");
+        }
+
+        if (password.value !== confirmPassword.value) {
+            errors.push("Passwords do not match.");
+        }
+
+        // If there are errors, stop the form and alert the user
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert(errors.join("\n"));
+        }
+    });
+  </script>
 </body>
 </html>

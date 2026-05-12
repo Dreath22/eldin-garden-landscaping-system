@@ -9,7 +9,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
 // If user is already logged in, redirect to appropriate page
 if ($isLoggedIn) {
     if (hasRole('admin')) {
-        header("Location: admin.php");
+        header("Location: dashboard.php");
     } else {
         header("Location: profile.php");
     }
@@ -26,11 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($user && password_verify($pass, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_name'] = $user['fullname'];
+        $_SESSION['user_name'] = $user['name'];
         $_SESSION['role'] = $user['role'];
         
         if ($user['role'] == 'admin') {
-            header("Location: admin.php");
+            header("Location: dashboard.php");
         } else {
             header("Location: profile.php");
         }
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - GreenScape</title>
+  <title>Login - EldinGarden</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -66,9 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <a href="index.php" class="auth-logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
         <h2>Sign In</h2>
         <?php if(isset($_GET['success'])): ?><p style="color:green; margin-bottom: 1rem;"><?= htmlspecialchars($_GET['success']) ?></p><?php endif; ?>

@@ -1,4 +1,5 @@
 import { moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize } from './utils/utils.js'
+import {showModal} from './utils/TrueModal.js'
 const state = {
     currentPage: 1,
     currentTab: 'all',
@@ -52,9 +53,11 @@ const getServiceRecord = (id) => {
 
 const fetchData = (tab=state.currentTab) => {
     const queryString = new URLSearchParams({
-    page: tab,
-    currentTab: state.currentTab,
-    order: state.order,
+    action: 'list',
+        currentPage: state.currentPage,
+        currentTab: tab,
+        order: state.order,
+        limit: state.limit
     } ).toString();
     return fetch(`${controllerPath}?action=list&${queryString}`)
         .then(response => {
@@ -79,15 +82,24 @@ const stats = (data) => {
         putTextinElementById('#avg_order_value', `${moneySign}${data.total_baseprice/data.total_services}`);
     }
 }
-
+const serviceImageMap = {
+    "Aquatic Sanctuaries": "assets/img/WATERFALL AND FISH PONDS.jpg",
+    "Artisan Masonry": "assets/img/STATUE.jpg",
+    "Bespoke Garden Accents": "assets/img/GARDEN SET.jpg",
+    "Outdoor Living Sets": "assets/img/WALL AND FLOORING DESIGN .jpg",
+    "Bamboo Architecture": "assets/img/BAMBOO HOUSE.jpg",
+    "default" : "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=600",
+};
 const displayData = (data)=>{
-    
     console.log("Displaying data:", data.uploads.length);
+    
     let html = ''
     if(data.uploads.length > 0){
         data.uploads.forEach(item => {
+        
+        const backgroundImage = serviceImageMap[item.service_name] || serviceImageMap['default'];
         html += `<div class="service-item">
-                    <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=200" alt="Service" class="service-item-image">
+                    <img src="${backgroundImage}" alt="${capitalize(item.service_name)} Services" class="service-item-image">
                     <div class="service-item-info">
                       <h4>${capitalize(item.service_name)} Services</h4>
                       <p>${item.description}</p>
@@ -118,9 +130,9 @@ const displayData = (data)=>{
 }
 
 const viewService = (id) => {
-      toggleModal('#viewServiceModal', 'flex');
       getServiceRecord(id).then(data => { 
         if (data) {
+          const backgroundImage = serviceImageMap[data.service_name] || serviceImageMap['default'];
           putTextinElementById('#viewServiceModalName', (data.service_name || 'Unknown') + " Services");
           putTextinElementById('#viewServiceModalPrice', moneySign + (data.base_price || 0));
           putTextinElementById('#viewServiceModalStatus', data.status || 'Inactive');
@@ -128,6 +140,7 @@ const viewService = (id) => {
           putTextinElementById('#viewServiceModalDescription', data.description || 'No description available');
           putTextinElementById('#viewServiceModalCount', data.count || 0);
           putTextinElementById('#viewServiceModalDuration', data.duration || 'N/A');
+          putTextinElementById('#img-idss', backgroundImage, 'src');
           // Handle features list
           const featuresList = document.querySelector('#viewServiceModal ul');
           if (data.features && Array.isArray(data.features)) {
@@ -139,6 +152,8 @@ const viewService = (id) => {
           }else {
             featuresList.innerHTML = '<li style="padding: 0.3rem 0;"><i class="fas fa-check" style="color: var(--primary-green); margin-right: 0.5rem;"></i> No features listed</li>';
           }
+            toggleModal('#viewServiceModal', 'flex');
+
 
           document.querySelectorAll('.viewCloseModal').forEach(button => {
             buttonEventListener(button, ()=>{
@@ -338,13 +353,14 @@ const deleteService = (id) => {
     })
     .then((data)=>{
         if (data.success) {
-            console.log('clicked2')
             fetchData(state.currentTab);
+            showModal('success', 'Delete Success', 'Service was successfully deleted.')
         }else{
-            console.log("Delete failed:", data);
+            showModal('database', 'Delete failed', data.message)
+            console.error("Delete failed:", data);
         }
     }).catch((e)=>{
-        console.log("error: ", e)
+        showModal('database', 'Delete failed', e)
     })
 }
 

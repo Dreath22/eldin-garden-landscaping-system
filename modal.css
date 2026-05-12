@@ -1,5 +1,5 @@
 /* ============================================
-   MODAL SYSTEM - GreenScape Landscaping
+   MODAL SYSTEM - EldinGarden Landscaping
    ============================================ */
 
 /* Modal Overlay */
@@ -258,13 +258,279 @@
 }
 .modal.pulse { animation: pulse 2s infinite; }
 
+/* Enhanced Modal Sizes */
+.modal.modal-fullscreen { 
+  max-width: 95vw; 
+  width: 95vw; 
+  height: 95vh; 
+  margin: 2.5vh auto;
+}
+
+/* Loading Modal Styles */
+.loading-backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-icon.loading {
+  background-color: rgba(13, 110, 253, 0.15);
+  color: var(--info-blue);
+  animation: pulse 1.5s infinite;
+}
+
+.loading-progress {
+  margin-top: 1rem;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 4px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--info-blue), var(--primary-green));
+  background-size: 200% 100%;
+  animation: progressAnimation 2s linear infinite;
+}
+
+@keyframes progressAnimation {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+/* Enhanced Toast Positions */
+.toast-container.top-left {
+  top: 100px;
+  left: 20px;
+  right: auto;
+  flex-direction: column;
+}
+
+.toast-container.top-center {
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+  align-items: center;
+}
+
+.toast-container.bottom-right {
+  top: auto;
+  bottom: 20px;
+  right: 20px;
+  left: auto;
+}
+
+.toast-container.bottom-left {
+  top: auto;
+  bottom: 20px;
+  left: 20px;
+  right: auto;
+}
+
+.toast-container.bottom-center {
+  top: auto;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
+  align-items: center;
+}
+
+/* Enhanced Toast Animations */
+.toast {
+  transform: translateX(120%) scale(0.8);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast.show {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+}
+
+/* Toast Container Animations */
+.toast-container.top-left .toast {
+  transform: translateX(-120%) scale(0.8);
+}
+
+.toast-container.top-left .toast.show {
+  transform: translateX(0) scale(1);
+}
+
+.toast-container.bottom-right .toast,
+.toast-container.bottom-left .toast {
+  transform: translateY(120%) scale(0.8);
+}
+
+.toast-container.bottom-right .toast.show,
+.toast-container.bottom-left .toast.show {
+  transform: translateY(0) scale(1);
+}
+
+.toast-container.bottom-center .toast {
+  transform: translateY(120%) scale(0.8);
+}
+
+.toast-container.bottom-center .toast.show {
+  transform: translateY(0) scale(1);
+}
+
+/* Enhanced Progress Bar */
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 0 0 12px 0;
+  transition: width linear;
+  background: linear-gradient(90deg, currentColor, rgba(255,255,255,0.3));
+  background-size: 20px 100%;
+  animation: progressStripe 1s linear infinite;
+}
+
+@keyframes progressStripe {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 20px 0%; }
+}
+
+/* Enhanced Modal Animations */
+.modal-overlay {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Focus Management */
+.modal:focus-within {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+}
+
+/* Enhanced Loading States */
+.modal-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.modal-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Enhanced Accessibility */
+.modal[aria-hidden="false"] {
+  display: flex;
+}
+
+.modal[aria-hidden="true"] {
+  display: none;
+}
+
+.toast[role="alert"] {
+  z-index: 10001;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .modal {
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .modal-title h3 {
+    color: #e2e8f0;
+  }
+  
+  .modal-title p {
+    color: #a0aec0;
+  }
+  
+  .modal-body p {
+    color: #a0aec0;
+  }
+  
+  .toast {
+    background-color: #2d3748;
+    color: #e2e8f0;
+  }
+  
+  .toast-content h4 {
+    color: #e2e8f0;
+  }
+  
+  .toast-content p {
+    color: #a0aec0;
+  }
+}
+
 /* Responsive Modals */
 @media (max-width: 576px) {
-  .modal { width: 95%; margin: 1rem; }
-  .modal-header { padding: 1.25rem 1.25rem 0.75rem; }
-  .modal-body { padding: 0 1.25rem 1.25rem; }
-  .modal-footer { padding: 0.75rem 1.25rem 1.25rem; flex-direction: column; }
-  .modal-btn { width: 100%; justify-content: center; }
-  .toast-container { left: 10px; right: 10px; top: 80px; }
-  .toast { min-width: auto; max-width: none; }
+  .modal { 
+    width: 95%; 
+    margin: 1rem; 
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .modal.modal-fullscreen {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .modal-header { 
+    padding: 1.25rem 1.25rem 0.75rem; 
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .modal-body { 
+    padding: 0 1.25rem 1.25rem; 
+  }
+  
+  .modal-footer { 
+    padding: 0.75rem 1.25rem 1.25rem; 
+    flex-direction: column; 
+    gap: 0.5rem;
+  }
+  
+  .modal-btn { 
+    width: 100%; 
+    justify-content: center; 
+  }
+  
+  .toast-container { 
+    left: 10px; 
+    right: 10px; 
+    top: 80px; 
+  }
+  
+  .toast { 
+    min-width: auto; 
+    max-width: none; 
+  }
+}
+
+/* Print Styles */
+@media print {
+  .modal-overlay,
+  .toast-container {
+    display: none !important;
+  }
 }

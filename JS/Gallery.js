@@ -1,6 +1,7 @@
 import { toggleModal, filesizeComputation, generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, renderPagination, capitalize, log } from './utils/utils.js'
 import { fetchPorfolio } from './utils/apiUtils.js';
-import { ModalSystem, ToastSystem } from './utils/modal.js';
+import { ModalSystem } from './utils/modal.js';
+import { showModal } from './utils/TrueModal.js';
 const state = {
     currentPage: 1,
     currentTab: 'all',
@@ -253,7 +254,7 @@ const buttonsLoader = () => {
     const checkboxes = document.querySelectorAll('.checkbox:checked');
     
     if (checkboxes.length === 0) {
-      ToastSystem.warning('Please select at least one item to delete', 'Selection Required');
+      showModal('warning', 'Selection Required', 'Please select at least one item to delete');
       return;
     }
     
@@ -309,12 +310,12 @@ function performBatchDeletion(checkboxes) {
     const failed = data.results?.filter(r => !r.success) || [];
     
     if (successful.length > 0) {
-      ToastSystem.success(`Successfully deleted ${successful.length} portfolio item(s)`, 'Delete Success');
+      showModal('success', 'Delete Success', `Successfully deleted ${successful.length} portfolio item(s)`);
     }
     
     if (failed.length > 0) {
       console.error('Failed deletions:', failed);
-      ToastSystem.error(`Failed to delete ${failed.length} portfolio item(s)`, 'Delete Error');
+      showModal('error', 'Delete Error', `Failed to delete ${failed.length} portfolio item(s)`);
     }
     
     // Reload data if any deletions occurred
@@ -324,7 +325,7 @@ function performBatchDeletion(checkboxes) {
   })
   .catch(error => {
     console.error('Batch delete error:', error);
-    ToastSystem.error('Batch delete failed: ' + error.message, 'Delete Error');
+    showModal('error', 'Delete Error', 'Batch delete failed: ' + error.message);
   });
   
   // Show/hide batch delete button based on checkbox selection
@@ -356,21 +357,21 @@ buttonEventListener('#saveEdit', (e, element) => {
     const isFeatured = document.getElementById('isFeatured').checked;
     
     if (!title) {
-        ModalSystem.warning("Required Field", "Title is required");
+        showModal('warning', "Required Field", "Title is required");
         document.getElementById('editImageTitle').focus();
         e.target.disabled = false;
         return;
     }
     
     if (!description) {
-        ModalSystem.warning("Required Field", "Description is required");
+        showModal('warning', "Required Field", "Description is required");
         document.getElementById('editImageDescription').focus();
         e.target.disabled = false;
         return;
     }
     
     if (!categoryId) {
-        ModalSystem.warning("Required Field", "Category is required");
+        showModal('warning', "Required Field", "Category is required");
         document.getElementById('editImageCategory').focus();
         e.target.disabled = false;
         return;
@@ -379,7 +380,7 @@ buttonEventListener('#saveEdit', (e, element) => {
     // 2. Get the portfolio ID from the modal (store it when opening the modal)
     const portfolioId = document.getElementById('editImageModal').dataset.portfolioId;
     if (!portfolioId) {
-        ModalSystem.error("System Error", "Portfolio ID not found");
+        showModal('error', "System Error", "Portfolio ID not found");
         e.target.disabled = false;
         return;
     }
@@ -410,7 +411,7 @@ buttonEventListener('#saveEdit', (e, element) => {
             console.log('Update successful:', data);
             
             // Show success feedback to user
-            ToastSystem.success(data.message || 'Portfolio updated successfully!', 'Update Success');
+            showModal('success', 'Update Success', data.message || 'Portfolio updated successfully!');
             
             // Close modal and refresh gallery
             toggleModal("#editImageModal", "none");
@@ -433,9 +434,9 @@ buttonEventListener('#saveEdit', (e, element) => {
                         emptyElement(element, message);
                     }
                 });
-                ToastSystem.error('Please fix the validation errors.', 'Validation Required');
+                showModal('error', 'Validation Required', 'Please fix validation errors.');
             } else {
-                ToastSystem.error(data.message || 'Update failed', 'Update Error');
+                showModal('error', 'Update Error', data.message || 'Update failed');
             }
         }
         
@@ -445,7 +446,7 @@ buttonEventListener('#saveEdit', (e, element) => {
         console.error('Update failed:', error);
         
         // Show user-friendly error message
-        ToastSystem.error('Update failed: ' + error.message, 'Update Error');
+        showModal('error', 'Update Error', 'Update failed: ' + error.message);
         e.target.disabled = false;
     });
 }, 'click')

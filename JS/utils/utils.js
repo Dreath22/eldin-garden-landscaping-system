@@ -18,7 +18,24 @@ export const moneySign = '₱';
 export function formatToCalendar(dateString) {
   if (!dateString) return 'N/A'
 
-  const date = new Date(dateString.replace(/-/g, '/')) // Replace for cross-browser compatibility
+  // Handle ISO date strings with timezone offsets and regular date strings
+  let date;
+  try {
+    // If it's an ISO string with timezone, create Date directly
+    if (dateString.includes('T') && dateString.includes('+') || dateString.includes('Z')) {
+      date = new Date(dateString);
+    } else {
+      // For regular date strings, replace dashes for cross-browser compatibility
+      date = new Date(dateString.replace(/-/g, '/'));
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+  } catch (error) {
+    return 'Invalid Date';
+  }
 
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',

@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json");
 
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 
 $action = isset($_GET['action']) ? $_GET['action'] : null;
 $userId = isset($_GET['id']) ? (int)$_GET['id'] : null;

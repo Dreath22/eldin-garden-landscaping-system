@@ -1,6 +1,7 @@
 import { generateCsrfToken, putTextinElementById, renderPagination, rowData } from './utils/utils.js'
 import { fetchPorfolio } from './utils/apiUtils.js'
 // import { ModalSystem, ToastSystem } from './utils/modal.js'
+//import { showModal } from './utils/TrueModal.js'
 // { filesizeComputation, generateCsrfToken, emptyElement, clearElementError, moneySign, switchTab, putTextinElementById, buttonEventListener, capitalize, log } 
 const controllerPath = '/landscape/USER_API/PortfolioController.php'
 
@@ -9,7 +10,7 @@ let data;
 
 const state = {
   currentPage: 1,
-  currentTab: 'all',
+  currentTab: 'live',
   service_id: 1,
   sort: 'new',
   limit: 3,

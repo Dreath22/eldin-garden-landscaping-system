@@ -11,7 +11,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us - GreenScape Landscaping</title>
+  <title>About Us - EldinGarden Landscaping</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -20,9 +20,9 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <nav class="navbar">
     <a href="index.php" class="logo">
       <div class="logo-icon">
-        <i class="fas fa-leaf"></i>
+        <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
       </div>
-      GreenScape
+      EldinGarden
     </a>
     <div class="menu-toggle" onclick="toggleMenu()">
       <span></span>
@@ -46,8 +46,8 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <!-- About Hero -->
   <section class="about-hero">
     <div class="hero-content">
-      <h1>About GreenScape</h1>
-      <p>Creating beautiful outdoor spaces since 2010</p>
+      <h1>About EldinGarden</h1>
+      <p>Creating beautiful outdoor spaces since 2005</p>
     </div>
   </section>
 
@@ -56,11 +56,11 @@ $isLoggedIn = $sessionData['isLoggedIn'];
     <div class="about-content">
       <div class="about-grid">
         <div class="about-image">
-          <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="GreenScape Team">
+          <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="EldinGarden Team">
         </div>
         <div class="about-text">
           <h3>Our Story</h3>
-          <p>GreenScape was founded in 2010 with a simple mission: to transform ordinary outdoor spaces into extraordinary landscapes. What started as a small family business has grown into one of the most trusted landscaping companies in the region.</p>
+          <p>EldinGarden was founded in 2005 with a simple mission: to transform ordinary outdoor spaces into extraordinary landscapes. What started as a small family business has grown into one of the most trusted landscaping companies in the region.</p>
           <p>Our team of passionate horticulturists, designers, and craftsmen work together to create sustainable, beautiful outdoor environments that our clients love. We believe that every landscape has the potential to be a masterpiece.</p>
         </div>
       </div>
@@ -68,7 +68,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
       <div class="about-grid">
         <div class="about-text">
           <h3>Our Mission</h3>
-          <p>At GreenScape, we're committed to excellence in every project we undertake. Our mission is to provide exceptional landscaping services that enhance the beauty and value of your property while promoting environmental sustainability.</p>
+          <p>At EldinGarden, we're committed to excellence in every project we undertake. Our mission is to provide exceptional landscaping services that enhance the beauty and value of your property while promoting environmental sustainability.</p>
           <p>We use eco-friendly practices, native plants, and efficient irrigation systems to create landscapes that are not only beautiful but also sustainable for years to come.</p>
         </div>
         <div class="about-image">
@@ -97,31 +97,77 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <section class="section" style="background-color: var(--light-cream);">
     <div class="section-header">
       <h2>Meet Our Team</h2>
-      <p>The passionate experts behind GreenScape</p>
+      <p>The passionate experts behind EldinGarden</p>
     </div>
-    <div class="services-grid">
-      <div class="service-card">
-        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400')"></div>
-        <div class="service-content">
-          <h3>David Martinez</h3>
-          <p style="color: var(--primary-green); font-weight: 600;">Founder & CEO</p>
-          <p>With over 20 years of experience in landscape architecture, David leads our team with vision and expertise.</p>
+    <style>
+      .asjfadsnlk-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        padding: 20px;
+      }
+
+      .asjfadsnlk-card {
+        position: relative;
+        height: 450px; 
+        border-radius: 15px;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end; 
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .asjfadsnlk-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      .asjfadsnlk-content {
+        padding: 30px;
+        color: #ffffff;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .asjfadsnlk-content h3 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+
+      .asjfadsnlk-role {
+        color: #a8cf45; 
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1.2px;
+        margin: 8px 0 15px 0;
+      }
+
+      .asjfadsnlk-content p:not(.asjfadsnlk-role) {
+        font-size: 1rem;
+        line-height: 1.5;
+        opacity: 0.95;
+        margin: 0;
+      }
+    </style>
+    <div class="asjfadsnlk-grid">
+      <div class="asjfadsnlk-card" style="background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('assets/img/male.jpeg');">
+        <div class="asjfadsnlk-content">
+          <h3>[Husband Name]</h3>
+          <p class="asjfadsnlk-role">Co-Owner & Director of Operations</p>
+          <p>With over [Number] years of field expertise, [Husband Name] oversees every project from ground-break to completion, ensuring structural integrity and precision in every build.</p>
         </div>
       </div>
-      <div class="service-card">
-        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400')"></div>
-        <div class="service-content">
-          <h3>Jennifer Walsh</h3>
-          <p style="color: var(--primary-green); font-weight: 600;">Lead Designer</p>
-          <p>Jennifer brings creativity and innovation to every project, transforming ideas into stunning landscapes.</p>
-        </div>
-      </div>
-      <div class="service-card">
-        <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400')"></div>
-        <div class="service-content">
-          <h3>Robert Kim</h3>
-          <p style="color: var(--primary-green); font-weight: 600;">Operations Manager</p>
-          <p>Robert ensures every project runs smoothly, on time, and exceeds our clients' expectations.</p>
+
+      <div class="asjfadsnlk-card" style="background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('assets/img/female.jpeg');">
+        <div class="asjfadsnlk-content">
+          <h3>[Wife Name]</h3>
+          <p class="asjfadsnlk-role">Co-Owner & Principal Designer</p>
+          <p>[Wife Name] bridges the gap between imagination and reality, utilizing her keen eye for horticulture and aesthetics to create outdoor living spaces that feel like home.</p>
         </div>
       </div>
     </div>
@@ -131,7 +177,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
-        <h3>GreenScape</h3>
+        <h3>EldinGarden</h3>
         <p>Professional landscaping services that bring your outdoor vision to life. We create beautiful, sustainable landscapes for homes and businesses.</p>
       </div>
       <div class="footer-section">
@@ -151,13 +197,13 @@ $isLoggedIn = $sessionData['isLoggedIn'];
       </div>
       <div class="footer-section">
         <h3>Contact Us</h3>
-        <p><i class="fas fa-phone"></i> (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> info@greenscape.com</p>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Garden Lane, Green City</p>
+        <p><i class="fas fa-phone"></i> 0945 547 5152</p>
+        <p><i class="fas fa-envelope"></i> info@EldinGarden.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Bautista St., Brgy. Sampaloc IV, Dasmariñas City, Cavite</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 GreenScape Landscaping. All rights reserved.</p>
+      <p>&copy; 2005 EldinGarden Landscaping. All rights reserved.</p>
     </div>
   </footer>
 

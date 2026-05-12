@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>New Password - GreenScape</title>
+  <title>New Password - EldinGarden</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>

@@ -16,7 +16,7 @@ $adminName = $_SESSION['user_name'];
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - GreenScape</title>
+  <title>Admin Dashboard - EldinGarden</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -24,7 +24,7 @@ $adminName = $_SESSION['user_name'];
   <div class="admin-page">
     <aside class="admin-sidebar">
       <div class="admin-sidebar-header">
-        <a href="index.php" class="logo"><div class="logo-icon"><i class="fas fa-leaf"></i></div>GreenScape</a>
+        <a href="index.php" class="logo"><div class="logo-icon"><img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;"></div>EldinGarden</a>
       </div>
       <nav class="admin-nav">
         <div class="admin-nav-section">

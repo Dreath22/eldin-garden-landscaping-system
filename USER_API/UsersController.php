@@ -2,7 +2,7 @@
 date_default_timezone_set('Asia/Manila');
 
 // $pdo is already created by config.php (PDO::ERRMODE_EXCEPTION, FETCH_ASSOC, no emulated prepares)
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 
 
 // ─── ROUTER ───────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 <?php
 $action = $_GET['action'] ?? 'summary'; 
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 // 3. Delegate to the right file
 switch($action) {
     case 'summary':
@@ -11,6 +11,29 @@ switch($action) {
         break;
     case 'getServices':
         include __DIR__ . '/Services/get_services.php';
+        break;
+    case 'get_service_price':
+        // Get service base price by ID
+        $serviceId = $_GET['service_id'] ?? null;
+        if (!$serviceId) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Service ID required']);
+            exit;
+        }
+        
+        $stmt = $pdo->prepare("SELECT id, service_name, base_price FROM services WHERE id = ?");
+        $stmt->execute([$serviceId]);
+        $service = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($service) {
+            echo json_encode([
+                'status' => 'success',
+                'data' => $service
+            ]);
+        } else {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Service not found']);
+        }
         break;
     case 'create':
         // FIX: Changed REQUEST_REQUEST to REQUEST_METHOD

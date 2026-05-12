@@ -1,13 +1,26 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Management - GreenScape Admin</title>
+    <title>Invoice Management - EldinGarden Admin</title>
     <link rel="stylesheet" href="admin-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="./JS/invoice.js"></script>
+    <script type="module" src="./JS/invoice.js"></script>
     <style>
         .invoice-grid {
             display: grid;
@@ -43,9 +56,9 @@
         <div class="admin-sidebar-header">
             <a href="admin-dashboard.php" class="logo">
                 <div class="logo-icon">
-                    <i class="fas fa-leaf"></i>
+                    <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
                 </div>
-                GreenScape
+                EldinGarden
             </a>
         </div>
         <nav class="admin-nav">
@@ -184,7 +197,7 @@
                 <div class="stat-card">
                     <div class="stat-card-header">
                         <div>
-                            <h3 id="totalRevenue">$0</h3>
+                            <h3 id="totalRevenue">₱0</h3>
                             <p>Total Revenue</p>
                         </div>
                         <div class="stat-card-icon purple">
@@ -288,7 +301,7 @@
                         </div>
                         <div class="flex justify-between text-lg font-semibold">
                             <span>Total:</span>
-                            <span style="color: var(--primary-green);">$${parseFloat(invoice.total_amount).toFixed(2)}</span>
+                            <span style="color: var(--primary-green);">₱${parseFloat(invoice.total_amount).toFixed(2)}</span>
                         </div>
                     </div>
                     
@@ -320,7 +333,7 @@
             document.getElementById('totalInvoices').textContent = total;
             document.getElementById('paidInvoices').textContent = paid;
             document.getElementById('unpaidInvoices').textContent = unpaid;
-            document.getElementById('totalRevenue').textContent = `$${revenue.toFixed(2)}`;
+            document.getElementById('totalRevenue').textContent = `₱${revenue.toFixed(2)}`;
         }
 
         function displayPagination(pagination) {

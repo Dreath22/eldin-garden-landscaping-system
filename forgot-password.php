@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/auth_middleware.php';
 
 // Initialize standard session
@@ -33,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$email, $token, $expiry]);
         
         // Generate the link for manual testing
-        $debugLink = "http://localhost/greenscape/reset-password.php?token=" . $token;
+        $debugLink = "http://localhost/landscape/reset-password.php?token=" . $token;
     }
 }
 
@@ -43,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forgot Password - GreenScape Landscaping</title>
+  <title>Forgot Password - EldinGarden Landscaping</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -64,8 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <a href="index.php" class="back-btn"><i class="fas fa-arrow-left"></i> Home</a>
         
         <div class="auth-logo">
-          <div class="logo-icon"><i class="fas fa-leaf"></i></div>
-          <span>GreenScape</span>
+          <div class="logo-icon"><img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;"></div>
+          <span>EldinGarden</span>
         </div>
 
         <h2>Reset Password</h2>

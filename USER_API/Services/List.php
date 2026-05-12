@@ -27,50 +27,62 @@ function getIdRecord($id, $pdo) {
  * Lists records with filters and pagination
  */
 function listRecords($inputParams, $pdo) {
-    // Sanitize inputs using your existing utility
     $currentPage = sanitizeInput($inputParams['currentPage'] ?? 1, 'int') ?: 1;
-    $currentTab  = validateInput($inputParams['currentTab'] ?? 'all', ['all', 'active', 'inactive', 'cancelled', 'popular']);
+    $currentTab  = $inputParams['currentTab'] ?? 'all';
     $order       = validateInput($inputParams['order'] ?? 'DESC', ['DESC', 'ASC']);
     $limit       = sanitizeInput($inputParams['limit'] ?? 6, 'int') ?: 6;
-    $offset = ($currentPage - 1) * $limit;
+    $offset      = ($currentPage - 1) * $limit;
 
     $whereConditions = [];
     $sqlParams = [];
-    $orderBy = "";
     
-    if ($currentTab && $currentTab == 'popular') {
-        $orderBy = " ORDER BY rating " . $order . ", review_count DESC, service_name ASC";
+    /**
+     * 1. Status Mapping
+     * Your DB uses 'Active', 'Inactive', 'Cancelled'.
+     * We map the incoming tab to the exact ENUM string.
+     */
+    if ($currentTab !== 'all' && $currentTab !== 'popular') {
+        $statusMap = [
+            'active'    => 'Active',
+            'inactive'  => 'Inactive',
+            'cancelled' => 'Cancelled'
+        ];
+        
+        if (isset($statusMap[$currentTab])) {
+            $whereConditions[] = "status = :status";
+            $sqlParams[':status'] = $statusMap[$currentTab];
+        }
+    }
+
+    /**
+     * 2. Order By Logic
+     */
+    if ($currentTab === 'popular') {
+        // Sort by highest rating first, then most reviews
+        $orderBy = " ORDER BY rating DESC, review_count DESC, service_name ASC";
     } else {
-        $orderBy = " ORDER BY created_at " . $order;
+        $orderBy = " ORDER BY created_at $order";
     }
 
-    if ($currentTab && $currentTab !== 'all' && $currentTab !== 'popular') {
-        $whereConditions[] = "status = :status";
-        $sqlParams[':status'] = $currentTab;
-    }
-
-
-    $whereClause = !empty($whereConditions) ? 'WHERE ' . implode(' AND ', $whereConditions) : '';
+    $whereClause = !empty($whereConditions) ? ' WHERE ' . implode(' AND ', $whereConditions) : '';
 
     try {
-        // 1. Get Total Count Efficiently (Using COUNT(*) instead of fetching all rows)
+        // Count total records for pagination
         $countSql = "SELECT COUNT(*) FROM services $whereClause";
         $countStmt = $pdo->prepare($countSql);
         $countStmt->execute($sqlParams);
         $totalRecords = (int)$countStmt->fetchColumn();
         $totalPages = ceil($totalRecords / $limit);
 
-        
-
-        // 3. Fetch Paginated Data
+        // Fetch the data
         $sql = "SELECT * FROM services $whereClause $orderBy LIMIT :limit OFFSET :offset";
         $stmt = $pdo->prepare($sql);
         
-        // Bind filters
         foreach ($sqlParams as $key => $value) {
             $stmt->bindValue($key, $value);
         }
-        // Bind pagination (must be INT)
+        
+        // LIMIT and OFFSET must be integers for PDO
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
         
@@ -78,6 +90,8 @@ function listRecords($inputParams, $pdo) {
         $uploads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $summary = summary($pdo);
+
+        header('Content-Type: application/json');
         echo json_encode([
             'success' => true,
             'data' => [
@@ -85,8 +99,8 @@ function listRecords($inputParams, $pdo) {
                 'summary' => $summary,
                 'pagination' => [
                     'currentPage'  => (int)$currentPage,
-                    'totalPages'   => $totalPages,
-                    'totalRecords' => $totalRecords,
+                    'totalPages'   => (int)$totalPages,
+                    'totalRecords' => (int)$totalRecords,
                     'limit'        => (int)$limit,
                     'hasNextPage'  => $currentPage < $totalPages,
                     'hasPrevPage'  => $currentPage > 1
@@ -95,6 +109,7 @@ function listRecords($inputParams, $pdo) {
         ], JSON_PRETTY_PRINT);
 
     } catch (PDOException $e) {
+        header('Content-Type: application/json');
         echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
     }
 }

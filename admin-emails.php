@@ -1,9 +1,22 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Updates - GreenScape Admin</title>
+  <title>Email Updates - EldinGarden Admin</title>
   <link rel="stylesheet" href="admin-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -78,9 +91,9 @@
       <div class="admin-sidebar-header">
         <a href="index.html" class="logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
       </div>
       <nav class="admin-nav">
@@ -119,23 +132,8 @@
           </a>
         </div>
         <div class="admin-nav-section">
-          <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.php" class="admin-nav-item active">
-            <i class="fas fa-envelope"></i>
-            <span>Email Updates</span>
-          </a>
-          <a href="admin-notifications.php" class="admin-nav-item">
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
-          </a>
-        </div>
-        <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.php" class="admin-nav-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-          </a>
-          <a href="index.html" class="admin-nav-item">
+          <a href="logout.html" class="admin-nav-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
           </a>
@@ -347,7 +345,7 @@
                     <span>Jan 28, 2026 - 3:30 PM</span>
                   </div>
                   <p class="email-subject">Thank You for Your Business in 2025!</p>
-                  <p class="email-preview">As we reflect on 2025, we want to express our sincere gratitude for choosing GreenScape Landscaping. Your trust in us has made this our best year yet...</p>
+                  <p class="email-preview">As we reflect on 2025, we want to express our sincere gratitude for choosing EldinGarden Landscaping. Your trust in us has made this our best year yet...</p>
                   <div class="email-actions">
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-right: 1rem;">
                       <i class="fas fa-paper-plane"></i> Sent to 1,284 subscribers

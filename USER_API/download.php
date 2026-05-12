@@ -1,6 +1,6 @@
 <?php
 // Secure file download endpoint
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 
 if (!isset($_GET['file'])) {
     http_response_code(400);

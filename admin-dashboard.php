@@ -1,9 +1,25 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+
+// Get current admin ID (fallback to 0 for testing when not authenticated)
+$adminId = $_SESSION['user_id'] ?? 0;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - GreenScape Admin</title>
+  <title>Dashboard - EldinGarden Admin</title>
   <link rel="stylesheet" href="admin-style.css">
   <link rel="stylesheet" href="/landscape/assets/uPlot.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,9 +31,9 @@
       <div class="admin-sidebar-header">
         <a href="index.html" class="logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
       </div>
       <nav class="admin-nav">
@@ -56,23 +72,8 @@
           </a>
         </div>
         <div class="admin-nav-section">
-          <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.php" class="admin-nav-item">
-            <i class="fas fa-envelope"></i>
-            <span>Email Updates</span>
-          </a>
-          <a href="admin-notifications.php" class="admin-nav-item">
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
-          </a>
-        </div>
-        <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.php" class="admin-nav-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-          </a>
-          <a href="index.html" class="admin-nav-item">
+          <a href="logout.html" class="admin-nav-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
           </a>
@@ -133,7 +134,7 @@
           <div class="stat-card">
             <div class="stat-card-header">
               <div>
-                <h3 id="monthly-revenue">$48,250</h3>
+                <h3 id="monthly-revenue">₱48,250</h3>
                 <p>Revenue This Month</p>
               </div>
               <div class="stat-card-icon green">
@@ -310,7 +311,7 @@
                   <p>Lawn Maintenance Service</p>
                 </div>
                 <div class="transaction-amount positive">
-                  <h4>+$199.00</h4>
+                  <h4>+₱199.00</h4>
                   <p>Feb 18, 2026</p>
                 </div>
               </div>
@@ -323,7 +324,7 @@
                   <p>Garden Design Package</p>
                 </div>
                 <div class="transaction-amount positive">
-                  <h4>+$599.00</h4>
+                  <h4>+₱599.00</h4>
                   <p>Feb 17, 2026</p>
                 </div>
               </div>
@@ -336,7 +337,7 @@
                   <p>Lawn Mower Maintenance</p>
                 </div>
                 <div class="transaction-amount negative">
-                  <h4>-$450.00</h4>
+                  <h4>-₱450.00</h4>
                   <p>Feb 16, 2026</p>
                 </div>
               </div>
@@ -349,7 +350,7 @@
                   <p>Hardscaping Project</p>
                 </div>
                 <div class="transaction-amount positive">
-                  <h4>+$1,299.00</h4>
+                  <h4>+₱1,299.00</h4>
                   <p>Feb 15, 2026</p>
                 </div>
               </div>

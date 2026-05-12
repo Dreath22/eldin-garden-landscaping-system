@@ -1,9 +1,22 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Services Management - GreenScape Admin</title>
+  <title>Services Management - EldinGarden Admin</title>
   <link rel="stylesheet" href="admin-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -14,9 +27,9 @@
       <div class="admin-sidebar-header">
         <a href="index.html" class="logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
       </div>
       <nav class="admin-nav">
@@ -55,19 +68,8 @@
           </a>
         </div>
         <div class="admin-nav-section">
-          <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.php" class="admin-nav-item">
-            <i class="fas fa-envelope"></i>
-            <span>Email Updates</span>
-          </a>
-        </div>
-        <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.php" class="admin-nav-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-          </a>
-          <a href="index.html" class="admin-nav-item">
+          <a href="logout.php" class="admin-nav-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
           </a>
@@ -186,7 +188,7 @@
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.8 (124 reviews)</span>
                   </div>
                 </div>
-                <div class="service-item-price">$199<span style="font-size: 0.8rem; color: var(--text-gray);">/visit</span></div>
+                <div class="service-item-price">₱199<span style="font-size: 0.8rem; color: var(--text-gray);">/visit</span></div>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="viewService('Lawn Maintenance')"><i class="fas fa-eye"></i></button>
                   <button class="table-btn edit" title="Edit" onclick="editService('Lawn Maintenance')"><i class="fas fa-edit"></i></button>
@@ -205,7 +207,7 @@
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.9 (89 reviews)</span>
                   </div>
                 </div>
-                <div class="service-item-price">$599<span style="font-size: 0.8rem; color: var(--text-gray);">/project</span></div>
+                <div class="service-item-price">₱599<span style="font-size: 0.8rem; color: var(--text-gray);">/project</span></div>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="viewService('Garden Design')"><i class="fas fa-eye"></i></button>
                   <button class="table-btn edit" title="Edit" onclick="editService('Garden Design')"><i class="fas fa-edit"></i></button>
@@ -224,7 +226,7 @@
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.7 (56 reviews)</span>
                   </div>
                 </div>
-                <div class="service-item-price">$1,299<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
+                <div class="service-item-price">₱1,299<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="viewService('Hardscaping')"><i class="fas fa-eye"></i></button>
                   <button class="table-btn edit" title="Edit" onclick="editService('Hardscaping')"><i class="fas fa-edit"></i></button>
@@ -243,7 +245,7 @@
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.6 (42 reviews)</span>
                   </div>
                 </div>
-                <div class="service-item-price">$899<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
+                <div class="service-item-price">₱899<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="viewService('Irrigation')"><i class="fas fa-eye"></i></button>
                   <button class="table-btn edit" title="Edit" onclick="editService('Irrigation')"><i class="fas fa-edit"></i></button>
@@ -262,7 +264,7 @@
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.8 (78 reviews)</span>
                   </div>
                 </div>
-                <div class="service-item-price">$350<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
+                <div class="service-item-price">₱350<span style="font-size: 0.8rem; color: var(--text-gray);">+</span></div>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="viewService('Tree Trimming')"><i class="fas fa-eye"></i></button>
                   <button class="table-btn edit" title="Edit" onclick="editService('Tree Trimming')"><i class="fas fa-edit"></i></button>
@@ -281,7 +283,7 @@
                     <span style="color: var(--text-gray); font-size: 0.85rem; margin-left: 0.5rem;"><i class="fas fa-star" style="color: var(--star-orange);"></i> 4.5 (34 reviews)</span>
                   </div>
                 </div>
-                <div class="service-item-price">$275<span style="font-size: 0.8rem; color: var(--text-gray);">/visit</span></div>
+                <div class="service-item-price">₱275<span style="font-size: 0.8rem; color: var(--text-gray);">/visit</span></div>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="viewService('Seasonal Cleanup')"><i class="fas fa-eye"></i></button>
                   <button class="table-btn edit" title="Edit" onclick="editService('Seasonal Cleanup')"><i class="fas fa-edit"></i></button>
@@ -329,7 +331,9 @@
               <i class="fas fa-image"></i>
               <h4>Click to Upload Image</h4>
               <p>Recommended: 800x600px, JPG or PNG</p>
+              <input type="file" id="serviceImageInput" accept="image/*" style="display: none;">
             </div>
+            <div id="uploadPreview" style="margin-top: 1rem;"></div>
           </div>
           <div class="form-group">
             <label>Features (one per line)</label>
@@ -417,7 +421,7 @@
         <button class="modal-close viewCloseModal" >&times;</button>
       </div>
       <div class="modal-body">
-        <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="Service" style="width: 100%; border-radius: 8px; margin-bottom: 1.5rem;">
+        <img id="img-idss" src="https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800" alt="Service" style="width: 100%; border-radius: 8px; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
             <h2 id="viewServiceModalName"></h2>
@@ -469,6 +473,109 @@
     }); 
 
 
+  </script>
+  <script>
+
+    // // Form Submit
+    // document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    //   e.preventDefault();
+    //   alert('Content uploaded successfully!');
+    // });
+
+    // Drag and Drop
+    const uploadZone = document.querySelector('.upload-zone');
+    const fileInput = document.getElementById('serviceImageInput');
+    
+    // Click to upload
+    uploadZone.addEventListener('click', () => {
+      fileInput.click();
+    });
+    
+    // File input change handler
+    fileInput.addEventListener('change', (e) => {
+      const files = e.target.files;
+      const preview = document.getElementById('uploadPreview');
+      preview.innerHTML = ''; // Clear previous previews
+      
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const div = document.createElement('div');
+          div.className = 'upload-preview-item';
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; margin-bottom: 0.5rem;">
+            <button class="upload-preview-remove" onclick="this.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          div.style.position = 'relative';
+          div.style.display = 'inline-block';
+          div.style.marginRight = '1rem';
+          preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+    
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = 'var(--primary-green)';
+      uploadZone.style.backgroundColor = 'rgba(26, 77, 46, 0.05)';
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.style.borderColor = '#cbd5e1';
+      uploadZone.style.backgroundColor = '#f8fafc';
+    });
+    
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.style.borderColor = '#cbd5e1';
+      uploadZone.style.backgroundColor = '#f8fafc';
+      
+      const files = e.dataTransfer.files;
+      const preview = document.getElementById('uploadPreview');
+      
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const div = document.createElement('div');
+          div.className = 'upload-preview-item';
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; margin-bottom: 0.5rem;">
+            <button class="upload-preview-remove" onclick="this.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">
+              <i class="fas fa-times"></i>
+            </button>
+          `;
+          div.style.position = 'relative';
+          div.style.display = 'inline-block';
+          div.style.marginRight = '1rem';
+          preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.style.display = 'none';
+        }
+      });
+    });
+
+    // Close modals when clicking close buttons
+    document.querySelectorAll('.close').forEach(closeBtn => {
+      closeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Find the closest modal overlay and close it
+        const modalOverlay = this.closest('.modal-overlay');
+        if (modalOverlay) {
+          modalOverlay.style.display = 'none';
+        }
+      });
+    });
   </script>
 </body>
 </html>

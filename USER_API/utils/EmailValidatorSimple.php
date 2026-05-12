@@ -296,7 +296,7 @@ class EmailValidatorSimple {
             'landscape.com',
             'localhost',
             '127.0.0.1',
-            'greenscape.com'
+            'EldinGarden.com'
         ];
         
         $parsedUrl = parse_url($url);

@@ -1,11 +1,27 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+
+// Get current admin ID (fallback to 0 for testing when not authenticated)
+$adminId = $_SESSION['user_id'] ?? 0;
+?>
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Management - GreenScape Admin</title>
+    <title>User Management - EldinGarden Admin</title>
     <link rel="stylesheet" href="admin-style.css" />
-    <link rel="stylesheet" href="modal.css" />
+    <!-- <link rel="stylesheet" href="modal.css" /> -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -24,9 +40,9 @@
         <div class="admin-sidebar-header">
           <a href="index.html" class="logo">
             <div class="logo-icon">
-              <i class="fas fa-leaf"></i>
+              <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
             </div>
-            GreenScape
+            EldinGarden
           </a>
         </div>
         <nav class="admin-nav">
@@ -64,24 +80,10 @@
               <span>Services</span>
             </a>
           </div>
-          <div class="admin-nav-section">
-            <p class="admin-nav-title">Communication</p>
-            <a href="admin-emails.php" class="admin-nav-item">
-              <i class="fas fa-envelope"></i>
-              <span>Email Updates</span>
-            </a>
-            <a href="admin-notifications.php" class="admin-nav-item">
-              <i class="fas fa-bell"></i>
-              <span>Notifications</span>
-            </a>
-          </div>
+          
           <div class="admin-nav-section">
             <p class="admin-nav-title">Settings</p>
-            <a href="admin-settings.php" class="admin-nav-item">
-              <i class="fas fa-cog"></i>
-              <span>Settings</span>
-            </a>
-            <a href="index.html" class="admin-nav-item">
+            <a href="logout.html" class="admin-nav-item">
               <i class="fas fa-sign-out-alt"></i>
               <span>Logout</span>
             </a>
@@ -214,7 +216,7 @@
             <div class="dashboard-card-header">
               <h3><i class="fas fa-users"></i> All Users</h3>
               <div style="display: flex; gap: 0.5rem">
-                <button class="btn btn-secondary btn-small" id="exportBtn">
+                <button class="btn btn-secondary btn-small" id="exportBtn" onclick="exportUsers()">
                   <i class="fas fa-download"></i> Export
                 </button>
                 <button class="btn btn-danger btn-small">

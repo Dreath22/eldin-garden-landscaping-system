@@ -1,6 +1,7 @@
 import { toggleModal, generateCsrfToken, emptyElement, clearElementError, putTextinElementById, buttonEventListener, renderPagination, capitalize, rowData } from './utils/utils.js'
 import { fetchPorfolio } from './utils/apiUtils.js'
-import { ModalSystem, ToastSystem } from './utils/modal.js'
+import { ToastSystem } from './utils/modal.js'
+import { showModal } from './utils/TrueModal.js'
 const state = {
   currentPage: 1,
   currentTab: 'all',
@@ -97,7 +98,7 @@ buttonEventListener('#fileInput', (e, ) => {
   const newFiles = Array.from(fileInput.files)
   const newFileSize = newFiles.reduce((acc, file) => acc + file.size, 0)
   if(newFileSize > 10485760) {
-    ToastSystem.warning('File size exceeds 10MB', 'Upload Error')
+    showModal('warning', 'Upload Error', 'File size exceeds 10MB')
     uploads.files = []
     renderPreviews()
     return
@@ -192,14 +193,14 @@ buttonEventListener('#upload-submit', async(e, ) => {
     
   if (!validation.isValid) {
     // Show first error message to user
-    ModalSystem.warning('Validation Error', validation.errors[0].message)
+    showModal('warning', 'Validation Error', validation.errors[0].message)
     validation.errors[0].element.focus()
     return
   }
     
   // 2. Validate file uploads
   if (!uploads.files || uploads.files.length === 0) {
-    ToastSystem.error('Please select at least one file to upload', 'File Selection Error')
+    showModal('error', 'File Selection Error', 'Please select at least one file to upload')
     return
   }
     
@@ -240,7 +241,7 @@ buttonEventListener('#upload-submit', async(e, ) => {
       }
             
       // Show success feedback to user
-      ToastSystem.success(data.message || 'Content uploaded successfully!', 'Upload Success')
+      showModal('success', 'Upload Success', data.message || 'Content uploaded successfully!')
             
       if(data.status !== 'error'){
         // Reset form on success
@@ -271,9 +272,9 @@ buttonEventListener('#upload-submit', async(e, ) => {
             emptyElement(element, message)
           }
         })
-        ToastSystem.error('Please fix the validation errors.', 'Validation Required')
+        showModal('error', 'Validation Required', 'Please fix validation errors.')
       } else {
-        ToastSystem.error(data.message || 'Upload failed', 'Upload Error')
+        showModal('error', 'Upload Error', data.message || 'Upload failed')
       }
     }
   } catch (error) {
@@ -287,7 +288,7 @@ buttonEventListener('#upload-submit', async(e, ) => {
     })
         
     // Show user-friendly error message
-    ToastSystem.error('Upload failed: ' + error.message, 'Upload Error')
+    showModal('error', 'Upload Error', 'Upload failed: ' + error.message)
   } finally {
     // Re-enable button
     e.target.disabled = false
@@ -440,7 +441,7 @@ const buttonsLoader = (dataarray) => {
         .then(data => {
           if (data.status === 'success') {
             console.log('Deletion successful:', data)
-            ToastSystem.success(data.message || 'Portfolio deleted successfully!', 'Delete Success')
+            showModal('success', 'Delete Success', data.message || 'Portfolio deleted successfully!')
             
             // Re-render the page contents
             fetchData(state.currentTab)
@@ -450,12 +451,12 @@ const buttonsLoader = (dataarray) => {
               recentLoader(data1.data.data)
             })
           } else {
-            ToastSystem.error(data.message || 'Deletion failed', 'Delete Error')
+            showModal('error', 'Delete Error', data.message || 'Deletion failed')
           }
         })
         .catch((e)=>{
           console.error('error message: ', e)
-          ToastSystem.error('Deletion failed: ' + e.message, 'Delete Error')
+          showModal('error', 'Delete Error', 'Deletion failed: ' + e.message)
         })
 
 
@@ -477,19 +478,19 @@ buttonEventListener('#saveEdit', async (e,) => {
   const isFeatured = document.getElementById('isFeatured').checked
     
   if (!title) {
-    ModalSystem.warning('Required Field', 'Title is required')
+    showModal("warning", 'Required Field', 'Title is required')
     e.target.disabled = false
     return
   }
     
   if (!description) {
-    ModalSystem.warning('Required Field', 'Description is required')
+    showModal("warning", 'Required Field', 'Description is required')
     e.target.disabled = false
     return
   }
     
   if (!categoryId) {
-    ModalSystem.warning('Required Field', 'Category is required')
+    showModal("warning", 'Required Field', 'Category is required')
     e.target.disabled = false
     return
   }
@@ -498,7 +499,7 @@ buttonEventListener('#saveEdit', async (e,) => {
   const portfolioId = document.getElementById('editImageModal').dataset.portfolioId
     
   if (!portfolioId) {
-    ModalSystem.error('System Error', 'Portfolio ID not found')
+    showModal("error", 'System Error', 'Portfolio ID not found')
     e.target.disabled = false
     return
   }
@@ -528,7 +529,7 @@ buttonEventListener('#saveEdit', async (e,) => {
         
     if (data.status === 'success') {
       // Show success message
-      ToastSystem.success(data.message || 'Portfolio updated successfully!', 'Update Success')
+      showModal('success', 'Update Success', data.message || 'Portfolio updated successfully!')
             
       // Close modal
       document.getElementById('editImageModal').style.display = 'none'
@@ -552,16 +553,16 @@ buttonEventListener('#saveEdit', async (e,) => {
           const element = document.getElementById(elementId)
           if (element) {
             // Don't empty it, show the error in a user-friendly way
-            ModalSystem.warning('Field Error', `${field}: ${message}`)
+            showModal("warning", 'Field Error', `${field}: ${message}`)
           }
         })
       } else {
-        ToastSystem.error(data.message || 'Update failed', 'Update Error')
+        showModal('error', 'Update Error', data.message || 'Update failed')
       }
     }
   } catch (error) {
     console.error('Update failed:', error)
-    ToastSystem.error('Update failed: ' + error.message, 'Update Error')
+    showModal('error', 'Update Error', 'Update failed: ' + error.message)
   } finally {
     // Re-enable button
     e.target.disabled = false

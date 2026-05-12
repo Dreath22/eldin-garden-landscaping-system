@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json");
 date_default_timezone_set('Asia/Manila');
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 
 /**
  * Send JSON error response
@@ -288,6 +288,7 @@ function getTransactionList($pdo, $params = []) {
             SELECT 
                 t.id AS transaction_id,
                 t.booking_id,
+                t.booking_code,
                 t.transaction_code,
                 DATE(t.transaction_date) AS transaction_date,
                 t.description,
@@ -302,7 +303,7 @@ function getTransactionList($pdo, $params = []) {
                 COALESCE(u.id, 0) AS user_record_id,
                 -- Additional transaction metadata
                 CASE 
-                    WHEN t.booking_id IS NOT NULL THEN 'Booking Related'
+                    WHEN t.booking_code IS NOT NULL THEN 'Booking Related'
                     WHEN t.invoice_id IS NOT NULL THEN 'Invoice Related'
                     ELSE 'Direct Transaction'
                 END AS transaction_category,
@@ -315,7 +316,7 @@ function getTransactionList($pdo, $params = []) {
                     ELSE t.status
                 END AS status_display
             FROM transactions t
-            LEFT JOIN bookings b ON t.booking_id = b.id
+            LEFT JOIN bookings b ON t.booking_code = b.booking_code
             LEFT JOIN users u ON b.user_id = u.id
             {$whereClause}
             {$orderBy}
@@ -352,7 +353,7 @@ function getTransactionList($pdo, $params = []) {
         $countSql = "
             SELECT COUNT(*) as total
             FROM transactions t
-            LEFT JOIN bookings b ON t.booking_id = b.id
+            LEFT JOIN bookings b ON t.booking_code = b.booking_code
             LEFT JOIN users u ON b.user_id = u.id
             {$whereClause}
         ";
@@ -370,6 +371,107 @@ function getTransactionList($pdo, $params = []) {
             'page' => $page,
             'limit' => $limit,
             'total_pages' => ceil($total / $limit)
+        ];
+        
+    } catch (PDOException $e) {
+        jsonError('Database error in getTransactionList: ' . $e->getMessage(), 500);
+    } catch (Exception $e) {
+        jsonError('Server error in getTransactionList: ' . $e->getMessage(), 500);
+    }
+}
+
+function getTransactionListById($pdo, $bookingCode) { 
+    try {
+        $order = 'newest';
+        
+        // Build WHERE conditions with comprehensive filtering
+        $whereConditions = [];
+        $bindParams = [];
+        
+        // Add booking code filter
+        $whereConditions[] = "t.booking_code = :booking_code";
+        $bindParams[':booking_code'] = $bookingCode;
+        
+        // Build ORDER BY clause with enhanced options
+        $orderBy = "ORDER BY t.transaction_date DESC";
+        if ($order === 'oldest') {
+            $orderBy = "ORDER BY t.transaction_date ASC";
+        } elseif ($order === 'amount_high') {
+            $orderBy = "ORDER BY t.amount DESC";
+        } elseif ($order === 'amount_low') {
+            $orderBy = "ORDER BY t.amount ASC";
+        } elseif ($order === 'type') {
+            $orderBy = "ORDER BY t.type ASC";
+        }
+        
+        $whereClause = !empty($whereConditions) ? "WHERE " . implode(" AND ", $whereConditions) : "";
+        
+        // Enhanced query with multiple join strategies for comprehensive user data
+        $sql = "
+            SELECT 
+                t.id AS transaction_id,
+                t.booking_id,
+                t.booking_code,
+                t.transaction_code,
+                DATE(t.transaction_date) AS transaction_date,
+                t.description,
+                t.type,
+                t.status,
+                t.amount,
+                t.notes,
+                -- User information with fallback for admin transactions
+                COALESCE(u.name, 'System Admin') AS full_name,
+                COALESCE(u.email, 'admin@admin.com') AS user_email,
+                COALESCE(u.phone_number, 'N/A') AS user_phone,
+                COALESCE(u.id, 0) AS user_record_id,
+                -- Additional transaction metadata
+                CASE 
+                    WHEN t.booking_code IS NOT NULL THEN 'Booking Related'
+                    WHEN t.invoice_id IS NOT NULL THEN 'Invoice Related'
+                    ELSE 'Direct Transaction'
+                END AS transaction_category,
+                -- Payment status indicator
+                CASE 
+                    WHEN t.status = 'Completed' THEN 'Completed'
+                    WHEN t.status = 'Pending' THEN 'Pending'
+                    WHEN t.status = 'Active' THEN 'Active'
+                    WHEN t.status = 'Cancelled' THEN 'Cancelled'
+                    ELSE t.status
+                END AS status_display
+            FROM transactions t
+            LEFT JOIN bookings b ON t.booking_code = b.booking_code
+            LEFT JOIN users u ON b.user_id = u.id
+            {$whereClause}
+            {$orderBy}
+        ";
+        
+        $stmt = $pdo->prepare($sql);
+        
+        // Bind all parameters with proper typing
+        foreach ($bindParams as $param => $value) {
+            $stmt->bindValue($param, $value);
+        }
+        
+        $stmt->execute();
+        $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Enhanced data formatting
+        foreach ($transactions as &$transaction) {
+            $transaction['date'] = date('Y-m-d', strtotime($transaction['transaction_date']));
+            $transaction['amount'] = (float)$transaction['amount'];
+            $transaction['amount_formatted'] = '$' . number_format($transaction['amount'], 2);
+            
+            // Add user avatar fallback
+            if ($transaction['user_record_id'] == 0) {
+                $transaction['avatar_url'] = 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin';
+            } else {
+                $transaction['avatar_url'] = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' . urlencode($transaction['full_name']);
+            }
+        }
+        
+        return [
+            'transactions' => $transactions,
+            'total' => count($transactions)
         ];
         
     } catch (PDOException $e) {
@@ -444,6 +546,7 @@ try {
             SELECT 
                 t.id AS transaction_id,
                 t.booking_id,
+                t.booking_code,
                 t.transaction_code,
                 t.transaction_date,
                 t.description,
@@ -451,14 +554,13 @@ try {
                 t.status,
                 t.amount,
                 t.notes,
-                -- User data through bookings join
+                b.booking_code,
                 b.user_id,
-                u.id AS user_record_id,
                 u.name AS full_name,
                 u.email AS user_email,
                 u.phone_number AS user_phone
             FROM transactions t
-            LEFT JOIN bookings b ON t.booking_id = b.id
+            LEFT JOIN bookings b ON t.booking_code = b.booking_code
             LEFT JOIN users u ON b.user_id = u.id
             WHERE t.transaction_code = :transaction_code
         ");
@@ -488,14 +590,25 @@ try {
         exit;
     }
 
+    if(isset($_GET['booking_id']) && count($_GET) === 1){
+            $transactions = getTransactionListById($pdo, $_GET['booking_id']);
+            echo json_encode([
+                "status" => "success",
+                "transactions" => $transactions,
+                "summary" => [],
+                "timestamp" => date('c')
+            ]);
+            return;
+    }
     // Get transaction list with user data
     $transactions = getTransactionList($pdo, $_GET);
+
     
     // Get summary statistics
     $summary = getTransactionSummary($pdo);
     
     // Get total count for pagination
-    $countSql = "SELECT COUNT(*) as total FROM transactions t LEFT JOIN bookings b ON t.booking_id = b.id LEFT JOIN users u ON b.user_id = u.id";
+    $countSql = "SELECT COUNT(*) as total FROM transactions t LEFT JOIN bookings b ON t.booking_code = b.booking_code LEFT JOIN users u ON b.user_id = u.id";
     $countStmt = $pdo->query($countSql);
     $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
     

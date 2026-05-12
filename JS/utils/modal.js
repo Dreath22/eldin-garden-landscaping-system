@@ -1,407 +1,190 @@
 /**
- * GreenScape Modal System
- * A comprehensive modal and notification system for GreenScape Landscaping
+ * Basic Modal System
+ * Simple modal and toast functionality
  */
 
-// Modal System
 export const ModalSystem = {
-    // Create modal overlay and container if not exists
-    init() {
-        if (!document.getElementById('modal-overlay')) {
-            const overlay = document.createElement('div');
-            overlay.id = 'modal-overlay';
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = '<div id="modal-container" class="modal"></div>';
-            document.body.appendChild(overlay);
+    /**
+     * Show a modal dialog
+     * @param {Object} options - Modal options
+     * @param {string} options.title - Modal title
+     * @param {string} options.message - Modal message
+     * @param {string} options.type - Modal type (info, success, warning, error)
+     * @param {Function} options.onConfirm - Callback for confirm action
+     * @param {Function} options.onCancel - Callback for cancel action
+     * @param {string} options.confirmText - Text for confirm button
+     * @param {string} options.cancelText - Text for cancel button
+     */
+    show: function(options = {}) {
+        const {
+            title = 'Modal',
+            message = '',
+            type = 'info',
+            onConfirm = null,
+            onCancel = null,
+            confirmText = 'OK',
+            cancelText = 'Cancel'
+        } = options;
 
-            // Close on overlay click
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    this.close();
-                }
+        // Create modal elements
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        `;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.cssText = `
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        `;
+
+        modal.innerHTML = `
+            <h3 style="margin: 0 0 10px 0; color: #333;">${title}</h3>
+            <p style="margin: 0 0 20px 0; color: #666;">${message}</p>
+            <div style="text-align: right;">
+                ${onCancel ? `<button class="cancel-btn" style="margin-right: 10px; padding: 8px 16px; border: 1px solid #ccc; background: #f5f5f5; border-radius: 4px; cursor: pointer;">${cancelText}</button>` : ''}
+                <button class="confirm-btn" style="padding: 8px 16px; border: none; background: #007bff; color: white; border-radius: 4px; cursor: pointer;">${confirmText}</button>
+            </div>
+        `;
+
+        modalOverlay.appendChild(modal);
+        document.body.appendChild(modalOverlay);
+
+        // Event handlers
+        const confirmBtn = modal.querySelector('.confirm-btn');
+        const cancelBtn = modal.querySelector('.cancel-btn');
+
+        const closeModal = () => {
+            document.body.removeChild(modalOverlay);
+        };
+
+        confirmBtn.addEventListener('click', () => {
+            if (onConfirm) onConfirm();
+            closeModal();
+        });
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                if (onCancel) onCancel();
+                closeModal();
             });
-
-            // Close on Escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    this.close();
-                }
-            });
         }
 
-        // Create toast container if not exists
-        if (!document.getElementById('toast-container')) {
-            const toastContainer = document.createElement('div');
-            toastContainer.id = 'toast-container';
-            toastContainer.className = 'toast-container';
-            document.body.appendChild(toastContainer);
-        }
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
     },
 
-    // Open modal with content
-    open(content, size = '') {
-        this.init();
-        const overlay = document.getElementById('modal-overlay');
-        const container = document.getElementById('modal-container');
-        
-        container.className = 'modal ' + size;
-        container.innerHTML = content;
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
+    /**
+     * Show confirmation modal
+     */
+    confirm: function(title, message, onConfirm, onCancel) {
+        this.show({
+            title,
+            message,
+            type: 'confirm',
+            onConfirm,
+            onCancel,
+            confirmText: 'Confirm',
+            cancelText: 'Cancel'
+        });
     },
 
-    // Close modal
-    close() {
-        const overlay = document.getElementById('modal-overlay');
-        if (overlay) {
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    },
-
-    // Success Modal
-    success(title, message, buttonText = 'OK', callback = null) {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon success"><i class="fas fa-check-circle"></i></div>
-                <div class="modal-title">
-                    <h3>${title}</h3>
-                    <p>Success</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>${message}</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-success" onclick="ModalSystem.close(); ${callback ? callback + '()' : ''}">
-                    <i class="fas fa-check"></i> ${buttonText}
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Error Modal
-    error(title, message, buttonText = 'OK', callback = null) {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon error"><i class="fas fa-times-circle"></i></div>
-                <div class="modal-title">
-                    <h3>${title}</h3>
-                    <p>Error</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>${message}</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-danger" onclick="ModalSystem.close(); ${callback ? callback + '()' : ''}">
-                    <i class="fas fa-times"></i> ${buttonText}
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Warning Modal
-    warning(title, message, buttonText = 'Understood', callback = null) {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
-                <div class="modal-title">
-                    <h3>${title}</h3>
-                    <p>Warning</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>${message}</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-warning" onclick="ModalSystem.close(); ${callback ? callback + '()' : ''}">
-                    <i class="fas fa-check"></i> ${buttonText}
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Info Modal
-    info(title, message, buttonText = 'OK', callback = null) {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon info"><i class="fas fa-info-circle"></i></div>
-                <div class="modal-title">
-                    <h3>${title}</h3>
-                    <p>Information</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>${message}</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-primary" onclick="ModalSystem.close(); ${callback ? callback + '()' : ''}">
-                    <i class="fas fa-check"></i> ${buttonText}
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Confirmation Modal
-    confirm(title, message, onConfirm, onCancel = null, confirmText = 'Yes', cancelText = 'No') {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon confirm"><i class="fas fa-question-circle"></i></div>
-                <div class="modal-title">
-                    <h3>${title}</h3>
-                    <p>Please confirm</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close(); ${onCancel ? onCancel + '()' : ''}"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>${message}</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-secondary" onclick="ModalSystem.close(); ${onCancel ? onCancel + '()' : ''}">
-                    <i class="fas fa-times"></i> ${cancelText}
-                </button>
-                <button class="modal-btn modal-btn-primary" onclick="ModalSystem.close(); ${onConfirm}();">
-                    <i class="fas fa-check"></i> ${confirmText}
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Delete Confirmation Modal
-    confirmDelete(itemName, onConfirm, onCancel = null) {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon error"><i class="fas fa-trash-alt"></i></div>
-                <div class="modal-title">
-                    <h3>Delete Confirmation</h3>
-                    <p>This action cannot be undone</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close(); ${onCancel ? onCancel + '()' : ''}"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete <strong>${itemName}</strong>?</p>
-                <p style="color: var(--danger-red); margin-top: 0.5rem;"><i class="fas fa-exclamation-circle"></i> This action is permanent and cannot be recovered.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-secondary" onclick="ModalSystem.close(); ${onCancel ? onCancel + '()' : ''}">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-                <button class="modal-btn modal-btn-danger" onclick="ModalSystem.close(); ${onConfirm}();">
-                    <i class="fas fa-trash-alt"></i> Delete
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Logout Confirmation Modal
-    confirmLogout(onConfirm, onCancel = null) {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon warning"><i class="fas fa-sign-out-alt"></i></div>
-                <div class="modal-title">
-                    <h3>Logout Confirmation</h3>
-                    <p>Are you leaving?</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close(); ${onCancel ? onCancel + '()' : ''}"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to log out of your account?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-secondary" onclick="ModalSystem.close(); ${onCancel ? onCancel + '()' : ''}">
-                    <i class="fas fa-times"></i> Stay Logged In
-                </button>
-                <button class="modal-btn modal-btn-danger" onclick="ModalSystem.close(); ${onConfirm}();">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        `;
-        this.open(content);
-    },
-
-    // Form Modal
-    form(title, formContent, onSubmit, submitText = 'Submit', cancelText = 'Cancel') {
-        const content = `
-            <div class="modal-header">
-                <div class="modal-icon info"><i class="fas fa-edit"></i></div>
-                <div class="modal-title">
-                    <h3>${title}</h3>
-                    <p>Please fill in the details</p>
-                </div>
-                <button class="modal-close" onclick="ModalSystem.close()"><i class="fas fa-times"></i></button>
-            </div>
-            <form onsubmit="event.preventDefault(); ModalSystem.close(); ${onSubmit}(this);">
-                <div class="modal-body">
-                    ${formContent}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="modal-btn modal-btn-secondary" onclick="ModalSystem.close()">
-                        <i class="fas fa-times"></i> ${cancelText}
-                    </button>
-                    <button type="submit" class="modal-btn modal-btn-primary">
-                        <i class="fas fa-check"></i> ${submitText}
-                    </button>
-                </div>
-            </form>
-        `;
-        this.open(content, 'modal-medium');
-    },
-
-    // Custom Modal with full HTML content
-    custom(htmlContent, size = '') {
-        this.open(htmlContent, size);
+    /**
+     * Show alert modal
+     */
+    alert: function(title, message, onConfirm) {
+        this.show({
+            title,
+            message,
+            type: 'alert',
+            onConfirm,
+            confirmText: 'OK'
+        });
     }
 };
 
-// Toast Notification System
 export const ToastSystem = {
-    // Create toast container
-    init() {
-        if (!document.getElementById('toast-container')) {
-            const toastContainer = document.createElement('div');
-            toastContainer.id = 'toast-container';
-            toastContainer.className = 'toast-container';
-            document.body.appendChild(toastContainer);
-        }
-    },
-
-    // Show toast notification
-    show(message, type = 'info', title = '', duration = 5000) {
-        this.init();
-        const container = document.getElementById('toast-container');
-        
-        const icons = {
-            success: 'fa-check-circle',
-            error: 'fa-times-circle',
-            warning: 'fa-exclamation-triangle',
-            info: 'fa-info-circle'
-        };
-
-        const titles = {
-            success: title || 'Success',
-            error: title || 'Error',
-            warning: title || 'Warning',
-            info: title || 'Information'
-        };
-
-        const toastId = 'toast-' + Date.now();
+    /**
+     * Show toast notification
+     * @param {string} message - Toast message
+     * @param {string} type - Toast type (info, success, warning, error)
+     * @param {number} duration - Duration in milliseconds
+     */
+    show: function(message, type = 'info', duration = 3000) {
         const toast = document.createElement('div');
-        toast.id = toastId;
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <div class="toast-icon"><i class="fas ${icons[type]}"></i></div>
-            <div class="toast-content">
-                <h4>${titles[type]}</h4>
-                <p>${message}</p>
-            </div>
-            <button class="toast-close" onclick="ToastSystem.dismiss('${toastId}')"><i class="fas fa-times"></i></button>
-            <div class="toast-progress" style="width: 100%;"></div>
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            transition: all 0.3s ease;
+            transform: translateX(100%);
         `;
 
-        container.appendChild(toast);
+        // Set background color based on type
+        const colors = {
+            info: '#007bff',
+            success: '#28a745',
+            warning: '#ffc107',
+            error: '#dc3545'
+        };
+        toast.style.background = colors[type] || colors.info;
+
+        toast.textContent = message;
+        document.body.appendChild(toast);
 
         // Animate in
-        requestAnimationFrame(() => {
-            toast.classList.add('show');
-        });
-
-        // Progress bar animation
-        const progress = toast.querySelector('.toast-progress');
-        progress.style.transition = `width ${duration}ms linear`;
-        requestAnimationFrame(() => {
-            progress.style.width = '0%';
-        });
-
-        // Auto dismiss
         setTimeout(() => {
-            this.dismiss(toastId);
+            toast.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Remove after duration
+        setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
         }, duration);
-
-        return toastId;
     },
 
-    // Success toast
-    success(message, title = '', duration = 5000) {
-        return this.show(message, 'success', title, duration);
+    success: function(message, duration) {
+        this.show(message, 'success', duration);
     },
 
-    // Error toast
-    error(message, title = '', duration = 5000) {
-        return this.show(message, 'error', title, duration);
+    error: function(message, duration) {
+        this.show(message, 'error', duration);
     },
 
-    // Warning toast
-    warning(message, title = '', duration = 5000) {
-        return this.show(message, 'warning', title, duration);
+    warning: function(message, duration) {
+        this.show(message, 'warning', duration);
     },
 
-    // Info toast
-    info(message, title = '', duration = 5000) {
-        return this.show(message, 'info', title, duration);
-    },
-
-    // Dismiss toast
-    dismiss(toastId) {
-        const toast = document.getElementById(toastId);
-        if (toast) {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                toast.remove();
-            }, 400);
-        }
-    },
-
-    // Dismiss all toasts
-    dismissAll() {
-        const toasts = document.querySelectorAll('.toast');
-        toasts.forEach(toast => {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                toast.remove();
-            }, 400);
-        });
+    info: function(message, duration) {
+        this.show(message, 'info', duration);
     }
 };
-
-// // Auto-initialize on DOM ready
-// document.addEventListener('DOMContentLoaded', () => {
-//     ModalSystem.init();
-//     ToastSystem.init();
-// });
-
-// // Handle PHP session messages
-// function handleSessionMessages() {
-//     // Check for success message in URL
-//     const urlParams = new URLSearchParams(window.location.search);
-//     const successMsg = urlParams.get('success');
-//     const errorMsg = urlParams.get('error');
-//     const warningMsg = urlParams.get('warning');
-//     const infoMsg = urlParams.get('info');
-
-//     if (successMsg) {
-//         ToastSystem.success(decodeURIComponent(successMsg), 'Success', 6000);
-//     }
-//     if (errorMsg) {
-//         ToastSystem.error(decodeURIComponent(errorMsg), 'Error', 8000);
-//     }
-//     if (warningMsg) {
-//         ToastSystem.warning(decodeURIComponent(warningMsg), 'Warning', 7000);
-//     }
-//     if (infoMsg) {
-//         ToastSystem.info(decodeURIComponent(infoMsg), 'Information', 5000);
-//     }
-// }
-
-// Run on page load
-//document.addEventListener('DOMContentLoaded', handleSessionMessages);

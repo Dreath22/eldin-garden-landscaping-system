@@ -1,3 +1,16 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,23 +68,8 @@
           </a>
         </div>
         <div class="admin-nav-section">
-          <p class="admin-nav-title">Communication</p>
-          <a href="admin-emails.php" class="admin-nav-item">
-            <i class="fas fa-envelope"></i>
-            <span>Email Updates</span>
-          </a>
-          <a href="admin-notifications.php" class="admin-nav-item">
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
-          </a>
-        </div>
-        <div class="admin-nav-section">
           <p class="admin-nav-title">Settings</p>
-          <a href="admin-settings.php" class="admin-nav-item">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-          </a>
-          <a href="index.html" class="admin-nav-item">
+          <a href="logout.html" class="admin-nav-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
           </a>
@@ -354,7 +352,7 @@
           
           document.getElementById('detailsId').textContent = transaction.transaction_code;
           document.getElementById('detailsAmount').textContent = transaction.type === 'cancelled' ? 
-            `-$${parseFloat(transaction.amount).toFixed(2)}` : `+$${parseFloat(transaction.amount).toFixed(2)}`;
+            `-₱${parseFloat(transaction.amount).toFixed(2)}` : `+₱${parseFloat(transaction.amount).toFixed(2)}`;
           document.getElementById('detailsDate').textContent = new Date(transaction.transaction_date).toLocaleDateString('en-US', {
             year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
           });

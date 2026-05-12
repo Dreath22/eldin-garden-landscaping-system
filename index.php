@@ -11,18 +11,41 @@ $isLoggedIn = $sessionData['isLoggedIn'];
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GreenScape - Professional Landscaping Services</title>
+  <title>EldinGarden - Professional Landscaping Services</title>
   <link rel="stylesheet" href="client-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script type="module">
+    import { showModal } from 'JS/utils/TrueModal.js';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const userId = urlParams.get('id');
+
+    if (status === 'success') {
+        showModal(
+            'success', 
+            'Account Created!', 
+            `Welcome aboard!`
+        );
+    } 
+    
+    if (status === 'database_error') {
+        showModal(
+            'database', 
+            'Connection Issue', 
+            'We couldn\'t save your data. Please try again later.'
+        );
+    }
+  </script>
 </head>
 <body>
   <!-- Navigation -->
   <nav class="navbar">
     <a href="index.php" class="logo">
       <div class="logo-icon">
-        <i class="fas fa-leaf"></i>
+        <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
       </div>
-      GreenScape
+      EldinGarden
     </a>
     <div class="menu-toggle" onclick="toggleMenu()">
       <span></span>
@@ -42,18 +65,27 @@ $isLoggedIn = $sessionData['isLoggedIn'];
       <?php endif; ?>
     </ul>
   </nav>
-
+  
   <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-content">
-      <h1>Transform Your Outdoor Space</h1>
-      <p>Professional landscaping services that bring your vision to life</p>
-      <div class="hero-buttons">
-        <a href="contact.php" class="btn btn-primary">Get Started <i class="fas fa-arrow-right"></i></a>
-        <a href="gallery.php" class="btn btn-secondary">View Our Work</a>
-      </div>
+  <!-- 1. The Video Element -->
+  <video autoplay muted loop playsinline poster="assets/img/fallback-image.jpg" class="hero-video">
+    <source src="assets/img/ELDIN WELCOME VID.mp4" type="video/mp4">
+  </video>
+
+  <!-- 2. The Dark Overlay -->
+  <div class="hero-overlay"></div>
+
+  <!-- 3. Your Existing Content -->
+  <div class="hero-content">
+    <h1>Transform Your Outdoor Space</h1>
+    <p>Professional landscaping services that bring your vision to life</p>
+    <div class="hero-buttons">
+      <a href="contact.php" class="btn btn-primary">Get Started <i class="fas fa-arrow-right"></i></a>
+      <a href="gallery.php" class="btn btn-secondary">View Our Work</a>
     </div>
-  </section>
+  </div>
+</section>
 
   <!-- Services Section -->
   <section class="section services-section">
@@ -66,7 +98,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
         <div class="service-image" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400')"></div>
         <div class="service-content">
           <div class="service-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
           <h3>Lawn Maintenance</h3>
           <p>Keep your lawn lush and healthy with our comprehensive maintenance services.</p>
@@ -121,7 +153,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
           <i class="fas fa-star"></i>
           <i class="fas fa-star"></i>
         </div>
-        <p class="testimonial-text">"GreenScape transformed our backyard into a beautiful oasis. The team was professional, timely, and the results exceeded our expectations!"</p>
+        <p class="testimonial-text">"EldinGarden transformed our backyard into a beautiful oasis. The team was professional, timely, and the results exceeded our expectations!"</p>
         <div class="testimonial-author">
           <h4>Sarah Johnson</h4>
           <p>Complete Backyard Redesign</p>
@@ -169,7 +201,7 @@ $isLoggedIn = $sessionData['isLoggedIn'];
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
-        <h3>GreenScape</h3>
+        <h3>EldinGarden</h3>
         <p>Professional landscaping services that bring your outdoor vision to life. We create beautiful, sustainable landscapes for homes and businesses.</p>
       </div>
       <div class="footer-section">
@@ -189,13 +221,13 @@ $isLoggedIn = $sessionData['isLoggedIn'];
       </div>
       <div class="footer-section">
         <h3>Contact Us</h3>
-        <p><i class="fas fa-phone"></i> (555) 123-4567</p>
-        <p><i class="fas fa-envelope"></i> info@greenscape.com</p>
-        <p><i class="fas fa-map-marker-alt"></i> 123 Garden Lane, Green City</p>
+        <p><i class="fas fa-phone"></i> 0945 547 5152</p>
+        <p><i class="fas fa-envelope"></i> info@EldinGarden.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Bautista St., Brgy. Sampaloc IV, Dasmariñas City, Cavite</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026 GreenScape Landscaping. All rights reserved.</p>
+      <p>&copy; 2005 EldinGarden Landscaping. All rights reserved.</p>
     </div>
   </footer>
 

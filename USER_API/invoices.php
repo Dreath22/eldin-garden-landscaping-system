@@ -5,7 +5,7 @@ session_start();
 header("Content-Type: application/json");
 date_default_timezone_set('Asia/Manila');
 
-require_once '../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 
 class InvoiceController
 {

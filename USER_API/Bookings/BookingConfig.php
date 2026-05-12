@@ -10,12 +10,13 @@ class BookingConfig {
     public const MAX_PAGE_NUMBER = 1000;
     
     // Status values
-    public const VALID_STATUSES = ['all', 'pending', 'active', 'completed', 'cancelled'];
+    public const VALID_STATUSES = ['all', 'pending', 'active', 'completed', 'cancelled', 'consultation'];
     public const STATUS_MAPPING = [
         'pending' => 'Pending',
         'active' => 'Active', 
         'completed' => 'Completed',
-        'cancelled' => 'Cancelled'
+        'cancelled' => 'Cancelled',
+        'consultation' => 'Consultation'
     ];
     
     // Sort options

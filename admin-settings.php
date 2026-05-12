@@ -1,9 +1,22 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings - GreenScape Admin</title>
+  <title>Settings - EldinGarden Admin</title>
   <link rel="stylesheet" href="admin-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -14,9 +27,9 @@
       <div class="admin-sidebar-header">
         <a href="index.html" class="logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
       </div>
       <nav class="admin-nav">
@@ -124,7 +137,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="siteName">Website Name</label>
-                <input type="text" id="siteName" value="GreenScape Landscaping">
+                <input type="text" id="siteName" value="EldinGarden Landscaping">
               </div>
               <div class="form-group">
                 <label for="siteTagline">Tagline</label>
@@ -134,11 +147,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="adminEmail">Admin Email</label>
-                <input type="email" id="adminEmail" value="admin@greenscape.com">
+                <input type="email" id="adminEmail" value="admin@EldinGarden.com">
               </div>
               <div class="form-group">
                 <label for="supportEmail">Support Email</label>
-                <input type="email" id="supportEmail" value="support@greenscape.com">
+                <input type="email" id="supportEmail" value="support@EldinGarden.com">
               </div>
             </div>
             <div class="form-group">
@@ -157,16 +170,16 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="businessName">Business Name</label>
-                <input type="text" id="businessName" value="GreenScape Landscaping LLC">
+                <input type="text" id="businessName" value="EldinGarden Landscaping LLC">
               </div>
               <div class="form-group">
                 <label for="businessPhone">Phone Number</label>
-                <input type="tel" id="businessPhone" value="+1 (555) 123-4567">
+                <input type="tel" id="businessPhone" value="0945 547 5152">
               </div>
             </div>
             <div class="form-group">
               <label for="businessAddress">Address</label>
-              <input type="text" id="businessAddress" value="123 Garden Street, Green City, GC 12345">
+              <input type="text" id="businessAddress" value="Bautista St., Brgy. Sampaloc IV, Dasmariñas City, Cavite">
             </div>
             <div class="form-row">
               <div class="form-group">
@@ -254,7 +267,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="smtpHost">SMTP Host</label>
-                <input type="text" id="smtpHost" value="smtp.greenscape.com">
+                <input type="text" id="smtpHost" value="smtp.EldinGarden.com">
               </div>
               <div class="form-group">
                 <label for="smtpPort">SMTP Port</label>
@@ -264,7 +277,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="smtpUser">SMTP Username</label>
-                <input type="text" id="smtpUser" value="noreply@greenscape.com">
+                <input type="text" id="smtpUser" value="noreply@EldinGarden.com">
               </div>
               <div class="form-group">
                 <label for="smtpPass">SMTP Password</label>
@@ -328,7 +341,7 @@
             <div class="settings-row">
               <div class="settings-row-info">
                 <h4>Require Deposit</h4>
-                <p>Require deposit for bookings over $500</p>
+                <p>Require deposit for bookings over ₱500</p>
               </div>
               <label class="toggle-switch">
                 <input type="checkbox">

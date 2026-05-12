@@ -18,11 +18,21 @@ const loader = async () => {
 }
 
 const buttonLoader = () => {
-  let value;
+  let currentBasePrice = 0;
   const sqm = document.querySelector("#sqm");
   
   // Helper to get a clean number
   const getVal = (el) => parseFloat(el.value) || 0;
+  
+  // Helper to get current base price from selected service
+  const getCurrentBasePrice = () => {
+    const serviceDropdown = document.querySelector("#service_dropdown");
+    if (serviceDropdown && serviceDropdown.selectedIndex > 0) {
+      const selectedOption = serviceDropdown.options[serviceDropdown.selectedIndex];
+      return parseFloat(selectedOption.dataset.value) || 0;
+    }
+    return 0;
+  };
 
   // Plus Button
   buttonEventListener("#add-estimate", (e) => {
@@ -70,25 +80,23 @@ const buttonLoader = () => {
     if (currentNum < 0) currentNum = 0;
     el.value = currentNum.toFixed(2);
     
-    // Calculate total cost
-    const totalCost = value * currentNum;
+    // Calculate total cost using current base price
+    const basePrice = getCurrentBasePrice();
+    const totalCost = basePrice * currentNum;
     putTextinElementById("#estimated-cost", moneySign + totalCost.toFixed(2))
-    putTextinElementById("#approx-value", value)
-    putTextinElementById("#baseprice", moneySign + value)
-    
+    putTextinElementById("#approx-value", basePrice, 'value')
+    putTextinElementById("#baseprice", moneySign + basePrice)
+      
     // Update hidden input for form submission
-    const hiddenInput = document.querySelector("#estimated-cost-input");
-    if (hiddenInput) {
-      hiddenInput.value = totalCost.toFixed(2);
-    }
+    putTextinElementById("#estimated-cost-input", totalCost.toFixed(2), 'value');
   }, 'change');
 
   buttonEventListener("#service_dropdown", (e, el)=>{
     const selectedOption = el.options[el.selectedIndex];
-    value = selectedOption.dataset.value;
-    console.log("Val: ", value)
+    currentBasePrice = parseFloat(selectedOption.dataset.value) || 0;
+    console.log("Base Price: ", currentBasePrice)
     
-    putTextinElementById("#baseprice", moneySign + "" + value)
+    putTextinElementById("#baseprice", moneySign + currentBasePrice)
     
     // Update cost calculation when service changes
     const currentSqm = getVal(sqm);
@@ -98,15 +106,18 @@ const buttonLoader = () => {
 
 // Helper function to update cost calculations
 function updateCostCalculation(sqmValue) {
-  const totalCost = value * sqmValue;
+  let el = document.querySelector("#service_dropdown")
+  if (!el || el.selectedIndex <= 0) return;
+  
+  const selectedOption = el.options[el.selectedIndex];
+  const basePrice = parseFloat(selectedOption.dataset.value) || 0;
+  const totalCost = basePrice * sqmValue;
   putTextinElementById("#estimated-cost", moneySign + totalCost.toFixed(2))
-  putTextinElementById("#approx-value", value)
+  putTextinElementById("#approx-value", basePrice, 'value')
   
   // Update hidden input for form submission
-  const hiddenInput = document.querySelector("#estimated-cost-input");
-  if (hiddenInput) {
-    hiddenInput.value = totalCost.toFixed(2);
-  }
+  putTextinElementById("#estimated-cost-input", totalCost.toFixed(2), 'value');
+  
 }
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -50,9 +50,9 @@ window.fetchData = async (page = state.currentPage) => {
 }
 
 function dataSummaryload(data){
-  updateStatCard('monthRevenue', 'monthRevenueColor', `$${parseFloat(data.revenue_this_month || 0).toLocaleString()}`, data.revenue_growth)
-  updateStatCard('totalExpenses', 'totalExpensesColor', `$${parseFloat(data.expenses_this_month || 0).toLocaleString()}`, data.expense_growth)
-  updateStatCard('lastMonthProfit', 'lastMonthProfitColor', `$${parseFloat(data.net_profit_this_month || 0).toLocaleString()}`, data.profit_growth)
+  updateStatCard('monthRevenue', 'monthRevenueColor', `₱${parseFloat(data.revenue_this_month || 0).toLocaleString()}`, data.revenue_growth)
+  updateStatCard('totalExpenses', 'totalExpensesColor', `₱${parseFloat(data.expenses_this_month || 0).toLocaleString()}`, data.expense_growth)
+  updateStatCard('lastMonthProfit', 'lastMonthProfitColor', `₱${parseFloat(data.net_profit_this_month || 0).toLocaleString()}`, data.profit_growth)
   updateStatCard('totalTransactions', 'totalTransactionsColor', `${data.transactions_this_month}`, data.transactions_growth)
 }
 
@@ -313,7 +313,7 @@ window.displayData = (datas) => {
               </td>
               <td><span class="status-badge active">${data.type || 'Payment'}</span></td>
               <td><span class="status-badge ${data.status?.toLowerCase()}">${data.status || 'Unknown'}</span></td>
-              <td style="color: #22c55e; font-weight: 600;">$${parseFloat(data.amount || 0).toFixed(2)}</td>
+              <td style="color: #22c55e; font-weight: 600;">₱${parseFloat(data.amount || 0).toFixed(2)}</td>
               <td>
                 <div class="table-actions">
                   <button class="table-btn view" title="View" onclick="showTransactionDetails('${data.transaction_code}')"><i class="fas fa-eye"></i></button>

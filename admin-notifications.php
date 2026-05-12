@@ -1,9 +1,22 @@
+<?php
+require_once __DIR__ . '/config/auth_middleware.php';
+
+// Require admin access - will redirect if not admin
+requireAdmin();
+
+// Initialize standard session
+$sessionData = initStandardSession();
+$user = $sessionData['user'];
+$isLoggedIn = $sessionData['isLoggedIn'];
+
+$adminName = $_SESSION['user_name'];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notifications - GreenScape Admin</title>
+  <title>Notifications - EldinGarden Admin</title>
   <link rel="stylesheet" href="admin-style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -14,9 +27,9 @@
       <div class="admin-sidebar-header">
         <a href="index.html" class="logo">
           <div class="logo-icon">
-            <i class="fas fa-leaf"></i>
+            <img src="assets/img/LOGO.png" alt="EldinGarden Logo" style="height: 24px; width: auto; vertical-align: middle;">
           </div>
-          GreenScape
+          EldinGarden
         </a>
       </div>
       <nav class="admin-nav">
@@ -215,7 +228,7 @@
                 </div>
                 <div class="notification-content">
                   <h4>Payment Received</h4>
-                  <p>Received $599.00 from Michael Chen for Garden Design Package</p>
+                  <p>Received ₱599.00 from Michael Chen for Garden Design Package</p>
                 </div>
                 <span class="notification-time">15 minutes ago</span>
                 <div class="table-actions">
@@ -420,7 +433,7 @@
             <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
             <div class="table-user-info">
               <h4>Sarah Johnson</h4>
-              <p>sarah@email.com | +1 (555) 123-4567</p>
+              <p>sarah@email.com | +1 0945 547 5152</p>
             </div>
           </div>
         </div>
@@ -428,8 +441,8 @@
           <p style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 0.5rem;">Booking Details</p>
           <p><i class="fas fa-tools" style="width: 20px; color: var(--text-gray);"></i> Lawn Maintenance Service</p>
           <p><i class="fas fa-calendar" style="width: 20px; color: var(--text-gray);"></i> Feb 20, 2026 at 10:00 AM</p>
-          <p><i class="fas fa-map-marker-alt" style="width: 20px; color: var(--text-gray);"></i> 123 Garden St, Green City</p>
-          <p><i class="fas fa-dollar-sign" style="width: 20px; color: var(--text-gray);"></i> $199.00</p>
+          <p><i class="fas fa-map-marker-alt" style="width: 20px; color: var(--text-gray);"></i> Bautista St., Brgy. Sampaloc IV, Dasmariñas City, Cavite</p>
+          <p><i class="fas fa-dollar-sign" style="width: 20px; color: var(--text-gray);"></i> ₱199.00</p>
         </div>
       </div>
       <div class="modal-footer">

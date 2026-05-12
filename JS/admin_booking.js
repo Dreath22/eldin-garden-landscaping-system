@@ -1,5 +1,6 @@
-import { switchTab, formatToCalendar, renderPagination, capitalize, log, toggleModal } from './utils/utils.js'
-import { ModalSystem, ToastSystem } from './utils/modal.js';
+import { switchTab, formatToCalendar, renderPagination, capitalize, log, toggleModal, moneySign } from './utils/utils.js'
+import { ToastSystem } from './utils/modal.js';
+import { showModal } from './utils/TrueModal.js';
 // --- 1. Centralized State Object ---
 const state = {
   currentPage: 1,
@@ -14,16 +15,18 @@ const state = {
   selectAllActive: false,
 }
 
-async function fetchData(page = state.currentPage) {
+async function fetchData(page = state.currentPage, fetchAllForCalendar = false) {
   state.currentPage = page
 
   // Use URLSearchParams for clean URL building
+  const limit = fetchAllForCalendar ? 100 : state.limit; // Fetch more for calendar
   const params = new URLSearchParams({
     page: state.currentPage,
     status: state.currentTab,
     order: state.order,
     from: state.dateFrom,
-    category: state.category
+    category: state.category,
+    limit: limit
   })
 
   const apiURL = `/landscape/USER_API/BookingsController.php?action=list&${params.toString()}`
@@ -39,11 +42,55 @@ async function fetchData(page = state.currentPage) {
 
     // Update State & UI
     state.allBookings = data.bookings
+    // Also make available bookingsglobally for admin-bookings.php calendar
+    window.allBookings = data.bookings
     displayStats(data.summary)
     displayBookings(data.bookings)
     renderPagination(fetchData, data.summary.filtered, state, () => fetchData())
+    
+    // Update calendar after booking data is loaded
+    if (typeof updateAdminCalendar === 'function') {
+      console.log('Updating calendar after booking data loaded');
+      updateAdminCalendar();
+    }
   } catch (error) {
     console.error('Fetch error:', error)
+  }
+}
+
+// Function to fetch all bookings for calendar (ignores pagination)
+window.fetchAllBookingsForCalendar = async function fetchAllBookingsForCalendar() {
+  try {
+    const params = new URLSearchParams({
+      page: 1,
+      status: 'all',
+      order: 'oldest', // Get oldest first to ensure we get all dates
+      limit: 100 // Fetch up to 100 bookings
+    });
+
+    const apiURL = `/landscape/USER_API/BookingsController.php?action=list&${params.toString()}`
+    const response = await fetch(apiURL)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('Fetched all bookings for calendar:', data.bookings.length, 'bookings')
+    
+    // Set global bookings for calendar
+    window.allBookings = data.bookings
+    
+    // Update calendar after fetching all bookings
+    if (typeof updateAdminCalendar === 'function') {
+      console.log('Updating calendar with all bookings loaded');
+      updateAdminCalendar();
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching all bookings for calendar:', error)
+    return null;
   }
 }
 
@@ -73,7 +120,7 @@ function displayBookings(bookings) {
   let doc = ''
   bookings.forEach((booking) => {
     const statusLower = booking.status.toLowerCase()
-
+    
     // Start of Card
     doc += `
       <div class="booking-card">
@@ -103,10 +150,24 @@ function displayBookings(bookings) {
           </div>
           <div class="booking-info-row">
             <i class="fas fa-dollar-sign"></i>
-            <span style="font-weight: 600; color: var(--primary-green)">$${parseFloat(booking.total_amount).toFixed(2)}</span>
-          </div>
-        </div>`
-
+            <span style="font-weight: 600; color: var(--primary-green)">${moneySign}${parseFloat(booking.total_cost).toFixed(2)}<span style="color: lighgray; font-size:8px; margin-left: 3px;">(Project Cost)</span></span>
+          </div>`
+        
+    if(booking.status != "Consultation" && booking.status != "Pending"){
+      doc +=`
+          <div class="booking-info-row">
+            <i class="fas fa-dollar-sign"></i>
+            <span style="font-weight: 600; color: var(--primary-green)">${moneySign}${parseFloat(booking.total_paid_to_date).toFixed(2)}<span style="color: lighgray; font-size:8px; margin-left: 3px;">(Amount Paid)</span></span>
+          </div>`
+    }
+    if(booking.status== "Cancelled"){
+      doc +=`
+          <div class="booking-info-row">
+            <i class="fas fa-dollar-sign"></i>
+            <span style="font-weight: 600; color: var(--primary-green)">${moneySign}${parseFloat(booking.refund_amount).toFixed(2)}<span style="color: lighgray; font-size:8px; margin-left: 3px;">(Amount Refunded)</span></span>
+          </div>`
+    }
+    doc+= '</div>';
     // Footer Logic (Appended inside the card)
     doc += `<div class="booking-card-footer">
               <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark)" onclick="handleModalAction('view','${booking.id}')">
@@ -125,13 +186,23 @@ function displayBookings(bookings) {
       doc += `
         <button class="btn btn-success btn-small" id="completeBtn-${booking.id}" onclick="handleModalAction('complete','${booking.id}')">
           <i class="fas fa-check-double"></i> Complete
+        </button>
+        <button class="btn btn-danger btn-small" onclick="handleModalAction('cancel','${booking.id}')" id="cancelBtn-${booking.id}">
+          <i class="fas fa-times"></i> Cancel
         </button>`
     } else if (statusLower === 'completed') {
       doc += `
         <button class="btn btn-secondary btn-small" onclick="handleModalAction('invoice','${booking.id}' )">
           <i class="fas fa-file-invoice"></i> Invoice
         </button>`
-    } 
+    } else if (statusLower === 'consultation'){
+      doc += `
+        <div class="booking-card-footer">
+              <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark)" onclick="handleModalAction('consult','${booking.id}')">
+                <i class="fas fa-eye"></i> Answer
+              </button>
+        </div>`
+    }
 
     doc += '</div></div>' // Close footer and card
   })
@@ -200,11 +271,12 @@ const modalActions = {
                 <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                         <div class="space-y-1.5">
-                            <label for="downpayment-amount" class="text-[10px] font-bold text-slate-500 uppercase px-1">Downpayment</label>
+                            <label for="downpayment-amount" class="text-[10px] font-bold text-slate-500 uppercase px-1">Downpayment (min: ${moneySign}${(booking.total_cost * 0.20).toFixed(2)} - max: ${moneySign}${booking.total_cost.toFixed(2)})</label>
                             <div class="relative flex items-center">
                                 <span class="absolute left-3 text-slate-400 material-symbols-outlined text-base">payments</span>
-                                <input id="downpayment-amount" type="number" placeholder="0.00" class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                                <input id="downpayment-amount" type="number" min="0" max="${booking.total_cost}" step="0.01" placeholder="0.00" class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
                             </div>
+                            <div id="downpayment-error" class="hidden text-xs text-red-500 mt-1">Minimum downpayment required: ${moneySign}${(booking.total_cost * 0.20).toFixed(2)}</div>
                         </div>
 
                         <div class="flex flex-col items-end gap-1">
@@ -226,6 +298,59 @@ const modalActions = {
         </div>
             `
     docID.style.display = 'flex'
+    
+    // Add event listener for downpayment validation
+    const downpaymentInput = document.getElementById('downpayment-amount');
+    const confirmButton = docID.querySelector('[data-type="confirm"]');
+    const checkbox = document.getElementById('initial-checkbox');
+    
+    function validateDownpayment() {
+        const downpaymentAmount = parseFloat(downpaymentInput.value) || 0;
+        const minimumRequired = booking.total_cost * 0.20; // 20% of total cost
+        const maximumAllowed = booking.total_cost; // Cannot exceed total cost
+        const isChecked = checkbox.checked;
+        const errorMessage = document.getElementById('downpayment-error');
+        
+        if (downpaymentAmount < minimumRequired) {
+            confirmButton.disabled = true;
+            confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
+            confirmButton.classList.remove('hover:bg-primary/90');
+            downpaymentInput.classList.add('border-red-500', 'bg-red-50');
+            downpaymentInput.classList.remove('border-slate-200');
+            errorMessage.textContent = `Minimum downpayment required: ${moneySign}${minimumRequired.toFixed(2)}`;
+            errorMessage.classList.remove('hidden');
+        } else if (downpaymentAmount > maximumAllowed) {
+            confirmButton.disabled = true;
+            confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
+            confirmButton.classList.remove('hover:bg-primary/90');
+            downpaymentInput.classList.add('border-red-500', 'bg-red-50');
+            downpaymentInput.classList.remove('border-slate-200');
+            errorMessage.textContent = `Downpayment cannot exceed total cost: ${moneySign}${maximumAllowed.toFixed(2)}`;
+            errorMessage.classList.remove('hidden');
+        } else {
+            downpaymentInput.classList.remove('border-red-500', 'bg-red-50');
+            downpaymentInput.classList.add('border-slate-200');
+            errorMessage.classList.add('hidden');
+            
+            // Enable button only if payment is valid AND checkbox is checked
+            if (isChecked) {
+                confirmButton.disabled = false;
+                confirmButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                confirmButton.classList.add('hover:bg-primary/90');
+            } else {
+                confirmButton.disabled = true;
+                confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
+                confirmButton.classList.remove('hover:bg-primary/90');
+            }
+        }
+    }
+    
+    // Add event listeners
+    downpaymentInput.addEventListener('input', validateDownpayment);
+    checkbox.addEventListener('change', validateDownpayment);
+    
+    // Initial validation
+    validateDownpayment();
   },
   complete: (id) => {
     const booking = state.allBookings.find(b => b.id === Number(id));
@@ -309,25 +434,78 @@ const modalActions = {
                     
                     <div class="bg-primary/5 dark:bg-primary/10 p-4 rounded-xl flex justify-between items-center border border-primary/10">
                         <div class="flex flex-col">
-                            <span class="text-xs text-slate-500 uppercase font-bold tracking-tight">Initial Estimate</span>
-                            <span class="text-lg font-bold text-slate-800 dark:text-slate-100">$${parseFloat(booking.total_amount).toFixed(2)}</span>
+                            <span class="text-xs text-slate-500 uppercase font-bold tracking-tight">Initial Payment: <span class="text-lg font-bold text-slate-800" style="color:lightgray;">${moneySign}${parseFloat(booking.total_paid_to_date).toFixed(2)}</span></span>
+                            <span class="text-sm font-bold text-slate-800 dark:text-slate-100"> Amount To Pay: <span class="text-lg font-bold text-slate-800" style="color:lightgray;">${moneySign}${parseFloat(booking.total_cost).toFixed(2) - parseFloat(booking.total_paid_to_date).toFixed(2)}</span></span>
                         </div>
                         <div class="flex flex-col items-end">
                             <span class="text-xs text-slate-500 uppercase font-bold tracking-tight">Final Project Cost</span>
                             <div class="relative mt-1">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                                <input id="project-cost" class="pl-7 pr-3 py-1 w-32 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold text-primary" type="number"/>
+                                <input id="project-cost" class="pl-7 pr-3 py-1 w-32 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-bold text-primary" type="number" step="0.01"/>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="p-6">
-                    <button data-type="complete" onclick="confirmBooking(this, ${booking.id})" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all">
+                    <button data-type="complete" id="x-complete" onclick="confirmBooking(this, ${booking.id})" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all">
                         Finalize & Close Project
                     </button>
                 </div>
             </div>`
     docID.style.display = 'flex'
+    
+    // Add event listener for final payment validation
+    const finalPaymentInput = document.getElementById('project-cost');
+    const completeButton = docID.querySelector('#x-complete');
+    
+    function validateFinalPayment() {
+        const finalPaymentAmount = parseFloat(finalPaymentInput.value) || 0;
+        const remainingBalance = parseFloat(booking.total_amount) - parseFloat(booking.total_paid_to_date);
+        const exactAmountRequired = remainingBalance;
+        
+        if (finalPaymentAmount !== exactAmountRequired) {
+            completeButton.disabled = true;
+            completeButton.classList.add('opacity-50', 'cursor-not-allowed');
+            completeButton.classList.remove('hover:bg-primary/90');
+            finalPaymentInput.classList.add('border-red-500', 'bg-red-50');
+            finalPaymentInput.classList.remove('border-slate-200');
+            
+            // Add or update error message
+            let errorDiv = finalPaymentInput.parentNode.querySelector('.text-red-500');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'text-xs text-red-500 mt-1';
+                finalPaymentInput.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = `Exact amount required: ${moneySign}${exactAmountRequired.toFixed(2)}`;
+            errorDiv.classList.remove('hidden');
+        } else {
+            completeButton.disabled = false;
+            completeButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            completeButton.classList.add('hover:bg-primary/90');
+            finalPaymentInput.classList.remove('border-red-500', 'bg-red-50');
+            finalPaymentInput.classList.add('border-slate-200');
+            
+            // Hide error message
+            const errorDiv = finalPaymentInput.parentNode.querySelector('.text-red-500');
+            if (errorDiv) {
+                errorDiv.classList.add('hidden');
+            }
+        }
+    }
+    
+    // Add event listener
+    finalPaymentInput.addEventListener('input', validateFinalPayment);
+    
+    // Set the input value to the remaining balance and validate
+    const remainingBalance = parseFloat(booking.total_amount) - parseFloat(booking.total_paid_to_date);
+    finalPaymentInput.value = remainingBalance.toFixed(2);
+    finalPaymentInput.max = remainingBalance;
+    finalPaymentInput.min = remainingBalance;
+    finalPaymentInput.step = '0.01';
+    
+    // Initial validation
+    validateFinalPayment();
   },
   cancel: (id) => {
     const booking = state.allBookings.find(b => b.id === Number(id));
@@ -352,10 +530,10 @@ const modalActions = {
                 <div class="p-6 space-y-5">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase">Service Charges ($)</label>
+                            <label class="text-xs font-bold text-slate-500 uppercase">Service Charges (50% of the total amount paid to date)</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                                <input class="w-full pl-7 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-red-500 focus:border-red-500" placeholder="0.00" type="number" value="${parseFloat(booking.total_amount).toFixed(2)}" />
+                                <div class="w-full pl-7 rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-red-500 focus:border-red-500">${parseFloat(booking.total_paid_to_date*0.5).toFixed(2)}</div>
                             </div>
                         </div>
                         <div class="space-y-2">
@@ -403,7 +581,8 @@ const modalActions = {
     docID.style.display = 'flex'
   },
   invoice: (id) => {
-    const booking = state.allBookings.find(b => b.id === Number(id));
+    const b = state.allBookings.find(b => b.id === Number(id));
+    console.log("bookings: ",b)
     const docID = document.getElementById('invoiceModal')
     docID.innerHTML = `<div id="modal-content" class="bg-white dark:bg-stone-900 w-full max-w-[960px] max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col scale-95 transition-transform duration-300">
             
@@ -413,9 +592,9 @@ const modalActions = {
                     <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                         <h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">Invoice &amp; Transaction History</h2>
                         <div class="flex items-center gap-2">
-                            <span class="text-slate-500 dark:text-stone-400 text-sm font-medium">#BK-2026-001</span>
+                            <span class="text-slate-500 dark:text-stone-400 text-sm font-medium">#${b.booking_code}</span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-primary dark:bg-blue-900/30 uppercase tracking-wider">
-                                COMPLETED
+                                ${b.status.toUpperCase()}
                             </span>
                         </div>
                     </div>
@@ -433,7 +612,7 @@ const modalActions = {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="flex flex-col gap-2 rounded-xl p-6 border border-slate-100 dark:border-stone-800 bg-slate-50/50 dark:bg-stone-800/50">
                         <p class="text-slate-500 dark:text-stone-400 text-xs font-bold uppercase tracking-widest">TOTAL PROJECT VALUE</p>
-                        <p class="text-slate-900 dark:text-white text-3xl font-bold tracking-tight">$12,450.00</p>
+                        <p class="text-slate-900 dark:text-white text-3xl font-bold tracking-tight">${moneySign}${b.total_cost}</p>
                         <p class="text-slate-400 text-sm font-medium">Baseline estimate</p>
                     </div>
                     
@@ -469,7 +648,7 @@ const modalActions = {
             <!-- Footer Actions (Fixed at bottom) -->
             <footer class="shrink-0 p-6 border-t border-slate-100 dark:border-stone-800 bg-slate-50/30 dark:bg-stone-900/50">
                 <div class="flex flex-col sm:flex-row items-center justify-end gap-3" id="invoiceActions">
-                    <button class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20" onclick="window.open('/landscape/USER_API/generate_booking_report.php?id=${booking.id}', '_blank')">
+                    <button class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20" onclick="window.open('/landscape/USER_API/generate_booking_report.php?id=${b.booking_code}', '_blank')">
                         <span class="material-symbols-outlined text-lg">download</span>
                         Download PDF Invoice
                     </button>
@@ -480,7 +659,7 @@ const modalActions = {
     docID.style.display = 'flex'
     
     // Load invoice and transaction information for this booking
-    loadTransactionInformation(booking.id)
+    loadTransactionInformation(b.booking_code)
   },
   view: (id) => {
     const booking = state.allBookings.find(b => b.id === Number(id));
@@ -619,8 +798,376 @@ const modalActions = {
       displayBookingFiles([]);
       displayPortfolioImages([]);
     }
+  },
+  consult: (id)=>{
+    console.log(`🔍 Loading consultation for booking ID: ${id}`);
+    
+    // Find the booking data
+    const booking = state.allBookings.find(b => b.id == id);
+    
+    if (!booking) {
+      showModal("error", 'Error', 'Booking not found');
+      return;
+    }
+    
+    console.log('📋 Booking data found:', booking);
+    
+    // Show the modal first (this ensures elements exist)
+    document.getElementById('modalOverlay').style.display = 'flex';
+    
+    // Parse the data and insert into modal fields
+    const fieldMappings = {
+      'fullNamex': booking.user_name || booking.name || 'N/A',
+      'emailx': booking.user_email || booking.email || 'N/A',
+      'address': booking.address || 'N/A',
+      'serviceName': booking.service_name || `Service ID: ${booking.service_id}` || 'N/A',
+      'area': booking.sqm ? `${booking.sqm} sqm` : 'N/A',
+      'message': booking.notes || booking.message || 'No notes provided'
+    };
+    
+    // Set all fields (handle both input and div elements)
+    Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+      const element = document.getElementById(fieldId);
+      if (element) {
+        // Check if it's an input element (has value property)
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          element.value = value;
+          element.readOnly = true; // Keep fields read-only
+        } else {
+          // It's a div element, set innerText
+          element.innerText = value;
+        }
+        console.log(`✅ Set ${fieldId}: "${value}"`);
+      } else {
+        console.warn(`⚠️  Field not found: ${fieldId}`);
+      }
+    });
+    
+    // Set cost fields with proper validation
+    const costFields = [
+      { id: 'laborCost', value: booking.labor_cost, label: 'Labor Cost' },
+      { id: 'materialsCost', value: booking.materials_cost, label: 'Materials Cost' },
+      { id: 'miscCost', value: booking.misc_cost, label: 'Miscellaneous Cost' }
+    ];
+    
+    costFields.forEach(costField => {
+      const field = document.getElementById(costField.id);
+      if (field) {
+        // Ensure field is editable
+        field.readOnly = false;
+        
+        // Clear any default value first
+        field.value = '';
+        
+        // Set the actual cost value
+        if (costField.value !== null && costField.value !== undefined && costField.value !== '') {
+          const numericValue = parseFloat(costField.value);
+          if (!isNaN(numericValue) && numericValue >= 0) {
+            field.value = numericValue.toFixed(2);
+            console.log(`✅ Set ${costField.id}: ${moneySign}${field.value}`);
+          } else {
+            field.value = '0.00';
+            console.log(`⚠️  Invalid ${costField.label}, set to 0.00`);
+          }
+        } else {
+          field.value = '0.00';
+          console.log(`ℹ️  No ${costField.label} data, set to 0.00`);
+        }
+        
+        // Add real-time validation
+        field.addEventListener('input', function(e) {
+          const value = parseFloat(e.target.value);
+          
+          // Remove existing validation classes
+          field.classList.remove('border-red-500', 'border-green-500');
+          
+          if (isNaN(value) || value < 0) {
+            field.classList.add('border-red-500');
+            field.title = 'Value cannot be negative';
+          } else if (value > 0) {
+            field.classList.add('border-green-500');
+            field.title = '';
+          } else {
+            field.title = 'Enter a value greater than 0';
+          }
+        });
+        
+      } else {
+        console.warn(`⚠️  Cost field not found: ${costField.id}`);
+      }
+    });
+    
+    // Store current booking ID for saving
+    window.currentConsultationId = id;
+    console.log(`💾 Stored consultation ID: ${window.currentConsultationId}`);
+    
+    // Calculate and display total
+    calculateTotal();
+    
+    // Add admin feedback section
+    addAdminFeedbackSection(booking);
+    
+    // Update modal title for consultation
+    const modalTitle = document.querySelector('.modal-header-x h2');
+    if (modalTitle) {
+      modalTitle.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        Consultation Request Details
+      `;
+    }
+    
+    // Update admin badge
+    const adminBadge = document.querySelector('.admin-badge-x');
+    if (adminBadge) {
+      adminBadge.textContent = 'Consultation';
+      adminBadge.style.backgroundColor = '#10b981';
+    }
+    
+    // Update modal footer for consultation mode
+    const cancelButton = document.querySelector('.modal-footer .btn-secondary-x');
+    const saveButton = document.querySelector('.modal-footer .btn-primary-x');
+    
+    if (cancelButton) {
+      cancelButton.textContent = 'Cancel';
+      cancelButton.onclick = () => closeModal('modalOverlay');
+    }
+    
+    if (saveButton) {
+      // Always show Save button for consultation costs
+      saveButton.textContent = 'Save Consultation Costs';
+      saveButton.onclick = saveConsultationCosts;
+      saveButton.style.backgroundColor = '#10b981';
+    }
+    
+    showModal('info', 'Consultation', `Loaded consultation request #${booking.booking_code || booking.id}`)
   }
 }
+
+/**
+ * Add admin feedback section to consultation modal
+ */
+function addAdminFeedbackSection(booking) {
+  // Find the modal body to add the feedback section
+  const modalBody = document.querySelector('.modal-body-x');
+  if (!modalBody) {
+    console.warn('Modal body not found for admin feedback section');
+    return;
+  }
+  
+  // Check if feedback section already exists
+  const existingSection = document.getElementById('adminFeedbackSection');
+  if (existingSection) {
+    existingSection.remove();
+  }
+  
+  // Create admin feedback section
+  const feedbackSection = document.createElement('div');
+  feedbackSection.id = 'adminFeedbackSection';
+  feedbackSection.style.cssText = `
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #10b981;
+  `;
+  
+  feedbackSection.innerHTML = `
+    <div style="margin-bottom: 0.5rem;">
+      <h6 style="margin: 0; color: #333; font-size: 1rem; font-weight: 600;">
+        <i class="fas fa-comment-dots" style="color: #10b981; margin-right: 0.5rem;"></i>
+        Admin Feedback
+      </h6>
+      <p style="margin: 0.25rem 0 0 0; color: #666; font-size: 0.85rem;">Add notes or feedback for this consultation request</p>
+    </div>
+    <textarea 
+      id="adminFeedbackInput" 
+      placeholder="Enter your admin feedback here..."
+      style="width: 100%; 
+             min-height: 80px; 
+             padding: 0.5rem; 
+             border: 1px solid #ddd; 
+             border-radius: 4px; 
+             resize: vertical;
+             font-family: inherit;
+             font-size: 0.9rem;"
+    >${booking.admin_feedback || ''}</textarea>
+    <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+      <button 
+        onclick="saveAdminFeedbackFromConsultation()" 
+        style="padding: 0.5rem 1rem; 
+               background: #10b981; 
+               color: white; 
+               border: none; 
+               border-radius: 4px; 
+               cursor: pointer;
+               font-size: 0.85rem;"
+      >
+        <i class="fas fa-save" style="margin-right: 0.5rem;"></i>
+        Save Feedback
+      </button>
+      <button 
+        onclick="clearAdminFeedback()" 
+        style="padding: 0.5rem 1rem; 
+               background: #6b7280; 
+               color: white; 
+               border: none; 
+               border-radius: 4px; 
+               cursor: pointer;
+               font-size: 0.85rem;"
+      >
+        <i class="fas fa-eraser" style="margin-right: 0.5rem;"></i>
+        Clear
+      </button>
+    </div>
+  `;
+  
+  // Append to modal body
+  modalBody.appendChild(feedbackSection);
+  
+  console.log('✅ Admin feedback section added to consultation modal');
+}
+
+/**
+ * Save admin feedback from consultation modal
+ */
+window.saveAdminFeedbackFromConsultation = async function() {
+  const feedbackInput = document.getElementById('adminFeedbackInput');
+  const feedback = feedbackInput ? feedbackInput.value : '';
+  const bookingId = window.currentConsultationId;
+  
+  if (!bookingId) {
+    showModal("error", 'Error', 'No consultation ID found');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/landscape/USER_API/BookingsController.php?action=update_admin_feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        admin_feedback: feedback,
+        notifBoolean: false
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showModal('success', 'Success', 'Admin feedback saved successfully!');
+      
+      // Update the booking data in the current state
+      const booking = state.allBookings.find(b => b.id == bookingId);
+      if (booking) {
+        booking.admin_feedback = feedback;
+      }
+      
+    } else {
+      showModal("error", 'Error', 'Failed to save admin feedback: ' + (result.message || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error saving admin feedback:', error);
+    showModal("error", 'Error', 'Failed to save admin feedback. Please try again.');
+  }
+}
+
+/**
+ * Clear admin feedback input
+ */
+window.clearAdminFeedback = function() {
+  const feedbackInput = document.getElementById('adminFeedbackInput');
+  if (feedbackInput) {
+    feedbackInput.value = '';
+    feedbackInput.focus();
+  }
+}
+
+/**
+ * Save consultation cost data to database
+ */
+
+/**
+ * Calculate total cost from cost input fields
+ */
+function calculateTotal() {
+  try {
+    const laborCost = parseFloat(document.getElementById('laborCost').value) || 0;
+    const materialsCost = parseFloat(document.getElementById('materialsCost').value) || 0;
+    const miscCost = parseFloat(document.getElementById('miscCost').value) || 0;
+    
+    const totalCost = laborCost + materialsCost + miscCost;
+    
+    // Update total cost display
+    const totalElement = document.getElementById('totalCost');
+    if (totalElement) {
+      totalElement.textContent = `${moneySign}${totalCost.toFixed(2)}`;
+    }
+    
+    return totalCost;
+  } catch (error) {
+    console.error('Error calculating total:', error);
+    return 0;
+  }
+}
+
+async function saveConsultationCosts() {
+  if (!window.currentConsultationId) {
+    showModal("error", 'Error', 'No consultation booking selected');
+    return;
+  }
+  
+  try {
+    const laborCost = parseFloat(document.getElementById('laborCost').value) || 0;
+    const materialsCost = parseFloat(document.getElementById('materialsCost').value) || 0;
+    const miscCost = parseFloat(document.getElementById('miscCost').value) || 0;
+    
+    // Validate that at least one cost is greater than 0
+    if (laborCost <= 0 && materialsCost <= 0 && miscCost <= 0) {
+      showModal("error", 'Validation Error', 'At least one cost field must be greater than 0');
+      return;
+    }
+    
+    // Validate individual cost fields are not negative
+    if (laborCost < 0 || materialsCost < 0 || miscCost < 0) {
+      showModal("error", 'Validation Error', 'Cost values cannot be negative');
+      return;
+    }
+    
+    const response = await fetch('/landscape/USER_API/BookingsController.php?action=update_costs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        booking_id: window.currentConsultationId,
+        labor_cost: laborCost,
+        materials_cost: materialsCost,
+        misc_cost: miscCost
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showModal('success', 'Success', 'Consultation costs updated successfully');
+      closeModal('modalOverlay');
+      // Refresh the booking data
+      fetchData(state.currentPage);
+    } else {
+      throw new Error(result.message || 'Failed to update costs');
+    }
+    
+  } catch (error) {
+    console.error('Save consultation costs error:', error);
+    showModal("error", error.message, 'Error');
+  }
+}
+
 
 
 
@@ -805,19 +1352,29 @@ window.confirmAddBooking = async () => {
 
   // 2. Validation Logic
   if (!formData.user_id) {
-    ToastSystem.error('Please select a valid customer from the list.', 'Validation Error');
+    showModal("error", 'Please select a valid customer from the list.', 'Validation Error');
     return;
   }
   if (!formData.service_id) {
-    ToastSystem.error('Please select a valid service from the list.', 'Validation Error');
+    showModal("error", 'Please select a valid service from the list.', 'Validation Error');
     return;
   }
   if (!date || !time) {
-    ToastSystem.error('Please select both a date and a time.', 'Validation Error');
+    showModal("error", 'Please select both a date and a time.', 'Validation Error');
+    return;
+  }
+  
+  // Additional validation: Check if date is in the past
+  const selectedDate = new Date(`${date}T${time}`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDate < today) {
+    showModal("error", 'Please select a future date and time.', 'Validation Error');
     return;
   }
   if (!formData.address) {
-    ToastSystem.error('Please enter a complete service address.', 'Validation Error');
+    showModal("error", 'Please enter a complete service address.', 'Validation Error');
     return;
   }
 
@@ -849,21 +1406,30 @@ window.confirmAddBooking = async () => {
     const result = await response.json()
 
     if (result.status === 'success') {
-      ModalSystem.success("Booking Created", "Booking has been successfully created!", "OK", () => {
-        // Reset form manually since 'this' no longer refers to the form
-        document.getElementById('addBookingForm').reset()
+      showModal('success', "Booking Created", "Booking has been successfully created!")
+      
+      // Reset form manually since 'this' no longer refers to the form
+      document.getElementById('addBookingForm').reset()
 
-        // Refresh the list
-        if (typeof fetchData === 'function') fetchData(1)
+      // Refresh the list
+      if (typeof fetchData === 'function') fetchData(1)
 
-        // Close modal if you have a closeModal function
-      });
-    } else {
-      ModalSystem.error("Booking Error", result.message || "Failed to create booking");
+      // Refresh admin calendar
+      if (typeof fetchAllBookings === 'function') {
+        fetchAllBookings().then(() => {
+          if (typeof updateAdminCalendar === 'function') updateAdminCalendar();
+        });
+      }
+
+      // Close modal
+      if (typeof closeAddBookingModal === 'function') closeAddBookingModal();
+    }
+    else {
+      showModal('error',"Booking Error", result.message || "Failed to create booking");
     }
   } catch (error) {
     console.error('Submission error:', error)
-    ToastSystem.error('Network error. Failed to save booking.', 'Network Error');
+    showModal('error',"Network error", "Network error. Failed to save booking.");
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false
@@ -872,7 +1438,13 @@ window.confirmAddBooking = async () => {
   }
 }
 
-window.closeModal = (id) => { document.getElementById(id).style.display = 'none' }
+window.closeModal = (id = 'modalOverlay') => { 
+  const modalId = id || 'modalOverlay';
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
 
 // Add Booking Modal
 window.handleAction = (bookingid, actionType) => {
@@ -882,8 +1454,215 @@ window.handleAction = (bookingid, actionType) => {
   if (!booking) return console.error(`booking ${bookingid} not found.`)
 }
 
-function showAddBookingModal() {
+window.showAddBookingModal = function() {
   document.getElementById('addBookingModal').style.display = 'flex'
+}
+
+// Additional global functions for onclick handlers
+window.saveAdminFeedback = async function(bookingId) {
+  const feedback = document.getElementById('adminFeedbackInput').value;
+  
+  try {
+    const response = await fetch('/landscape/USER_API/BookingsController.php?action=update_admin_feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        admin_feedback: feedback
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showModal('success', 'Success', 'Admin feedback saved successfully!');
+      closeBookingManagementModal();
+      // Refresh bookings
+      if (typeof fetchData === 'function') {
+        fetchData();
+      }
+    } else {
+      showModal("error", 'Failed to save admin feedback: ' + (result.message || 'Unknown error'), 'Error');
+    }
+  } catch (error) {
+    console.error('Error saving admin feedback:', error);
+    showModal("error", 'Failed to save admin feedback. Please try again.', 'Error');
+  }
+}
+
+window.addPayment = async function(bookingId) {
+  const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+  
+  if (!paymentAmount || paymentAmount <= 0) {
+    showModal("error", 'Please enter a valid payment amount', 'Error');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/landscape/USER_API/BookingsController.php?action=add_payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        amount: paymentAmount
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showModal('success', 'Successful Payment', `Payment of ${moneySign}${paymentAmount.toFixed(2)} added successfully!`);
+      closeBookingManagementModal();
+      // Refresh bookings to show updated payment status
+      if (typeof fetchData === 'function') {
+        fetchData();
+      }
+    } else {
+      showModal("error", 'Failed to add payment: ' + (result.message || 'Unknown error'), 'Error');
+    }
+  } catch (error) {
+    console.error('Error adding payment:', error);
+    showModal("error", 'Failed to add payment. Please try again.', 'Error');
+  }
+}
+
+window.closeBookingManagementModal = function() {
+  const modal = document.getElementById('bookingManagementModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+window.showAvailabilityModal = function(date = '') {
+  const modal = document.getElementById('availabilityModal');
+  const dateInput = document.getElementById('availabilityDate');
+  
+  if (date && dateInput) {
+    dateInput.value = date;
+  }
+  
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+window.closeAvailabilityModal = function() {
+  const modal = document.getElementById('availabilityModal');
+  if (modal) {
+    modal.style.display = 'none';
+    const form = document.getElementById('availabilityForm');
+    if (form) {
+      form.reset();
+    }
+  }
+}
+
+window.removeUnavailableDate = async function(date) {
+  if (!confirm(`Are you sure you want to make ${date} available?`)) {
+    return;
+  }
+  
+  try {
+    const response = await fetch('/landscape/USER_API/AppointmentController.php?action=remove_unavailable_date', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: date
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showModal('success', 'Success', 'Date made available successfully!');
+      // Refresh unavailable dates
+      fetchUnavailableDates();
+    } else {
+      showModal("error", 'Failed to update availability: ' + (result.message || 'Unknown error'), 'Error');
+    }
+  } catch (error) {
+    console.error('Error removing unavailable date:', error);
+    showModal("error", 'Failed to update availability. Please try again.', 'Error');
+  }
+}
+
+// Function to check if a date is unavailable
+window.isDateUnavailable = async function(date) {
+  try {
+    const response = await fetch('/landscape/USER_API/AppointmentController.php?action=get_unavailable_dates');
+    const result = await response.json();
+    
+    if (result.status === 'success' && result.data) {
+      const dateStr = date.toISOString().split('T')[0];
+      return result.data.some(unavailableDate => unavailableDate.unavailable_date === dateStr);
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking unavailable dates:', error);
+    return false;
+  }
+}
+
+// Function to validate calendar date selection
+window.validateCalendarDateSelection = async function(selectedDate, bookingId = null) {
+  // Check if date is in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDate < today) {
+    showModal("error", 'Cannot select dates in the past', 'Error');
+    return false;
+  }
+  
+  // Check if date is too far in future (more than 30 days)
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + 30);
+  
+  if (selectedDate > maxDate) {
+    showModal("error", 'Cannot select dates more than 30 days in advance', 'Error');
+    return false;
+  }
+  
+  // Check if date is unavailable
+  const isUnavailable = await window.isDateUnavailable(selectedDate);
+  if (isUnavailable) {
+    showModal("error", 'Selected date is unavailable. Please choose another date.', 'Error');
+    return false;
+  }
+  
+  return true;
+}
+
+// Function to update booking appointment date
+window.updateBookingAppointmentDate = async function(bookingId, appointmentDate) {
+  try {
+    const response = await fetch('/landscape/USER_API/BookingsController.php?action=update_appointment_date', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        appointment_date: appointmentDate.toISOString().slice(0, 19).replace('T', ' ')
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showModal('success', 'Success', 'Appointment date updated successfully!');
+      
+      // Update the booking data in state
+      const booking = state.allBookings.find(b => b.id == bookingId);
+      if (booking) {
+        booking.appointment_date = appointmentDate.toISOString();
+      }
+    } else {
+      showModal("error", 'Failed to update appointment date: ' + (result.message || 'Unknown error'), 'Error');
+    }
+  } catch (error) {
+    console.error('Error updating appointment date:', error);
+    showModal("error", 'Failed to update appointment date. Please try again.', 'Error');
+  }
 }
 
 window.closeAddBookingModal = () => {
@@ -892,6 +1671,27 @@ window.closeAddBookingModal = () => {
 
 window.closeBookingDetailsModal = () => {
   document.getElementById('bookingDetailsModal').style.display = 'none'
+}
+
+// Additional missing functions
+window.closeModalOnOverlay = function(event) {
+  if (event.target === event.currentTarget) {
+    closeModal();
+  }
+}
+
+window.saveChanges = function() {
+  // This function would save changes in the consultation modal
+  // For now, just close the modal
+  closeModal();
+}
+
+window.closeModal = function(id = 'modalOverlay') {
+  const modalId = id || 'modalOverlay';
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
 // Logger utility for future modal integration
@@ -1120,11 +1920,12 @@ window.confirmBooking = async (btn, bookingId) => {
         throw new Error('Invalid initial payment amount');
       }
       
-      formData.append('amount', sanitizedPayment); // Always append amount for confirm action
+      formData.append('amount', sanitizedPayment); 
+      formData.append('notifBoolean', '0'); 
       
       Logger.log('Confirm action FormData prepared', 'info', { 
         files: [blueprint[0]?.name, quotation[0]?.name, agreement[0]?.name],
-        amount: initialPayment 
+        amount: initialPayment
       });
       toggleModal('#confirmModal', 'flex');
       
@@ -1150,21 +1951,20 @@ window.confirmBooking = async (btn, bookingId) => {
       body: formData
     });
 
-    Logger.log('Response received', 'info', { status: response.status, ok: response.ok });
-
+    //Logger.log('Response received', 'info', { status: response.status, ok: response.ok });
     if (!response.ok) {
       const errorData = await response.json();
-      Logger.error('Backend error response', errorData);
+      showModal('database','Backend error response', errorData);
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
-    Logger.success('Booking operation completed successfully', result);
+    //Logger.success('Booking operation completed successfully', result);
     
     // Success handling
     const successMessage = `Booking ID ${sanitizedBookingId} has been successfully ${actionType === 'complete' ? 'completed' : 'confirmed'}.`;
-    ToastSystem.success(successMessage, 'Booking Updated');
-    Logger.success(successMessage);
+    showModal('success', 'Booking Updated', successMessage);
+    //Logger.success(successMessage);
     
     // Refresh data if function exists
     if (typeof fetchData === 'function') {
@@ -1174,7 +1974,8 @@ window.confirmBooking = async (btn, bookingId) => {
 
   } catch (error) {
     Logger.error('Booking confirmation failed', { error: error.message, stack: error.stack });
-    ToastSystem.error('Error: ' + error.message, 'Booking Error');
+    //showModal("error", 'Error: ' + error.message, 'Booking Error');
+    alert('Error: ' + error.message, 'Booking Error')
   } finally {
     // Reset button state
     if (btn) {
@@ -1187,23 +1988,30 @@ window.confirmBooking = async (btn, bookingId) => {
 }
 
 window.completeBooking = (bookingId) => {
-  ToastSystem.info('Booking ' + bookingId + ' has been marked as completed.', 'Booking Completed');
+  showModal('info', 'Booking Completed', 'Booking ' + bookingId + ' has been marked as completed.');
 }
 
 window.cancelBooking = (bookingId) => {
-  ModalSystem.confirm(
-    "Cancel Booking", 
-    `Are you sure you want to cancel booking ${bookingId}?`, 
-    () => {
-      confirmCancel(bookingId);
-      ToastSystem.info(`Booking ${bookingId} has been cancelled.`, 'Booking Cancelled');
-    }
-  );
+  confirmCancel(bookingId);
+  // showModal('confirm',
+  //   "Cancel Booking", 
+  //   `Are you sure you want to cancel booking ${bookingId}?`, 
+  //   () => {
+      
+  //    // showModal('info', 'Booking Cancelled', `Booking ${bookingId} has been cancelled.`);
+  //   }
+  // );
 }
 /**
  * Generic function to send status updates to the API
+ * Automatically resets notifBoolean when status changes
  */
 async function updateBookingStatus(url, data, methods="POST") {
+  // If this is a status update, also reset notifBoolean
+  if (data.status || data.next_status) {
+    data.notifBoolean = false;
+  }
+
   const response = await fetch(url, {
     method: methods,
     headers: {
@@ -1391,7 +2199,7 @@ window.exportBookingReport = async(btn) => {
     
   } catch (error) {
     Logger.log('Error generating booking report: ' + error.message, 'error');
-    ToastSystem.error('Failed to generate report. Please try again.', 'Report Generation Error');
+    showModal("error", 'Failed to generate report. Please try again.', 'Report Generation Error');
   } finally {
     // Restore button state
     btn.disabled = false;
@@ -1418,7 +2226,7 @@ async function confirmCancel(bookingId) {
     const cancellationReason = document.getElementById('cancellationReason').value.trim();
     
     if (!cancellationReason) {
-      ModalSystem.warning("Required Field", "Please provide a cancellation reason.");
+      //showModal("warning","Required Field", "Please provide a cancellation reason.");
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<i class=\'fas fa-times\'></i> Cancel';
@@ -1427,7 +2235,7 @@ async function confirmCancel(bookingId) {
     }
     
     // 3. Define API endpoint and payload
-    const url = '/USER_API/cancelled_booking.php'
+    const url = '/landscape/USER_API/BookingsController.php?action=cancel'
     const payload = {
       id: bookingId,
       notes: cancellationReason,
@@ -1437,15 +2245,15 @@ async function confirmCancel(bookingId) {
     await updateBookingStatus(url, payload, "POST")
 
     // 5. Success Handling
-    ToastSystem.success(`Booking ID ${bookingId} has been cancelled.`, 'Cancellation Successful');
+    showModal("success","Cancellation Successful", `Booking ID ${bookingId} has been cancelled.`);
 
     if (typeof fetchData === 'function') {
       fetchData()
     }
 
   } catch (error) {
+    showModal("error","Cancellation failed", 'Error: ' + error.message);
     console.error('Cancellation failed:', error)
-    ToastSystem.error('Error: ' + error.message, 'Cancellation Error');
   } finally {
     // 6. Reset UI
     if (btn) {
@@ -1531,7 +2339,7 @@ async function loadData() {
       `<option value="${user.name} (${user.email})" data-id="${user.id}">`
     ).join('')
     serviceList.innerHTML = servicesData.services.map(s =>
-      `<option value="${capitalize(s.service_name)}" data-id="${s.id}">${capitalize(s.service_name)} - $${s.basePrice}</option>`
+      `<option value="${capitalize(s.service_name)}" data-id="${s.id}">${capitalize(s.service_name)} - ${moneySign}${s.basePrice}</option>`
     ).join('')
 
     const filterOptions = [
@@ -1582,7 +2390,7 @@ async function loadTransactionInformation(bookingId) {
     
     if (result.status === 'success' && result.transactions) {
       const transactionTableBody = document.getElementById('transactionTableBody');
-      
+      console.log()
       if (result.transactions.length === 0) {
         transactionTableBody.innerHTML = `
           <tr>
@@ -1594,7 +2402,7 @@ async function loadTransactionInformation(bookingId) {
         return;
       }
       
-      transactionTableBody.innerHTML = result.transactions.map(transaction => `
+      transactionTableBody.innerHTML = result.transactions.transactions.map(transaction => `
         <tr class="hover:bg-slate-50/50 dark:hover:bg-stone-800/30 transition-colors">
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-stone-300">${new Date(transaction.transaction_date).toLocaleDateString()}</td>
           <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-stone-100">${transaction.transaction_code}</td>
@@ -1604,7 +2412,7 @@ async function loadTransactionInformation(bookingId) {
               ${getPaymentMethodText(transaction.description)}
             </div>
           </td>
-          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-stone-100 text-right">$${parseFloat(transaction.amount).toFixed(2)}</td>
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-stone-100 text-right">${moneySign}${parseFloat(transaction.amount).toFixed(2)}</td>
         </tr>
       `).join('');
       

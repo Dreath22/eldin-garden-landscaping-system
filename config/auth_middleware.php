@@ -7,6 +7,19 @@
 require_once __DIR__ . '/config.php';
 
 /**
+ * Get user by ID from database
+ * @param PDO $pdo Database connection
+ * @param int $userId User ID
+ * @return array|null User data or null if not found
+ */
+function getUserById(PDO $pdo, int $userId): ?array {
+    $stmt = $pdo->prepare("SELECT id, name, email, role, status FROM users WHERE id = :id");
+    $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+/**
  * Check if user is logged in
  * @return bool True if user is logged in
  */
@@ -27,7 +40,7 @@ function getCurrentUser() {
     if ($user === null) {
         global $pdo;
         $userId = $_SESSION['user_id'];
-        $stmt = $pdo->prepare("SELECT id, fullname, email, role, status FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, name, email, role, status FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
     }

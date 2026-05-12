@@ -1,6 +1,6 @@
-import { switchTab, renderPagination } from './utils/utils.js'
+import { switchTab, renderPagination, capitalize, formatToCalendar, moneySign } from './utils/utils.js'
 import UserAPI from './utils/UserAPI.js'
-import { ModalSystem, ToastSystem } from './utils/modal.js'
+import { showModal } from './utils/TrueModal.js'
 // --- 1. Centralized State Object ---
 const state = {
   currentPage: 1,
@@ -15,8 +15,8 @@ const state = {
   selectAllActive: false,
 }
 
-async function exportUsers(exportBtn) {
-  const originalText = exportBtn.innerHTML
+window.exportUsers = async function () {
+  const originalText = document.getElementById('exportBtn').innerHTML
 
   // 1. UI Feedback
   exportBtn.disabled = true
@@ -34,7 +34,7 @@ async function exportUsers(exportBtn) {
     const usersToExport = data.users
 
     if (!usersToExport || usersToExport.length === 0) {
-      ToastSystem.warning('No users found matching the current filters.', 'Export Error');
+      showModal('warning', 'Export Error', 'No users found matching current filters.');
       return
     }
 
@@ -61,7 +61,7 @@ async function exportUsers(exportBtn) {
     document.body.removeChild(link)
   } catch (error) {
     console.error('Export Error:', error)
-    ToastSystem.error('There was an error generating the export.', 'Export Error');
+    showModal('error', 'Export Error', 'There was an error generating the export.');
   } finally {
     exportBtn.disabled = false
     exportBtn.innerHTML = originalText
@@ -75,7 +75,7 @@ async function confirmBan(userId) {
 
   // 1. Validation
   if (!reasonElement) {
-    ModalSystem.warning("Required Field", "Please select a reason for the ban.");
+    showModal('warning', 'Required Field', 'Please select a reason for ban.');
     return
   }
 
@@ -94,12 +94,12 @@ async function confirmBan(userId) {
       notes: note,
     })
 
-    ToastSystem.success(`User ${userName} has been banned.`, 'User Banned');
+    showModal('success', 'User Banned', `User ${userName} has been banned.`);
     closeBanModal()
     fetchUsers()
   } catch (error) {
     console.error('Ban failed:', error)
-    ToastSystem.error('Error: ' + (error.message || 'Could not reach the server.'), 'Ban Error');
+    showModal('error', 'Ban Error', 'Error: ' + (error.message || 'Could not reach the server.'));
   } finally {
     if (banBtn) {
       banBtn.disabled = false
@@ -129,7 +129,7 @@ async function confirmEditUser(userId) {
 
   // 2. Validation
   if (!userData.firstName || !userData.email) {
-    ModalSystem.warning("Required Fields", "First Name and Email are required.");
+    showModal('warning', 'Required Fields', 'First Name and Email are required.');
     return
   }
 
@@ -139,11 +139,12 @@ async function confirmEditUser(userId) {
 
   try {
     await UserAPI.update(userData)
-    ToastSystem.success('User updated successfully!', 'Update Success');
+    showModal('success', 'Update Success', 'User updated successfully!');
     fetchUsers()
+    document.querySelector("#editUserModal").style.display = 'none';
   } catch (error) {
     console.error('Update failed:', error)
-    ToastSystem.error('Error: ' + (error.message || 'Could not reach the server.'), 'Update Error');
+    showModal('error', 'Update Error', 'Error: ' + (error.message || 'Could not reach the server.'));
   } finally {
     if (saveBtn) saveBtn.disabled = false
   }
@@ -158,7 +159,7 @@ async function confirmAddUser() {
 
   // Validation (matches UserAPI.add guard)
   if (!userData.firstName || !userData.email || !userData.temporaryPassword) {
-    ModalSystem.warning("Required Fields", "Please fill in the required fields (First Name, Email, and Password).");
+    showModal('warning', "Required Fields", "Please fill in the required fields (First Name, Email, and Password).");
     return
   }
 
@@ -166,13 +167,13 @@ async function confirmAddUser() {
     const result = await UserAPI.add(userData)
     console.log('Success:', result)
 
-    ToastSystem.success('User added successfully!', 'User Added');
+    showModal('success', 'User Added', 'User added successfully!');
     form.reset()
     closeAddUserModal()
     fetchUsers(1)
   } catch (error) {
     console.error('Network error:', error)
-    ToastSystem.error('Error: ' + (error.message || 'Could not connect to the server.'), 'Add User Error');
+    showModal('error', 'Add User Error', 'Error: ' + (error.message || 'Could not connect to the server.'));
   }
 }
 
@@ -195,21 +196,58 @@ async function fetchUsers(page = state.currentPage) {
     displayStats(data.summary)
     displayUsers(data.users)
 
-    renderPagination(fetchUsers, data.summary.total_users, state, () => fetchUsers());
+    renderPagination(fetchUsers, data.summary.total_pages, state, () => fetchUsers());
   } catch (error) {
     console.error('Fetch error:', error)
   }
 }
+async function fetchUserBookings(userId, page = 1) {
+      try {
+        if (!userId) {
+          console.error('User ID not found');
+          return;
+        }
 
+        // Use URLSearchParams for clean URL building
+        const params = new URLSearchParams({
+          page: page,
+          user_id: userId, // Filter by specific user
+          order: 'desc'
+        });
+
+        const apiURL = `/landscape/USER_API/BookingsController.php?action=list_by_user&${params.toString()}`;
+        
+        const response = await fetch(apiURL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Fetched user bookings:', data);
+        return data;
+        
+      } catch (error) {
+        console.error('Fetch user bookings error:', error);
+        return { bookings: [], summary: {} };
+      }
+    }
 
 // --- 5. Action Handler (Finds user in state) ---
 window.handleAction = (userId, actionType) => {
   const user = state.allUsers.find((u) => u.id === userId)
   if (!user) return console.error(`User ${userId} not found.`)
 
-  if (actionType === 'view') showViewUserModal(user)
-  else if (actionType === 'edit') showEditUserModal(user)
-  else if (actionType === 'ban') showBanModal(user)
+  if (actionType === 'view') {
+    console.log("view")
+    showViewUserModal(user)}
+  else if (actionType === 'edit') {
+    console.log("edit")
+    showEditUserModal(user)
+  }
+  else if (actionType === 'ban'){
+    console.log("ban")
+    showBanModal(user)
+  } 
 }
 
 
@@ -271,8 +309,50 @@ function displayUsers(users) {
 // --- 8. Modal Display Logic ---
 // (Using your existing template structure, referencing state)
 
-function showViewUserModal(user) {
-  const doc = `<div class="modal modal-large">
+const showViewUserModal = async(user) => {
+  const bookings_raw_data =  await fetchUserBookings(user.id);
+  const userBooking = bookings_raw_data.bookings;
+  console.log("BData: ", userBooking);
+  const dateOnly = (d)=>{
+    return d.includes('T') ? d.split('T')[0] : d.split(' ')[0];
+  }
+  let amount_spent = 0;
+  let htDoc = '<div class="no-bookings" style="text-align: center; padding: 20px; color: #6b7280;">No bookings found for this user.</div>';
+  let address = "Address Not Provided";
+  if (userBooking && userBooking.length > 0) {
+    let addrr=[]
+
+    htDoc = userBooking.map(b=>{
+          amount_spent += b.amount_paid;
+          addrr.push(b.address);
+          return `<div class="transaction-item">
+                    <div class="transaction-icon income">
+                      <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="transaction-info">
+                      <h4>${capitalize(b.category)} Service</h4>
+                      <p>Booked on ${formatToCalendar(b.created_at)}</p>
+                    </div>
+                    <span class="status-badge" style="
+                      ${b.status === 'Pending' ? 'background-color: #fbbf24; color: #78350f; border-radius: 12px;' : ''}
+                      ${b.status === 'Active' ? 'background-color: #3b82f6; color: white; border-radius: 8px;' : ''}
+                      ${b.status === 'Completed' ? 'background-color: #10b981; color: white; border-radius: 16px;' : ''}
+                      ${b.status === 'Cancelled' ? 'background-color: #ef4444; color: white; border-radius: 20px;' : ''}
+                      ${b.status === 'Consultation' ? 'background-color: #8b5cf6; color: white; border-radius: 6px;' : ''}
+                      padding: 4px 12px; font-size: 12px; font-weight: 600; border: none;
+                    ">${b.status}</span>
+                  </div>`
+        }).join('');
+    
+    if (addrr.length > 0) {
+      address = [...new Set(addrr)].join(', ');
+    }
+  }
+  
+
+  console.log("User: ", user);
+  const doc = `
+  <div class="modal modal-large">
       <div class="modal-header">
         <h3><i class="fas fa-user" style="color: var(--primary-green);"></i> User Details</h3>
         <button class="modal-close" onclick="closeViewUserModal()">&times;</button>
@@ -290,46 +370,29 @@ function showViewUserModal(user) {
           <div>
             <h4 style="margin-bottom: 0.75rem; color: var(--text-dark);">Contact Information</h4>
             <p style="margin-bottom: 0.5rem;"><i class="fas fa-phone" style="width: 20px; color: var(--text-gray);"></i> ${user.phone_number || 'Phone Number not provided'}</p>
-            <p style="margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt" style="width: 20px; color: var(--text-gray);"></i> ${user.address || 'Address not provided'}</p>
+            <p style="margin-bottom: 0.5rem;"><i class="fas fa-map-marker-alt" style="width: 20px; color: var(--text-gray);"></i> ${address}</p>
             <p><i class="fas fa-calendar" style="width: 20px; color: var(--text-gray);"></i> Joined ${timeAgo(user.joined_date)}</p>
           </div>
           <div>
             <h4 style="margin-bottom: 0.75rem; color: var(--text-dark);">Activity Summary</h4>
-            <p style="margin-bottom: 0.5rem;"><i class="fas fa-shopping-cart" style="width: 20px; color: var(--text-gray);"></i> ${user.booking_count || 0} Bookings</p>
-            <p style="margin-bottom: 0.5rem;"><i class="fas fa-dollar-sign" style="width: 20px; color: var(--text-gray);"></i> $${user.total_spent || 0} Total Spent</p>
+            <p style="margin-bottom: 0.5rem;"><i class="fas fa-shopping-cart" style="width: 20px; color: var(--text-gray);"></i> ${userBooking.length || 0} Bookings</p>
+            <p style="margin-bottom: 0.5rem;"><i class="fas fa-dollar-sign" style="width: 20px; color: var(--text-gray);"></i> ${moneySign}${amount_spent || 0} Total Spent</p>
             <p><i class="fas fa-clock" style="width: 20px; color: var(--text-gray);"></i> Last active ${timeAgo(user.last_active) || 'Never'}</p>
           </div>
         </div>
         <div style="margin-top: 1.5rem;">
           <h4 style="margin-bottom: 0.75rem; color: var(--text-dark);">Recent Bookings</h4>
           <div class="transaction-list">
-            <div class="transaction-item">
-              <div class="transaction-icon income">
-                <i class="fas fa-calendar-check"></i>
-              </div>
-              <div class="transaction-info">
-                <h4>Lawn Maintenance Service</h4>
-                <p>Booked on Feb 18, 2026</p>
-              </div>
-              <span class="status-badge completed">Completed</span>
-            </div>
-            <div class="transaction-item">
-              <div class="transaction-icon income">
-                <i class="fas fa-calendar-check"></i>
-              </div>
-              <div class="transaction-info">
-                <h4>Garden Design Consultation</h4>
-                <p>Booked on Feb 10, 2026</p>
-              </div>
-              <span class="status-badge completed">Completed</span>
-            </div>
+            ${htDoc}
           </div>
         </div>
        <div class="modal-footer">
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeViewUserModal()">Close</button>
         <button class="btn btn-primary btn-small" onclick="closeViewUserModal(); handleAction(${user.id}, 'edit')">Edit User</button>
       </div>
-    </div>`
+    </div>`;
+
+  
   document.getElementById('viewUserModal').innerHTML = doc
   document.getElementById('viewUserModal').style.display = 'flex'
 }
@@ -389,7 +452,7 @@ function showEditUserModal(user) {
         <button class="btn btn-small" style="background-color: #f1f5f9; color: var(--text-dark);" onclick="closeEditUserModal()">Cancel</button>
         <button class="btn btn-primary btn-small" onclick="confirmEditUser(${user.id})">Save Changes</button>
       </div>
-    </div>`
+    </div>`;
 }
 
 
